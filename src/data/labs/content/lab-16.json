@@ -1,0 +1,217 @@
+{
+  "id": "lab-16",
+  "schemaVersion": 1,
+  "contentVersion": 1,
+  "week": 5,
+  "order": 16,
+  "track": "apple",
+  "title": "Gmail Troubleshooting",
+  "persona": "Ms. Rivera, 5th-grade Teacher",
+  "channel": "phone",
+  "scenario": "Ms. Rivera, a 5th-grade teacher, calls. She received an email from 'IT-Support@westminsterschool.com' asking her to click a link and verify her Gmail password within 24 hours or her account will be suspended. She did not click the link. She is concerned. Her Gmail on her school MacBook is also showing a 'Sync Issue' — her sent mail is not appearing on her phone.",
+  "impact": "Security and instructional. Potential phishing attempt. Active sync issue affecting communication with parents and students.",
+  "objectives": [
+    "Confirm whether the suspicious email is a phishing attempt",
+    "Verify the actual Gmail sync status independently",
+    "Remediate the phishing concern (educate and document)",
+    "Diagnose the Gmail sync issue (IMAP vs. MDM policy)",
+    "Restore sync if possible",
+    "Educate the teacher on phishing recognition",
+    "Document the ticket"
+  ],
+  "tools": [
+    "Gmail web interface (webmail)",
+    "Apple Mail on macOS",
+    "Email header analyzer",
+    "MDM policy console",
+    "Google Workspace admin console"
+  ],
+  "evidence": [
+    { "id": "ev-email-headers", "description": "Screenshot of the suspicious email headers and From field", "kind": "screenshot" },
+    { "id": "ev-gmail-sync-error", "description": "Screenshot of the Gmail sync error in Apple Mail", "kind": "screenshot" },
+    { "id": "ev-imap-settings", "description": "Apple Mail IMAP configuration screenshot", "kind": "screenshot" },
+    { "id": "ev-comms-log", "description": "Record of communications with Ms. Rivera", "kind": "note" }
+  ],
+  "decisionPoints": [
+    {
+      "id": "dp-phishing",
+      "prompt": "You review the email. The From address is 'IT-Support@westminsterschool.com' which looks plausible but contains subtle inconsistencies in the actual sender domain. Is this a phishing email?",
+      "options": [
+        {
+          "id": "opt-phishing-yes",
+          "label": "Yes — the From domain is not the school's real email domain. Urgency and link request are textbook phishing.",
+          "score": { "diagnosis": 1, "evidence": 1, "resolution": 1 },
+          "feedback": "Correct. The 'IT-Support@westminsterschool.com' address impersonates a real internal-looking sender. The real school email domain should be verified against the directory. Report the phishing email."
+        },
+        {
+          "id": "opt-phishing-no",
+          "label": "No — the address looks legitimate, so this is probably a real IT request. Ask Ms. Rivera to click the link to verify.",
+          "score": { "diagnosis": -1, "evidence": -1, "resolution": -1 },
+          "feedback": "Dangerous. Domain spoofing and subtle character substitutions are common phishing techniques. The 'looks legitimate' appearance is exactly what makes the email work. Never advise clicking links in suspicious emails."
+        },
+        {
+          "id": "opt-unsure",
+          "label": "Ask Ms. Rivera to forward the email and have someone in IT check it later",
+          "score": { "diagnosis": 0, "evidence": 0, "resolution": 0 },
+          "feedback": "Delays the response and leaves Ms. Rivera vulnerable. The indicators in the email are strong enough to make a determination. Educate her now and report it."
+        }
+      ]
+    },
+    {
+      "id": "dp-sync-issue",
+      "prompt": "Ms. Rivera's sent mail is not syncing to her phone. The MacBook Apple Mail IMAP account is connected. How do you diagnose the sync issue?",
+      "options": [
+        {
+          "id": "opt-mdm-policy",
+          "label": "Check Google Workspace MDM policy for IMAP sync restrictions and confirm the account is not blocked",
+          "score": { "diagnosis": 1, "evidence": 1, "resolution": 1 },
+          "feedback": "Correct. On managed Google Workspace accounts, MDM policies can restrict IMAP sync or force OAuth. Check the Workspace admin console first before assuming a client-side issue."
+        },
+        {
+          "id": "opt-imap-only",
+          "label": "Focus only on Apple Mail IMAP settings — reconfigure IMAP and SMTP servers on the MacBook",
+          "score": { "diagnosis": 0, "evidence": 0, "resolution": 0 },
+          "feedback": "Reconfiguring Apple Mail client settings without checking the Workspace policy may not address the root cause. The account could be restricted at the server level."
+        },
+        {
+          "id": "opt-reset-password",
+          "label": "Reset Ms. Rivera's Google Workspace password and have her re-authenticate everywhere",
+          "score": { "diagnosis": -1, "evidence": -1, "resolution": -1 },
+          "feedback": "Unnecessary unless the account is actually compromised. The sync issue is likely a configuration or policy problem, not a credential issue. Resetting without evidence causes more disruption."
+        }
+      ]
+    }
+  ],
+  "ticket": {
+    "type": "incident",
+    "category": "Email / Phishing / Google Workspace",
+    "priority": "p2",
+    "impact": "medium",
+    "urgency": "high",
+    "sla": "business-hours",
+    "initialDescription": "Teacher received suspicious email impersonating IT. Did not click. Also reports Gmail 'Sync Issue' — sent mail not syncing to phone.",
+    "requester": {
+      "name": "Ms. Rivera",
+      "role": "Faculty",
+      "identifiers": { "extension": "ext. 4330", "location": "rm. 5C" }
+    }
+  },
+  "location": {
+    "id": "teacher-macbook",
+    "name": "Teacher MacBook (Remote Inspection)",
+    "objects": [
+      {
+        "id": "rivera-mac",
+        "name": "MacBook Pro (Ms. Rivera)",
+        "state": {
+          "model": "MacBook Pro 13-inch",
+          "os": "macOS 14.6 (Sonoma)",
+          "mail_app": "Apple Mail",
+          "gmail_account": "connected",
+          "imap_status": "connected",
+          "sync_status": "failing — sent items not appearing on phone",
+          "suspicious_email_present": true
+        }
+      }
+    ]
+  },
+  "nodes": [
+    {
+      "id": "intake",
+      "kind": "intro",
+      "title": "Intake the call",
+      "body": "Ms. Rivera is calling about two things: a suspicious email she did not click, and a Gmail sync issue. Acknowledge her for not clicking the link, thank her for reporting, and reassure her that you will look into both.",
+      "transitions": [{ "event": "intake-recorded", "to": "examine-email" }]
+    },
+    {
+      "id": "examine-email",
+      "kind": "inspect",
+      "title": "Examine the suspicious email",
+      "body": "Have Ms. Rivera forward the email to IT. Inspect the From header, the actual sender domain, the link target, and the email body. Note any urgency language, requests for credentials, and the exact return path. Document the evidence.",
+      "transitions": [{ "event": "evidence-saved", "to": "decide-phishing" }]
+    },
+    {
+      "id": "decide-phishing",
+      "kind": "decide",
+      "title": "Determine if the email is a phishing attempt",
+      "body": "Based on the From field, the actual sender domain, and the message content, determine whether this is a phishing email.",
+      "decisionPointId": "dp-phishing",
+      "transitions": [{ "event": "decision-made", "to": "phishing-remediation" }]
+    },
+    {
+      "id": "phishing-remediation",
+      "kind": "remediate",
+      "title": "Remediate the phishing concern",
+      "body": "Report the email to Google as phishing via the Gmail web interface. Have Ms. Rivera delete the email from all folders. Document the report. Do not click any links in the email. Educate Ms. Rivera on the red flags: urgency, credential requests, and look-alike domains.",
+      "transitions": [{ "event": "phishing-handled", "to": "diagnose-sync" }]
+    },
+    {
+      "id": "diagnose-sync",
+      "kind": "inspect",
+      "title": "Diagnose the Gmail sync issue",
+      "body": "Check Apple Mail IMAP settings on the MacBook. Note the IMAP server, port, and authentication method. Then check Google Workspace admin console for any MDM policy restricting IMAP, OAuth, or sync.",
+      "transitions": [{ "event": "evidence-saved", "to": "decide-sync" }]
+    },
+    {
+      "id": "decide-sync",
+      "kind": "decide",
+      "title": "Identify the sync root cause",
+      "body": "Apple Mail IMAP is connected but sent items are not syncing. Determine the most likely cause.",
+      "decisionPointId": "dp-sync-issue",
+      "transitions": [{ "event": "decision-made", "to": "sync-remediation" }]
+    },
+    {
+      "id": "sync-remediation",
+      "kind": "remediate",
+      "title": "Restore sync",
+      "body": "Apply the appropriate fix based on the diagnosis: enable IMAP access in Workspace, update the Apple Mail IMAP path, or remove and re-add the account. Confirm the fix and that sent items now appear on Ms. Rivera's phone.",
+      "transitions": [{ "event": "fix-applied", "to": "validate" }]
+    },
+    {
+      "id": "validate",
+      "kind": "remediate",
+      "title": "Validate the fix",
+      "body": "Confirm with Ms. Rivera: the suspicious email is reported and deleted, and her sent mail is now appearing on her phone. Walk her through the phishing red flags one more time.",
+      "transitions": [{ "event": "validation-saved", "to": "document" }]
+    },
+    {
+      "id": "document",
+      "kind": "document",
+      "title": "Document the ticket",
+      "body": "Document both issues in the ticket. Include the phishing analysis, the Workspace policy check, the fix applied, and the educational guidance provided.",
+      "prompt": "Write a follow-up message to Ms. Rivera acknowledging her quick action on the phishing email and summarizing the sync fix.",
+      "transitions": [{ "event": "followup-saved", "to": "debrief" }]
+    },
+    {
+      "id": "debrief",
+      "kind": "debrief",
+      "title": "Debrief",
+      "body": "Review your score and reflect on the dual-issue triage pattern.",
+      "transitions": []
+    }
+  ],
+  "startNode": "intake",
+  "terminalNodes": ["debrief"],
+  "scoring": {
+    "weights": {
+      "diagnosis": 1.2,
+      "evidence": 1.2,
+      "troubleshooting": 1,
+      "resolution": 1,
+      "validation": 1
+    },
+    "thresholds": { "jobReady": 3 }
+  },
+  "methodology": [
+    "identify",
+    "scope",
+    "gather-evidence",
+    "hypothesize",
+    "test",
+    "change",
+    "validate",
+    "document"
+  ],
+  "kbOpportunity": "Gmail sync on managed Google Workspace accounts — check Workspace MDM policy for IMAP/OAuth restrictions before reconfiguring the mail client. Phishing emails often use look-alike internal domains; always verify the actual sender domain before clicking any links.",
+  "skills": ["apple", "google-workspace", "ticketing"]
+}

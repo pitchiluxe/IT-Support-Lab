@@ -1,0 +1,221 @@
+{
+  "id": "lab-17",
+  "schemaVersion": 1,
+  "contentVersion": 1,
+  "week": 5,
+  "order": 17,
+  "track": "google-workspace",
+  "title": "Google Drive Permissions",
+  "persona": "Ms. Chen, History Department Chair",
+  "channel": "email",
+  "scenario": "Ms. Chen, the History Department Chair, emails the IT Service Desk. She created a shared Drive folder called 'US History Curriculum' last week and added her department colleagues as editors. Several teachers are now reporting they can see the folder but cannot open any documents inside — they receive an 'Access Denied' error. She has verified the folder link is shared correctly. The issue is affecting at least four teachers and blocking their lesson planning.",
+  "impact": "Instructional: Four history teachers cannot access shared curriculum materials for the week ahead. Lesson planning for 11 classes across two grade levels is stalled until permissions are restored.",
+  "objectives": [
+    "Identify the folder owner and current permission settings in Google Drive",
+    "Determine whether the problem is at the folder level or individual file level",
+    "Identify the scope — how many files and which users are affected",
+    "Correct the permission inheritance or sharing settings",
+    "Validate that affected teachers can access and edit documents",
+    "Document the resolution and communicate with Ms. Chen"
+  ],
+  "tools": [
+    "Google Drive admin panel (drive.google.com)",
+    "Google Admin Console (admin.google.com)",
+    "Shared drive management view",
+    "Google Drive sharing audit log",
+    "Service desk ticket system"
+  ],
+  "evidence": [
+    { "id": "ev-scope", "description": "List of affected users and which files they cannot access", "kind": "note" },
+    { "id": "ev-perms", "description": "Screenshot of the current Drive folder sharing settings", "kind": "screenshot" },
+    { "id": "ev-owner", "description": "Confirm who is the owner of the folder and the files inside it", "kind": "note" }
+  ],
+  "decisionPoints": [
+    {
+      "id": "dp-diagnosis",
+      "prompt": "After reviewing the Drive sharing settings, you discover the folder was shared with editors, but each file inside has 'Inherited restrictions — Remove restriction' applied. What is the root cause?",
+      "options": [
+        {
+          "id": "opt-inheritance",
+          "label": "Individual files have restricted sharing settings that override the folder-level permissions",
+          "score": { "diagnosis": 0.9, "evidence": 0.9, "resolution": 0.9 },
+          "feedback": "Correct — in Google Drive, folder permissions do not automatically cascade to files with existing restricted settings. The owner must change file-level sharing or remove the restriction."
+        },
+        {
+          "id": "opt-link-broken",
+          "label": "The shared link itself is broken or has expired",
+          "score": { "diagnosis": 0.2, "evidence": 0.1, "resolution": 0.2 },
+          "feedback": "A broken link would prevent access to the folder entirely, not allow seeing the folder but not opening files inside."
+        },
+        {
+          "id": "opt-wrong-group",
+          "label": "Ms. Chen shared the folder with the wrong Google group",
+          "score": { "diagnosis": 0.3, "evidence": 0.3, "resolution": 0.3 },
+          "feedback": "She confirmed the correct group was added. The issue is specifically at the file level, not the folder level."
+        }
+      ]
+    },
+    {
+      "id": "dp-resolution",
+      "prompt": "The correct resolution requires changing file-level permissions. Which is the most efficient approach?",
+      "options": [
+        {
+          "id": "opt-bulk-change",
+          "label": "Select all affected files in Drive and apply folder-level sharing to them in bulk using 'Change how you share'",
+          "score": { "diagnosis": 0.9, "evidence": 0.8, "resolution": 0.9 },
+          "feedback": "Correct — Drive's bulk sharing option applies folder-level permissions to all selected files at once, efficiently resolving the inheritance issue."
+        },
+        {
+          "id": "opt-file-by-file",
+          "label": "Manually open each file and change sharing settings one at a time",
+          "score": { "diagnosis": 0.5, "evidence": 0.3, "resolution": 0.3 },
+          "feedback": "This would work but is time-consuming and error-prone for dozens of files. Bulk change is the right approach."
+        },
+        {
+          "id": "opt-google-admin",
+          "label": "Resolve it through the Google Admin Console for all users at once",
+          "score": { "diagnosis": 0.2, "evidence": 0.1, "resolution": 0.1 },
+          "feedback": "The Admin Console does not override Drive file-level sharing for individual shared drives. The file owner must change settings from within Drive."
+        }
+      ]
+    }
+  ],
+  "ticket": {
+    "type": "incident",
+    "category": "Google Workspace / Drive Permissions",
+    "priority": "p3",
+    "impact": "medium",
+    "urgency": "medium",
+    "sla": "business-hours",
+    "initialDescription": "History Department shared Drive folder 'US History Curriculum' — teachers can see the folder but cannot open any documents. Affects 4+ teachers.",
+    "requester": {
+      "name": "Ms. Chen",
+      "role": "Faculty",
+      "identifiers": { "department": "History Dept", "location": "rm. 204" }
+    }
+  },
+  "location": {
+    "id": "service-desk",
+    "name": "IT Service Desk",
+    "objects": [
+      {
+        "id": "helpdesk-workstation",
+        "name": "IT Helpdesk Workstation",
+        "state": {
+          "os": "Windows 11",
+          "apps": ["Chrome", "Google Admin Console"],
+          "sessionUser": "it-tech"
+        }
+      },
+      {
+        "id": "ticket-queue",
+        "name": "Service Desk Ticket Queue",
+        "state": {
+          "openCount": 7,
+          "newCount": 2
+        }
+      }
+    ]
+  },
+  "nodes": [
+    {
+      "id": "intake",
+      "kind": "intro",
+      "title": "Receive the ticket",
+      "body": "Review the email from Ms. Chen. Identify the affected folder name, the number of affected users, and what specifically they cannot do. Open a Drive sharing audit to begin investigating.",
+      "transitions": [{ "event": "ticket-opened", "to": "inspect-drive" }]
+    },
+    {
+      "id": "inspect-drive",
+      "kind": "inspect",
+      "title": "Inspect the shared Drive folder",
+      "body": "Open the Google Drive folder 'US History Curriculum' as an admin or owner. Review the sharing settings at the folder level and open several documents to check their individual sharing status. Note any differences.",
+      "locationId": "service-desk",
+      "objectId": "helpdesk-workstation",
+      "transitions": [
+        { "event": "evidence-saved", "to": "decide-diagnosis" }
+      ]
+    },
+    {
+      "id": "decide-diagnosis",
+      "kind": "decide",
+      "title": "Identify the root cause",
+      "body": "Based on what you found in the Drive sharing settings, what is causing the access denied errors?",
+      "decisionPointId": "dp-diagnosis",
+      "transitions": [
+        { "event": "decision-made", "to": "decide-resolution" }
+      ]
+    },
+    {
+      "id": "decide-resolution",
+      "kind": "decide",
+      "title": "Choose the resolution method",
+      "body": "You have confirmed the root cause. Which method will you use to fix the file-level permissions most efficiently?",
+      "decisionPointId": "dp-resolution",
+      "transitions": [
+        { "event": "decision-made", "to": "remediate" }
+      ]
+    },
+    {
+      "id": "remediate",
+      "kind": "remediate",
+      "title": "Apply the fix",
+      "body": "Select all affected files in the 'US History Curriculum' folder. Use the 'Change how you share' option to apply the department editor permissions to all selected files. Verify the change is applied.",
+      "locationId": "service-desk",
+      "objectId": "helpdesk-workstation",
+      "transitions": [
+        { "event": "fix-applied", "to": "validate" }
+      ]
+    },
+    {
+      "id": "validate",
+      "kind": "remediate",
+      "title": "Validate the fix",
+      "body": "Ask Ms. Chen or one of the affected teachers to test accessing the shared documents from their Drive. Confirm they can open and edit files. Document the test result.",
+      "transitions": [
+        { "event": "validation-saved", "to": "document" }
+      ]
+    },
+    {
+      "id": "document",
+      "kind": "document",
+      "title": "Document the resolution",
+      "body": "Write a ticket note summarizing: the root cause (file-level inheritance restriction), the action taken (bulk sharing update), and validation result. Also write a plain-language message to Ms. Chen confirming the issue is resolved.",
+      "prompt": "Write a brief follow-up message to Ms. Chen explaining what was wrong and that it is fixed.",
+      "transitions": [
+        { "event": "followup-saved", "to": "debrief" }
+      ]
+    },
+    {
+      "id": "debrief",
+      "kind": "debrief",
+      "title": "Debrief",
+      "body": "Review your score and think about what you learned about Google Drive permission inheritance. A KB article for this scenario would help future technicians — note the key takeaway.",
+      "transitions": []
+    }
+  ],
+  "startNode": "intake",
+  "terminalNodes": ["debrief"],
+  "scoring": {
+    "weights": {
+      "diagnosis": 1,
+      "evidence": 1,
+      "troubleshooting": 1,
+      "resolution": 1.2,
+      "validation": 0.8
+    },
+    "thresholds": { "jobReady": 3 }
+  },
+  "methodology": [
+    "identify",
+    "scope",
+    "gather-evidence",
+    "hypothesize",
+    "change",
+    "validate",
+    "document",
+    "follow-up"
+  ],
+  "kbOpportunity": "Google Drive folder sharing does not automatically cascade to files with existing restricted settings. When users can see a folder but not files inside, check file-level permissions and use bulk sharing update.",
+  "skills": ["google-workspace", "ticketing", "documentation"]
+}

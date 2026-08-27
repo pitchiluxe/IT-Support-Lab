@@ -1,0 +1,219 @@
+{
+  "id": "lab-36",
+  "schemaVersion": 1,
+  "contentVersion": 1,
+  "week": 9,
+  "order": 36,
+  "track": "projects",
+  "title": "New Classroom Technology Deployment",
+  "persona": "Mr. Adebayo, Head of Library Media Center",
+  "channel": "email",
+  "scenario": "Mr. Adebayo, Head of the Library Media Center, submits a project request to outfit a new collaborative learning space with 6 student workstations, a teacher presentation station, a large-format display, a document camera, and a ceiling-mounted projector. The room must be ready for the start of the new semester in three weeks.",
+  "impact": "Operational: the library renovation is a major initiative. Delays affect 450 students and 30 faculty who are scheduled to use the space. The school has budgeted $28,000 for this project.",
+  "objectives": [
+    "Scope the full equipment list and confirm quantities and specifications",
+    "Identify all stakeholders and their approval requirements",
+    "Create a phased installation timeline that fits the 3-week window",
+    "Identify procurement lead times that could threaten the deadline",
+    "Define a testing and validation checklist for go/no-go",
+    "Document the project plan and communicate it to stakeholders"
+  ],
+  "tools": [
+    "Equipment vendor catalog",
+    "Project planning template",
+    "Change request form",
+    "Procurement tracking spreadsheet",
+    "Installation checklist template"
+  ],
+  "evidence": [
+    { "id": "ev-equipment-list", "description": "Final approved equipment list with quantities, model numbers, and estimated costs", "kind": "config" },
+    { "id": "ev-project-plan", "description": "Phased project plan with dates, owners, and dependencies", "kind": "note" },
+    { "id": "ev-stakeholder-approval", "description": "Signed approval from the CIO and Head of Finance confirming the equipment list and budget", "kind": "note" }
+  ],
+  "decisionPoints": [
+    {
+      "id": "dp-procurement-risk",
+      "prompt": "One of the 6 workstations requires a specialized monitor that has a 4-week lead time from the vendor. The project deadline is 3 weeks. What is the best approach?",
+      "options": [
+        {
+          "id": "opt-order-all-now",
+          "label": "Order all items immediately and accept the delay on the one monitor — deliver the rest on time",
+          "score": { "diagnosis": 1, "evidence": 1, "resolution": 1 },
+          "feedback": "Correct — partial delivery is better than no delivery. Split the order so the room can open with 5 workstations and the sixth as soon as the monitor arrives."
+        },
+        {
+          "id": "opt-substitute-monitor",
+          "label": "Substitute the specialized monitor with a standard model that is in stock",
+          "score": { "diagnosis": 0, "evidence": 0, "resolution": 0 },
+          "feedback": "Substitution is acceptable if the stakeholder approves it. Raise it as an option, but do not unilaterally swap specialized equipment."
+        },
+        {
+          "id": "opt-delay-project",
+          "label": "Delay the entire project until all 6 workstations are ready",
+          "score": { "diagnosis": -1, "evidence": -1, "resolution": -1 },
+          "feedback": "Delaying the entire project for one component is disproportionate and wastes three weeks of the school's time."
+        }
+      ]
+    },
+    {
+      "id": "dp-approval-chain",
+      "prompt": "The Head of Finance has not yet signed off on the equipment list. Without this approval, procurement cannot proceed. What is the correct escalation path?",
+      "options": [
+        {
+          "id": "opt-proceed-anyway",
+          "label": "Proceed with procurement anyway since the budget was already allocated in the school plan",
+          "score": { "diagnosis": -1, "evidence": -1, "resolution": -1 },
+          "feedback": "Unauthorized procurement is a compliance violation. Do not proceed without the required approvals."
+        },
+        {
+          "id": "opt-escalate-formally",
+          "label": "Escalate to the CIO to request a formal budget release so procurement can begin",
+          "score": { "diagnosis": 1, "evidence": 1, "resolution": 1 },
+          "feedback": "Correct — escalate with urgency to the CIO, citing the lead-time risk. Frame it as a project-critical dependency."
+        },
+        {
+          "id": "opt-wait-passively",
+          "label": "Wait for the Head of Finance to respond at their next available meeting",
+          "score": { "diagnosis": 0, "evidence": 0, "resolution": 0 },
+          "feedback": "A 4-week lead time means passive waiting could kill the project. Proactive escalation is required."
+        }
+      ]
+    }
+  ],
+  "ticket": {
+    "type": "request",
+    "category": "Projects / Technology Deployment",
+    "priority": "p2",
+    "impact": "high",
+    "urgency": "medium",
+    "sla": "week",
+    "initialDescription": "Mr. Adebayo requests a full technology deployment for the new Library Media Center collaborative space. 6 student workstations, teacher station, large display, document camera, ceiling projector. Deadline: semester start.",
+    "requester": {
+      "name": "Mr. Adebayo",
+      "role": "Administrator",
+      "identifiers": { "department": "Library Media", "room": "Library B" }
+    }
+  },
+  "location": {
+    "id": "new-library-space",
+    "name": "New Library Media Center Space (Room L-3)",
+    "objects": [
+      {
+        "id": "floor-plan",
+        "name": "Floor Plan / Wiring Diagram",
+        "state": {
+          "network_drop_count": 8,
+          "power_outlet_count": 12,
+          "ceiling_mount_point": "yes",
+          "projection_screen_location": "north wall",
+          "available": true
+        }
+      },
+      {
+        "id": "equipment-draft",
+        "name": "Draft Equipment List",
+        "state": {
+          "workstations": 6,
+          "monitors": 6,
+          "teacher_station": 1,
+          "large_display": 1,
+          "document_camera": 1,
+          "projector": 1,
+          "estimated_cost": 28450,
+          "budget_allocated": 28000,
+          "approval_status": "pending Finance sign-off"
+        }
+      }
+    ]
+  },
+  "nodes": [
+    {
+      "id": "intro",
+      "kind": "intro",
+      "title": "Review the project request",
+      "body": "Review the request from Mr. Adebayo. Note the 3-week deadline and the $28,000 budget. Identify the primary stakeholders: Mr. Adebayo, the CIO, and the Head of Finance.",
+      "transitions": [{ "event": "stakeholders-identified", "to": "scope" }]
+    },
+    {
+      "id": "scope",
+      "kind": "inspect",
+      "title": "Confirm the equipment list",
+      "body": "Review the draft equipment list. Check each item against the floor plan and wiring diagram. Identify any missing items or incompatibilities. Confirm quantities with Mr. Adebayo. Save the final equipment list as evidence.",
+      "locationId": "new-library-space",
+      "objectId": "equipment-draft",
+      "transitions": [
+        { "event": "equipment-confirmed", "to": "decide-procurement-risk" }
+      ]
+    },
+    {
+      "id": "decide-procurement-risk",
+      "kind": "decide",
+      "title": "Handle the lead-time risk",
+      "body": "One workstation has a 4-week lead time. Choose how to handle this project-critical dependency.",
+      "decisionPointId": "dp-procurement-risk",
+      "transitions": [
+        { "event": "decision-made", "to": "check-approvals" }
+      ]
+    },
+    {
+      "id": "check-approvals",
+      "kind": "inspect",
+      "title": "Verify approvals are in place",
+      "body": "Check whether the Head of Finance has signed off on the equipment list. Note any outstanding approvals. If approval is missing, document this as a project risk.",
+      "locationId": "new-library-space",
+      "objectId": "equipment-draft",
+      "transitions": [
+        { "event": "approval-status-noted", "to": "decide-approval" }
+      ]
+    },
+    {
+      "id": "decide-approval",
+      "kind": "decide",
+      "title": "Escalate the approval",
+      "body": "Head of Finance has not signed off. Choose the correct course of action.",
+      "decisionPointId": "dp-approval-chain",
+      "transitions": [
+        { "event": "decision-made", "to": "document" }
+      ]
+    },
+    {
+      "id": "document",
+      "kind": "document",
+      "title": "Write the project plan",
+      "body": "Write the project plan covering: scope, equipment list, phased installation timeline (prep, delivery, install, test, go-live), owners, risks, and communication plan. Send to Mr. Adebayo and the CIO for final sign-off.",
+      "prompt": "Write the project plan summary for Mr. Adebayo and the CIO covering scope, phased timeline, risks, and owners.",
+      "transitions": [
+        { "event": "plan-sent", "to": "debrief" }
+      ]
+    },
+    {
+      "id": "debrief",
+      "kind": "debrief",
+      "title": "Debrief",
+      "body": "Review the project approach. Key lessons: always identify lead-time risks early, never proceed without required approvals, and break the project into phased delivery milestones.",
+      "transitions": []
+    }
+  ],
+  "startNode": "intro",
+  "terminalNodes": ["debrief"],
+  "scoring": {
+    "weights": {
+      "diagnosis": 1,
+      "evidence": 1,
+      "troubleshooting": 0.8,
+      "resolution": 1,
+      "validation": 0.6
+    },
+    "thresholds": { "jobReady": 3 }
+  },
+  "methodology": [
+    "identify",
+    "scope",
+    "gather-evidence",
+    "hypothesize",
+    "document",
+    "follow-up"
+  ],
+  "kbOpportunity": "Classroom technology deployment checklist: stakeholder sign-off → equipment list approval → procurement lead-time check → phased installation timeline → go/no-go testing checklist → project closeout documentation.",
+  "skills": ["projects", "classroom-tech"]
+}

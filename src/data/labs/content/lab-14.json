@@ -1,0 +1,248 @@
+{
+  "id": "lab-14",
+  "schemaVersion": 1,
+  "contentVersion": 1,
+  "week": 4,
+  "order": 14,
+  "track": "apple",
+  "title": "Lost iPhone/iPad",
+  "persona": "Parent of 7th-grade student",
+  "channel": "phone",
+  "scenario": "A parent calls the school. Their child (7th grade) lost their school-issued iPad somewhere between home and school this morning. The device is enrolled in Jamf MDM. The parent is concerned about data security. The school needs to locate the device (if possible), secure it (lock/wipe), and issue a replacement.",
+  "impact": "Data security and instructional. Student has no iPad for class. Potential exposure of student data requires immediate action.",
+  "objectives": [
+    "Verify the MDM enrollment and confirm device identity",
+    "Locate the device if possible (if powered on and connected)",
+    "Initiate remote lock to secure the device",
+    "Initiate remote wipe if device is at risk",
+    "File the loss report and document the incident",
+    "Arrange a replacement device",
+    "Communicate status to the parent"
+  ],
+  "tools": [
+    "Jamf Pro MDM console",
+    "Apple Find My (via Jamf integration)",
+    "Service desk ticket system",
+    "Asset management database",
+    "Parent contact records"
+  ],
+  "evidence": [
+    { "id": "ev-mdm-location", "description": "MDM location screenshot showing last known location", "kind": "screenshot" },
+    { "id": "ev-remote-lock", "description": "Remote lock confirmation from Jamf", "kind": "screenshot" },
+    { "id": "ev-remote-wipe", "description": "Remote wipe confirmation from Jamf", "kind": "screenshot" },
+    { "id": "ev-parent-log", "description": "Log of all parent communications", "kind": "note" },
+    { "id": "ev-incident-ticket", "description": "Completed loss/incident ticket", "kind": "note" }
+  ],
+  "decisionPoints": [
+    {
+      "id": "dp-lock-or-wipe",
+      "prompt": "The device is MDM-enrolled. The parent has called. Do you wipe immediately or attempt to locate first?",
+      "options": [
+        {
+          "id": "opt-locate-first",
+          "label": "Attempt to locate the device first, then issue a remote lock, and only wipe if locate returns an unfamiliar address",
+          "score": { "diagnosis": 1, "evidence": 1, "resolution": 1 },
+          "feedback": "Correct. Locating first preserves evidence of where the device went. A remote lock secures the data while a wipe can still be issued if the situation warrants."
+        },
+        {
+          "id": "opt-immediate-wipe",
+          "label": "Issue a remote wipe immediately to protect student data",
+          "score": { "diagnosis": 0, "evidence": -1, "resolution": 0 },
+          "feedback": "Wiping immediately destroys location evidence and may be premature. Lock first, wipe only if the device cannot be recovered or has left expected areas."
+        },
+        {
+          "id": "opt-wait",
+          "label": "Wait 24 hours to see if the child finds the iPad and brings it back",
+          "score": { "diagnosis": -1, "evidence": -1, "resolution": -1 },
+          "feedback": "Unacceptable. Student data is at risk. MDM tools should be used immediately. A lock can be issued with no negative consequences if the device is recovered."
+        }
+      ]
+    },
+    {
+      "id": "dp-residential-address",
+      "prompt": "The MDM shows the device last seen three hours ago at a residential address that is neither the school nor the student's home. How do you proceed?",
+      "options": [
+        {
+          "id": "opt-escalate-sro",
+          "label": "Escalate to the school resource officer (SRO) for guidance before any further action",
+          "score": { "diagnosis": 1, "evidence": 1, "resolution": 1 },
+          "feedback": "Correct. Contacting a residential address directly is not appropriate for school staff. The SRO has the proper authority and protocols to handle suspected theft or unauthorized possession."
+        },
+        {
+          "id": "opt-contact-address",
+          "label": "Contact the residential address directly to ask if anyone has found a school iPad",
+          "score": { "diagnosis": -1, "evidence": 0, "resolution": -1 },
+          "feedback": "Directly contacting an unknown residential address creates liability, safety, and privacy concerns. This is the role of the SRO or law enforcement, not IT staff."
+        },
+        {
+          "id": "opt-wipe-and-stop",
+          "label": "Issue a remote wipe immediately and consider the device lost",
+          "score": { "diagnosis": 0, "evidence": 0, "resolution": 0 },
+          "feedback": "Wiping before involving the SRO destroys evidence needed for recovery or investigation. Always involve the proper authorities when a device may be in unauthorized possession."
+        }
+      ]
+    }
+  ],
+  "ticket": {
+    "type": "major-incident",
+    "category": "Lost / Stolen Device",
+    "priority": "p1",
+    "impact": "high",
+    "urgency": "high",
+    "sla": "24x7",
+    "initialDescription": "School-issued iPad lost between home and school. MDM enrolled. Parent concerned about student data. Need immediate locate/lock/wipe assessment.",
+    "requester": {
+      "name": "Parent (7th-grader's family)",
+      "role": "Parent / Guardian"
+    }
+  },
+  "location": {
+    "id": "it-office",
+    "name": "IT Office",
+    "objects": [
+      {
+        "id": "jamf-console",
+        "name": "Jamf Pro MDM Console",
+        "state": {
+          "logged_in": true,
+          "device_status": "lost",
+          "last_seen_hours_ago": 3,
+          "last_seen_location_type": "residential",
+          "lock_status": "available",
+          "wipe_status": "available"
+        }
+      },
+      {
+        "id": "replacement-inventory",
+        "name": "Replacement iPad Inventory",
+        "state": {
+          "available_count": 6,
+          "loaner_count": 2
+        }
+      }
+    ]
+  },
+  "nodes": [
+    {
+      "id": "intake",
+      "kind": "intro",
+      "title": "Intake the call",
+      "body": "A parent is on the line reporting a lost school iPad. The child is in 7th grade. Listen carefully to where it was last seen, what time, and what the parent has already done. Acknowledge the data security concern. Open a P1 incident ticket immediately.",
+      "transitions": [{ "event": "intake-recorded", "to": "verify-mdm" }]
+    },
+    {
+      "id": "verify-mdm",
+      "kind": "inspect",
+      "title": "Verify MDM enrollment and identity",
+      "body": "Confirm the device is enrolled in Jamf MDM. Pull up the device record by serial number or student assignment. Verify the last known status, OS version, and supervised state. Document the device identifier.",
+      "locationId": "it-office",
+      "objectId": "jamf-console",
+      "transitions": [{ "event": "evidence-saved", "to": "decide-lock-or-wipe" }]
+    },
+    {
+      "id": "decide-lock-or-wipe",
+      "kind": "decide",
+      "title": "Lock, wipe, or wait?",
+      "body": "The device is lost and may be in unauthorized possession. Decide on the immediate MDM action.",
+      "decisionPointId": "dp-lock-or-wipe",
+      "transitions": [{ "event": "decision-made", "to": "execute-lock" }]
+    },
+    {
+      "id": "execute-lock",
+      "kind": "remediate",
+      "title": "Issue remote lock",
+      "body": "Issue a remote lock from Jamf. Add a recovery message to the lock screen with the school's IT phone number. Document the lock confirmation.",
+      "locationId": "it-office",
+      "objectId": "jamf-console",
+      "transitions": [{ "event": "lock-confirmed", "to": "attempt-locate" }]
+    },
+    {
+      "id": "attempt-locate",
+      "kind": "remediate",
+      "title": "Attempt to locate the device",
+      "body": "Send a locate request via Jamf or the school's Find My integration. Record the last known location. If the device is at a residential address that is not the home or school, escalate.",
+      "locationId": "it-office",
+      "objectId": "jamf-console",
+      "transitions": [{ "event": "location-recorded", "to": "decide-residential" }]
+    },
+    {
+      "id": "decide-residential",
+      "kind": "decide",
+      "title": "Handle unfamiliar residential location",
+      "body": "The device's last known location is an unfamiliar residential address. Decide on the next action.",
+      "decisionPointId": "dp-residential-address",
+      "transitions": [{ "event": "decision-made", "to": "sro-escalation" }]
+    },
+    {
+      "id": "sro-escalation",
+      "kind": "remediate",
+      "title": "Escalate to SRO and decide on wipe",
+      "body": "Contact the school resource officer. Share the device record, the last known location, and the lock confirmation. Based on SRO guidance, decide whether to issue a remote wipe. Document the SRO interaction.",
+      "locationId": "it-office",
+      "objectId": "jamf-console",
+      "transitions": [{ "event": "escalation-documented", "to": "parent-update" }]
+    },
+    {
+      "id": "parent-update",
+      "kind": "remediate",
+      "title": "Update the parent",
+      "body": "Call the parent back. Explain what has been done (lock, locate, SRO escalation). Reassure them about student data. Confirm next steps for a replacement device. Log the call in the ticket.",
+      "transitions": [{ "event": "parent-updated", "to": "arrange-replacement" }]
+    },
+    {
+      "id": "arrange-replacement",
+      "kind": "remediate",
+      "title": "Arrange replacement",
+      "body": "Pull a replacement iPad from inventory. Enroll it in MDM, push the standard profile, and assign it to the student. Coordinate handoff with the parent or front office.",
+      "locationId": "it-office",
+      "objectId": "replacement-inventory",
+      "transitions": [{ "event": "replacement-ready", "to": "validate" }]
+    },
+    {
+      "id": "validate",
+      "kind": "remediate",
+      "title": "Validate closure",
+      "body": "Confirm: device locked, SRO notified, parent informed, replacement issued, incident ticket complete. Ensure the lost device record is flagged for periodic re-attempts to locate.",
+      "transitions": [{ "event": "validation-saved", "to": "document" }]
+    },
+    {
+      "id": "document",
+      "kind": "document",
+      "title": "Document the incident",
+      "body": "Complete the loss/incident report. Include timeline, MDM actions, SRO contact, parent communications, and replacement details. Submit to the principal and IT lead.",
+      "prompt": "Write a closing note summarizing the incident, the actions taken, and the lessons learned for future lost-device events.",
+      "transitions": [{ "event": "followup-saved", "to": "debrief" }]
+    },
+    {
+      "id": "debrief",
+      "kind": "debrief",
+      "title": "Debrief",
+      "body": "Review your score and reflect on the balance between data security and device recovery.",
+      "transitions": []
+    }
+  ],
+  "startNode": "intake",
+  "terminalNodes": ["debrief"],
+  "scoring": {
+    "weights": {
+      "diagnosis": 1,
+      "evidence": 1.2,
+      "troubleshooting": 1,
+      "resolution": 1,
+      "validation": 1
+    },
+    "thresholds": { "jobReady": 3 }
+  },
+  "methodology": [
+    "identify",
+    "scope",
+    "gather-evidence",
+    "hypothesize",
+    "test",
+    "change",
+    "validate",
+    "document"
+  ],
+  "kbOpportunity": "Lost or stolen device response — always attempt locate and lock first; escalate to SRO or law enforcement when the device is in an unfamiliar location; never directly contact unknown residential addresses from school IT.",
+  "skills": ["apple", "mdm", "hardware-lifecycle"]
+}

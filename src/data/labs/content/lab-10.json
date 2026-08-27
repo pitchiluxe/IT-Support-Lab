@@ -1,0 +1,207 @@
+{
+  "id": "lab-10",
+  "schemaVersion": 1,
+  "contentVersion": 1,
+  "week": 3,
+  "order": 10,
+  "track": "apple",
+  "title": "macOS Performance Issue",
+  "persona": "Ms. Williams, Drama Teacher",
+  "channel": "phone",
+  "scenario": "Ms. Williams, a drama teacher, calls the IT service desk. Her MacBook Pro (macOS 14.6) has become painfully slow over the past two weeks. Apps take 30-60 seconds to open. Activity Monitor shows the kernel_task process consuming 80%+ CPU continuously. Fans are running at maximum speed. She has a production deadline — the spring musical program needs to be printed and distributed by Friday.",
+  "impact": "Instructional: Spring musical programs are blocked by the slow Mac. Deadline is Friday. This is a high-urgency instructional impact.",
+  "objectives": [
+    "Identify the root cause of kernel_task CPU spikes and thermal throttling",
+    "Collect evidence including Activity Monitor readings and temperature data",
+    "Determine whether this is a software or hardware issue",
+    "Resolve the issue or escalate appropriately with documentation",
+    "Validate full performance restoration",
+    "Document the troubleshooting steps and resolution"
+  ],
+  "tools": [
+    "Activity Monitor (CPU and energy tab)",
+    "Apple Diagnostics (boot-time hardware test)",
+    "Safe Mode boot",
+    "System Information",
+    "Temperature monitoring tools"
+  ],
+  "evidence": [
+    { "id": "ev-activity-monitor", "description": "Screenshot of Activity Monitor showing kernel_task at 80%+ CPU", "kind": "screenshot" },
+    { "id": "ev-apple-diagnostics", "description": "Apple Diagnostics result (reference code if any)", "kind": "note" },
+    { "id": "ev-temp-readings", "description": "Temperature sensor readings from the MacBook", "kind": "screenshot" },
+    { "id": "ev-safe-mode", "description": "Result of booting in Safe Mode — does the issue persist?", "kind": "note" }
+  ],
+  "decisionPoints": [
+    {
+      "id": "dp-kernel-cause",
+      "prompt": "Ms. Williams' MacBook shows kernel_task consuming 80%+ CPU with thermal throttling. What is the most likely root cause?",
+      "options": [
+        {
+          "id": "opt-thermal-hw",
+          "label": "Hardware thermal issue — elevated ambient temperature or degraded thermal paste causing the CPU to throttle",
+          "score": { "diagnosis": 1, "evidence": 1, "resolution": 1 },
+          "feedback": "Correct. kernel_task consuming high CPU with thermal throttling is the hallmark of a hardware thermal management issue. The system is throttling itself to prevent damage."
+        },
+        {
+          "id": "opt-kext",
+          "label": "A problematic kernel extension (kext) is driving CPU spikes and must be unloaded",
+          "score": { "diagnosis": 0, "evidence": 0, "resolution": 0 },
+          "feedback": "A rogue kext could cause elevated CPU, but the sustained thermal throttling pattern is more consistent with heat management. A kext issue would not typically cause thermal throttling without an underlying heat source."
+        },
+        {
+          "id": "opt-malware",
+          "label": "Malware on the MacBook is generating the CPU load and must be scanned and removed",
+          "score": { "diagnosis": -1, "evidence": -1, "resolution": -1 },
+          "feedback": "macOS malware is rare and would not present as kernel_task thermal throttling. This diagnosis lacks evidence and leads to the wrong remediation path."
+        }
+      ]
+    },
+    {
+      "id": "dp-next-step",
+      "prompt": "To isolate whether this is a hardware thermal failure or a software-triggered heat issue, what should you do first?",
+      "options": [
+        {
+          "id": "opt-safe-mode",
+          "label": "Boot in Safe Mode to rule out third-party software as a contributing factor",
+          "score": { "diagnosis": 1, "evidence": 1, "resolution": 0 },
+          "feedback": "Good thinking. Safe Mode isolates the software environment. If kernel_task is still throttling in Safe Mode, the issue is hardware thermal. If it resolves, software is contributing."
+        },
+        {
+          "id": "opt-apple-diagnostics",
+          "label": "Run Apple Diagnostics immediately to check for hardware sensor failures",
+          "score": { "diagnosis": 1, "evidence": 1, "resolution": 1 },
+          "feedback": "Correct. Apple Diagnostics will check thermal sensors and fans directly. If sensors are failing, this will show a reference code. This is the most direct hardware test."
+        },
+        {
+          "id": "opt-reset-smc",
+          "label": "Reset the SMC to clear thermal management state and restart the system",
+          "score": { "diagnosis": 0, "evidence": 0, "resolution": 0 },
+          "feedback": "Resetting the SMC is a valid step, but it should follow evidence collection. You cannot diagnose whether hardware is failing if you immediately reset and restart."
+        }
+      ]
+    }
+  ],
+  "ticket": {
+    "type": "problem",
+    "category": "Hardware / macOS Performance",
+    "priority": "p2",
+    "impact": "high",
+    "urgency": "high",
+    "sla": "business-hours",
+    "initialDescription": "MacBook Pro (macOS 14.6) painfully slow — kernel_task at 80%+ CPU, fans at max, apps taking 30-60 seconds. Deadline Friday for spring musical programs.",
+    "requester": {
+      "name": "Ms. Williams",
+      "role": "Faculty",
+      "identifiers": { "extension": "ext. 4410", "location": "drama office" }
+    }
+  },
+  "location": {
+    "id": "teacher-macbook",
+    "name": "Teacher MacBook (Remote Inspection)",
+    "objects": [
+      {
+        "id": "williams-mac",
+        "name": "MacBook Pro 14-inch (Ms. Williams)",
+        "state": {
+          "model": "MacBook Pro 14-inch",
+          "os": "macOS 14.6 (Sonoma)",
+          "cpu": { "process": "kernel_task", "usage_pct": 82, "status": "thermal-throttled" },
+          "ram": { "used_gb": 14, "total_gb": 18 },
+          "thermal": { "status": "throttled", "cpu_temp_c": 98, "fan_rpm": 6200 },
+          "uptime": "14 days",
+          "last_reboot": "unknown"
+        }
+      }
+    ]
+  },
+  "nodes": [
+    {
+      "id": "intake",
+      "kind": "intro",
+      "title": "Intake",
+      "body": "Ms. Williams calls. Her MacBook Pro has been painfully slow for two weeks. kernel_task is at 80%+ CPU, fans are maxed, apps take 30-60 seconds. She has a Friday deadline for spring musical programs. Acknowledge the urgency, take notes, and open a ticket.",
+      "transitions": [{ "event": "intake-recorded", "to": "gather-evidence" }]
+    },
+    {
+      "id": "gather-evidence",
+      "kind": "inspect",
+      "title": "Inspect Activity Monitor and system state",
+      "body": "Review the MacBook's Activity Monitor snapshot. Note kernel_task CPU usage, RAM pressure, and thermal state. Document the exact readings as evidence. Ask Ms. Williams what changed two weeks ago — new software, location, or behavior?",
+      "locationId": "teacher-macbook",
+      "objectId": "williams-mac",
+      "transitions": [{ "event": "evidence-saved", "to": "decide-cause" }]
+    },
+    {
+      "id": "decide-cause",
+      "kind": "decide",
+      "title": "Identify the root cause",
+      "body": "kernel_task is at 82% CPU with thermal throttling and fans at 6200 RPM. Based on the evidence and the pattern of symptoms, identify the most likely root cause.",
+      "decisionPointId": "dp-kernel-cause",
+      "transitions": [{ "event": "decision-made", "to": "decide-next-step" }]
+    },
+    {
+      "id": "decide-next-step",
+      "kind": "decide",
+      "title": "Choose the next diagnostic step",
+      "body": "Before committing to a resolution, choose the most appropriate next step to confirm whether this is hardware or software.",
+      "decisionPointId": "dp-next-step",
+      "transitions": [{ "event": "decision-made", "to": "remediate" }]
+    },
+    {
+      "id": "remediate",
+      "kind": "remediate",
+      "title": "Apply resolution or escalate",
+      "body": "Based on the diagnostic results: if Apple Diagnostics shows a hardware reference code, this requires escalation to Apple Store / authorized repair with a hardware ticket. If Safe Mode resolves it, a software uninstallation or OS reinstall may be needed. Document your findings and next steps.",
+      "locationId": "teacher-macbook",
+      "objectId": "williams-mac",
+      "transitions": [{ "event": "fix-applied", "to": "validate" }]
+    },
+    {
+      "id": "validate",
+      "kind": "remediate",
+      "title": "Validate performance restoration",
+      "body": "Confirm that kernel_task CPU has returned to normal (<5%), thermal status is nominal, and fans are at standard RPM. Ask Ms. Williams to test opening two apps to confirm the improvement.",
+      "locationId": "teacher-macbook",
+      "objectId": "williams-mac",
+      "transitions": [{ "event": "validation-saved", "to": "document" }]
+    },
+    {
+      "id": "document",
+      "kind": "document",
+      "title": "Document the ticket",
+      "body": "Write a clear ticket resolution. Include root cause, diagnostic steps taken, resolution applied, and guidance for Ms. Williams if the issue recurs.",
+      "prompt": "Write a follow-up message to Ms. Williams. Acknowledge the deadline pressure, explain the root cause in plain language, and confirm the system is ready for Friday's program work.",
+      "transitions": [{ "event": "followup-saved", "to": "debrief" }]
+    },
+    {
+      "id": "debrief",
+      "kind": "debrief",
+      "title": "Debrief",
+      "body": "Review your score and reflect on the thermal throttling diagnosis pattern.",
+      "transitions": []
+    }
+  ],
+  "startNode": "intake",
+  "terminalNodes": ["debrief"],
+  "scoring": {
+    "weights": {
+      "diagnosis": 1.2,
+      "evidence": 1,
+      "troubleshooting": 1.2,
+      "resolution": 1,
+      "validation": 1
+    },
+    "thresholds": { "jobReady": 3 }
+  },
+  "methodology": [
+    "identify",
+    "gather-evidence",
+    "hypothesize",
+    "test",
+    "change",
+    "validate",
+    "document"
+  ],
+  "kbOpportunity": "kernel_task thermal throttling on MacBook Pro — when Activity Monitor shows kernel_task consuming high CPU with thermal throttling, check Apple Diagnostics for hardware sensor failures before assuming a software cause.",
+  "skills": ["apple", "ticketing"]
+}

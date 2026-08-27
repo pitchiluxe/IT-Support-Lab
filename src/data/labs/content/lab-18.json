@@ -1,0 +1,229 @@
+{
+  "id": "lab-18",
+  "schemaVersion": 1,
+  "contentVersion": 1,
+  "week": 5,
+  "order": 18,
+  "track": "google-workspace",
+  "title": "Drive Sync Issues",
+  "persona": "Mr. Thompson, Math Teacher",
+  "channel": "phone",
+  "scenario": "Mr. Thompson calls the IT Service Desk. His laptop's Google Drive for desktop app is showing persistent 'Sync paused' and several files have not updated. He has a class starting in 20 minutes and the latest version of the lesson plan is not available. He is at home on his personal network but can use the school's VPN. The issue started this morning and he is unsure if he is the only one affected.",
+  "impact": "Instructional: A 9th-grade math teacher cannot access the most current version of a shared lesson plan before class. The 25 students in his first period will not receive updated materials.",
+  "objectives": [
+    "Identify the affected account, device, and sync client version",
+    "Determine scope — is this isolated to one user or affecting multiple?",
+    "Check Drive sync logs and error states for evidence",
+    "Form a hypothesis about the cause (network, account, client)",
+    "Apply the least-risky fix to restore sync",
+    "Validate the user can see current versions of the shared files"
+  ],
+  "tools": [
+    "Google Drive for desktop (sync client)",
+    "Google Drive web (drive.google.com)",
+    "Google Admin Console (Drive audit logs)",
+    "Service desk ticket system",
+    "Network status board"
+  ],
+  "evidence": [
+    { "id": "ev-client", "description": "Version of the Google Drive for desktop client and OS", "kind": "note" },
+    { "id": "ev-sync-state", "description": "Screenshot of the Drive sync status panel showing paused/errors", "kind": "screenshot" },
+    { "id": "ev-scope", "description": "Confirm whether other users are reporting similar issues (scope check)", "kind": "note" }
+  ],
+  "decisionPoints": [
+    {
+      "id": "dp-cause",
+      "prompt": "The Drive desktop client shows 'Sync paused — authentication required' and the user is signed in to the web app fine. What is the most likely cause?",
+      "options": [
+        {
+          "id": "opt-token",
+          "label": "The desktop client's OAuth token has expired and needs re-authentication",
+          "score": { "diagnosis": 0.9, "evidence": 0.9, "resolution": 0.9 },
+          "feedback": "Correct — the desktop client periodically requires re-authentication when the access token expires. The user is signed in to the web app via the browser, which uses a separate session."
+        },
+        {
+          "id": "opt-disk-space",
+          "label": "The local disk is full and the sync client cannot download new files",
+          "score": { "diagnosis": 0.3, "evidence": 0.2, "resolution": 0.3 },
+          "feedback": "Disk full would usually show a specific error about storage, not 'authentication required'."
+        },
+        {
+          "id": "opt-vpn",
+          "label": "The home network VPN is blocking Drive traffic",
+          "score": { "diagnosis": 0.4, "evidence": 0.3, "resolution": 0.3 },
+          "feedback": "VPN could cause some sync issues but would not produce an 'authentication required' error specifically."
+        }
+      ]
+    },
+    {
+      "id": "dp-test",
+      "prompt": "Which test should you ask the user to perform first to confirm the diagnosis?",
+      "options": [
+        {
+          "id": "opt-click-resume",
+          "label": "Ask the user to click 'Resume sync' and re-enter his Google account password to re-authenticate the desktop client",
+          "score": { "diagnosis": 0.9, "evidence": 0.8, "resolution": 0.9 },
+          "feedback": "Correct — this is the direct, low-risk test for an expired token. The user is already signed in to the web app so the password is known."
+        },
+        {
+          "id": "opt-reinstall",
+          "label": "Have the user uninstall and reinstall the Google Drive desktop client",
+          "score": { "diagnosis": 0.2, "evidence": 0.0, "resolution": 0.0 },
+          "feedback": "Premature and destructive. A reinstall is not warranted for an auth token issue."
+        },
+        {
+          "id": "opt-disable-firewall",
+          "label": "Instruct the user to disable the home firewall and antivirus",
+          "score": { "diagnosis": 0.1, "evidence": -0.4, "resolution": -0.5 },
+          "feedback": "Disabling security software on a personal machine is dangerous and unrelated to the auth-token error message."
+        }
+      ]
+    }
+  ],
+  "ticket": {
+    "type": "incident",
+    "category": "Google Workspace / Drive Sync",
+    "priority": "p2",
+    "impact": "medium",
+    "urgency": "high",
+    "sla": "business-hours",
+    "initialDescription": "Teacher (Mr. Thompson) reports Google Drive for desktop sync paused. Class in 20 minutes. Error: 'authentication required'.",
+    "requester": {
+      "name": "Mr. Thompson",
+      "role": "Faculty",
+      "identifiers": { "extension": "ext. 5142", "location": "rm. 118" }
+    }
+  },
+  "location": {
+    "id": "service-desk",
+    "name": "IT Service Desk",
+    "objects": [
+      {
+        "id": "helpdesk-workstation",
+        "name": "IT Helpdesk Workstation",
+        "state": {
+          "os": "Windows 11",
+          "apps": ["Chrome", "Google Admin Console"]
+        }
+      },
+      {
+        "id": "drive-admin-logs",
+        "name": "Google Drive Audit Logs",
+        "state": {
+          "scope": "all drives",
+          "errors": 12,
+          "authFailures": 4
+        }
+      }
+    ]
+  },
+  "nodes": [
+    {
+      "id": "intake",
+      "kind": "intro",
+      "title": "Take the call",
+      "body": "Answer the phone. Ask who is calling, what is affected, when it started, and whether they are at school or remote. Open a ticket and record the answers before doing anything else.",
+      "transitions": [{ "event": "intake-saved", "to": "inspect-client" }]
+    },
+    {
+      "id": "inspect-client",
+      "kind": "inspect",
+      "title": "Inspect the Drive desktop client",
+      "body": "Ask Mr. Thompson to open the Drive for desktop app and check the version, sync status, and the exact error message. Have him take a screenshot. Save the screenshot to the ticket.",
+      "locationId": "service-desk",
+      "objectId": "drive-admin-logs",
+      "transitions": [
+        { "event": "evidence-saved", "to": "scope-check" }
+      ]
+    },
+    {
+      "id": "scope-check",
+      "kind": "intro",
+      "title": "Determine scope",
+      "body": "Check the Google Drive audit logs and the network status board. Is anyone else reporting the same error? Confirm whether this is isolated to Mr. Thompson or a wider issue.",
+      "transitions": [
+        { "event": "scope-saved", "to": "decide-cause" }
+      ]
+    },
+    {
+      "id": "decide-cause",
+      "kind": "decide",
+      "title": "Identify the cause",
+      "body": "Based on the error message and the fact the web app works, choose the most likely cause.",
+      "decisionPointId": "dp-cause",
+      "transitions": [
+        { "event": "decision-made", "to": "decide-test" }
+      ]
+    },
+    {
+      "id": "decide-test",
+      "kind": "decide",
+      "title": "Choose the next test",
+      "body": "You have a hypothesis. Pick the least-risky test that will confirm or rule it out.",
+      "decisionPointId": "dp-test",
+      "transitions": [
+        { "event": "decision-made", "to": "remediate" }
+      ]
+    },
+    {
+      "id": "remediate",
+      "kind": "remediate",
+      "title": "Restore sync",
+      "body": "Walk Mr. Thompson through the re-authentication in the Drive desktop client. Once re-authenticated, verify the sync resumes. Have him confirm the latest version of his lesson plan is visible.",
+      "transitions": [
+        { "event": "fix-applied", "to": "validate" }
+      ]
+    },
+    {
+      "id": "validate",
+      "kind": "remediate",
+      "title": "Validate",
+      "body": "Confirm with Mr. Thompson that the sync is active and the latest files are available on his local machine. Have him check that the class materials are accessible.",
+      "transitions": [
+        { "event": "validation-saved", "to": "document" }
+      ]
+    },
+    {
+      "id": "document",
+      "kind": "document",
+      "title": "Document and follow up",
+      "body": "Close the ticket with a clear note describing the cause (expired auth token) and the action taken (re-authentication of the desktop client). Send a follow-up message to Mr. Thompson confirming resolution.",
+      "prompt": "Write a brief follow-up message to Mr. Thompson confirming the fix.",
+      "transitions": [
+        { "event": "followup-saved", "to": "debrief" }
+      ]
+    },
+    {
+      "id": "debrief",
+      "kind": "debrief",
+      "title": "Debrief",
+      "body": "Review your score. Think about how to recognize 'authentication required' errors vs. other Drive sync failures.",
+      "transitions": []
+    }
+  ],
+  "startNode": "intake",
+  "terminalNodes": ["debrief"],
+  "scoring": {
+    "weights": {
+      "diagnosis": 1.2,
+      "evidence": 1,
+      "troubleshooting": 1,
+      "resolution": 1,
+      "validation": 0.8
+    },
+    "thresholds": { "jobReady": 3 }
+  },
+  "methodology": [
+    "identify",
+    "scope",
+    "gather-evidence",
+    "hypothesize",
+    "test",
+    "change",
+    "validate",
+    "document",
+    "follow-up"
+  ],
+  "kbOpportunity": "Google Drive for desktop 'authentication required' error means the OAuth token has expired. Re-authentication of the desktop client resolves the issue — the web app uses a separate session and is not affected.",
+  "skills": ["google-workspace", "ticketing", "documentation"]
+}

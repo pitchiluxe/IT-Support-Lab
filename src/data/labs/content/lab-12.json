@@ -1,0 +1,204 @@
+{
+  "id": "lab-12",
+  "schemaVersion": 1,
+  "contentVersion": 1,
+  "week": 4,
+  "order": 12,
+  "track": "apple",
+  "title": "macOS Application Support",
+  "persona": "Mr. Patel, Science Teacher",
+  "channel": "email",
+  "scenario": "Mr. Patel emails the IT service desk. The school's mandatory plagiarism-detection software Turnitin will not open on his school-issued MacBook. He receives a 'Turnitin requires Rosetta 2 to be installed' error when he tries to launch it. He has tried clicking 'Install Rosetta' twice but it prompts for admin credentials he does not have. He needs Turnitin working to grade student essays due next week.",
+  "impact": "Instructional: Mr. Patel cannot grade student essays due next week. This blocks grading for his class.",
+  "objectives": [
+    "Verify the issue and reproduce the Rosetta 2 error",
+    "Determine whether this is an MDM enrollment issue or a direct admin action requirement",
+    "Identify the correct escalation path for software installation on managed Macs",
+    "Provide interim guidance to Mr. Patel",
+    "Validate the resolution",
+    "Document the ticket"
+  ],
+  "tools": [
+    "MDM console (Jamf)",
+    "Apple Rosetta 2 documentation",
+    "Service desk ticket system",
+    "Email client"
+  ],
+  "evidence": [
+    { "id": "ev-rosetta-error", "description": "Screenshot of Rosetta 2 install error on Turnitin launch", "kind": "screenshot" },
+    { "id": "ev-mdm-status", "description": "MDM enrollment status showing whether the Mac is fully managed", "kind": "screenshot" },
+    { "id": "ev-email-chain", "description": "Email thread from Mr. Patel requesting Rosetta installation", "kind": "note" }
+  ],
+  "decisionPoints": [
+    {
+      "id": "dp-rosetta-path",
+      "prompt": "Rosetta 2 should be available via MDM push on managed school Macs. Mr. Patel has no admin rights to install it directly. What is the correct path to resolve this?",
+      "options": [
+        {
+          "id": "opt-mdm-push",
+          "label": "Verify MDM enrollment and push Rosetta 2 from the MDM console to Mr. Patel's Mac",
+          "score": { "diagnosis": 1, "evidence": 1, "resolution": 1 },
+          "feedback": "Correct. On managed Macs, Rosetta 2 should be pushed via MDM. First check that the Mac is fully enrolled, then push the Rosetta configuration profile."
+        },
+        {
+          "id": "opt-direct-admin",
+          "label": "Provide Mr. Patel with admin credentials so he can install Rosetta directly",
+          "score": { "diagnosis": -1, "evidence": 0, "resolution": -1 },
+          "feedback": "Sharing admin credentials violates security policy and MDM best practices. Never provide local admin rights to end users on managed devices."
+        },
+        {
+          "id": "opt-softwareupdate",
+          "label": "Instruct Mr. Patel to run 'softwareupdate --install-rosetta' from Terminal himself",
+          "score": { "diagnosis": 0, "evidence": 0, "resolution": 0 },
+          "feedback": "This command requires admin privileges which Mr. Patel does not have. It also bypasses MDM tracking which defeats the purpose of managed device configuration."
+        }
+      ]
+    },
+    {
+      "id": "dp-interim",
+      "prompt": "The MDM push will take a few hours to propagate. While waiting, what interim guidance do you give Mr. Patel so he can continue grading?",
+      "options": [
+        {
+          "id": "opt-web-turnitin",
+          "label": "Advise Mr. Patel to access Turnitin via the web browser while the MDM push completes",
+          "score": { "diagnosis": 1, "evidence": 1, "resolution": 1 },
+          "feedback": "Correct. The Turnitin web app does not require Rosetta 2. This is an immediate workaround that allows grading to continue without waiting for the desktop app."
+        },
+        {
+          "id": "opt-wait",
+          "label": "Tell Mr. Patel to wait until the MDM push completes before doing anything",
+          "score": { "diagnosis": 0, "evidence": 0, "resolution": 0 },
+          "feedback": "Leaving the teacher with no actionable path forward while waiting for MDM is poor service. There is a simple workaround via the web app."
+        },
+        {
+          "id": "opt-install-manual",
+          "label": "Email Mr. Patel a direct download link for Rosetta 2 from Apple's website",
+          "score": { "diagnosis": -1, "evidence": 0, "resolution": -1 },
+          "feedback": "Downloading Rosetta from an external source does not address the MDM enrollment issue and introduces security risk. Rosetta must be installed through managed channels on school devices."
+        }
+      ]
+    }
+  ],
+  "ticket": {
+    "type": "request",
+    "category": "Software / macOS",
+    "priority": "p3",
+    "impact": "medium",
+    "urgency": "high",
+    "sla": "business-hours",
+    "initialDescription": "Turnitin will not launch on school MacBook — Rosetta 2 required. Teacher has no admin rights to install. Essays due next week.",
+    "requester": {
+      "name": "Mr. Patel",
+      "role": "Faculty",
+      "identifiers": { "extension": "ext. 4428", "location": "science lab 3" }
+    }
+  },
+  "location": {
+    "id": "teacher-macbook",
+    "name": "Teacher MacBook (Remote Inspection)",
+    "objects": [
+      {
+        "id": "patel-mac",
+        "name": "MacBook Pro (Mr. Patel)",
+        "state": {
+          "model": "MacBook Pro 13-inch M2",
+          "os": "macOS 14.6 (Sonoma)",
+          "chip": "Apple Silicon M2",
+          "rosetta": { "installed": false, "error_on_launch": "Turnitin requires Rosetta 2 to be installed" },
+          "mdm": { "enrolled": true, "profile_count": 4 },
+          "apps": { "turnitin": "error-on-launch" }
+        }
+      }
+    ]
+  },
+  "nodes": [
+    {
+      "id": "intake",
+      "kind": "intro",
+      "title": "Review the email",
+      "body": "Mr. Patel has emailed about Turnitin not opening due to a missing Rosetta 2 installation. Acknowledge the email, open a ticket, and note the grading deadline. Do not attempt a fix before understanding the MDM enrollment status.",
+      "transitions": [{ "event": "intake-recorded", "to": "verify-issue" }]
+    },
+    {
+      "id": "verify-issue",
+      "kind": "inspect",
+      "title": "Verify the issue and MDM status",
+      "body": "Check Mr. Patel's MacBook MDM enrollment status. Confirm whether Rosetta 2 is present or absent. Verify the exact error message shown by Turnitin. Document the MDM profile count and enrollment token validity.",
+      "locationId": "teacher-macbook",
+      "objectId": "patel-mac",
+      "transitions": [{ "event": "evidence-saved", "to": "decide-rosetta-path" }]
+    },
+    {
+      "id": "decide-rosetta-path",
+      "kind": "decide",
+      "title": "Determine the correct resolution path",
+      "body": "Mr. Patel's MacBook is MDM-enrolled but Rosetta 2 is missing. Determine the correct path to get Rosetta installed on this managed device.",
+      "decisionPointId": "dp-rosetta-path",
+      "transitions": [{ "event": "decision-made", "to": "decide-interim" }]
+    },
+    {
+      "id": "decide-interim",
+      "kind": "decide",
+      "title": "Provide interim guidance",
+      "body": "MDM software pushes can take time to propagate. Mr. Patel has a grading deadline. Determine the best interim workaround.",
+      "decisionPointId": "dp-interim",
+      "transitions": [{ "event": "decision-made", "to": "remediate" }]
+    },
+    {
+      "id": "remediate",
+      "kind": "remediate",
+      "title": "Apply the fix",
+      "body": "Push Rosetta 2 via MDM or initiate the managed installation. Send Mr. Patel the Turnitin web app link as an interim solution. Confirm the MDM push has been initiated and provide an ETA.",
+      "locationId": "teacher-macbook",
+      "objectId": "patel-mac",
+      "transitions": [{ "event": "fix-applied", "to": "validate" }]
+    },
+    {
+      "id": "validate",
+      "kind": "remediate",
+      "title": "Validate Turnitin is working",
+      "body": "Confirm that Turnitin launches successfully after the MDM push. Ask Mr. Patel to verify he can open and grade submissions. Close the ticket only after confirmed working.",
+      "locationId": "teacher-macbook",
+      "objectId": "patel-mac",
+      "transitions": [{ "event": "validation-saved", "to": "document" }]
+    },
+    {
+      "id": "document",
+      "kind": "document",
+      "title": "Document and close",
+      "body": "Write the ticket resolution. Include the MDM push steps, the Rosetta configuration used, and the web-app interim workaround that was provided.",
+      "prompt": "Write a follow-up email to Mr. Patel confirming Turnitin is now working, thanking him for the report, and including the MDM enrollment note.",
+      "transitions": [{ "event": "followup-saved", "to": "debrief" }]
+    },
+    {
+      "id": "debrief",
+      "kind": "debrief",
+      "title": "Debrief",
+      "body": "Review your score.",
+      "transitions": []
+    }
+  ],
+  "startNode": "intake",
+  "terminalNodes": ["debrief"],
+  "scoring": {
+    "weights": {
+      "diagnosis": 1,
+      "evidence": 1,
+      "troubleshooting": 1,
+      "resolution": 1.2,
+      "validation": 1
+    },
+    "thresholds": { "jobReady": 3 }
+  },
+  "methodology": [
+    "identify",
+    "gather-evidence",
+    "hypothesize",
+    "change",
+    "validate",
+    "document",
+    "follow-up"
+  ],
+  "kbOpportunity": "Rosetta 2 on managed Macs — Apple Silicon Macs require Rosetta 2 for Intel-based apps. On MDM-enrolled devices, Rosetta should be pushed via configuration profile, not installed by end users.",
+  "skills": ["apple", "ticketing"]
+}

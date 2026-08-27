@@ -1,0 +1,238 @@
+{
+  "id": "lab-47",
+  "schemaVersion": 1,
+  "contentVersion": 1,
+  "week": 11,
+  "order": 47,
+  "track": "operations",
+  "title": "After-Hours Pager Response",
+  "persona": "Pager Alert: After-Hours Phone",
+  "channel": "phone",
+  "scenario": "It is 11:42 PM on a Saturday. Your pager goes off with an automated alert from the school monitoring system: the secondary internet circuit is down and the primary circuit is at 92% utilization. The alert severity is P1 because the school relies on remote access for the upcoming standardized testing window and the SIS nightly sync is at risk.",
+  "impact": "Operational: if the primary circuit also fails, the school loses all internet, the SIS nightly sync will fail, and remote testing access will be unavailable. A two-circuit outage is a major incident.",
+  "objectives": [
+    "Acknowledge the pager within the on-call response SLA",
+    "Assess scope and severity from the monitoring data",
+    "Open a major incident ticket if scope warrants it",
+    "Engage the ISP and the network vendor for the secondary circuit",
+    "Keep the CIO and on-call leadership informed",
+    "Document the response, the resolution, and any lessons learned"
+  ],
+  "tools": [
+    "Pager and on-call phone",
+    "Network monitoring dashboard",
+    "ISP support portal",
+    "Network vendor on-call contact",
+    "Major incident bridge"
+  ],
+  "evidence": [
+    { "id": "ev-monitor-data", "description": "Network monitoring snapshot at time of alert: primary utilization, secondary status, latency", "kind": "log" },
+    { "id": "ev-isp-ticket", "description": "ISP support ticket number and the technician ETA", "kind": "note" },
+    { "id": "ev-resolution-log", "description": "Timeline of actions taken during the on-call response and final resolution", "kind": "note" }
+  ],
+  "decisionPoints": [
+    {
+      "id": "dp-ack-sla",
+      "prompt": "The pager went off at 11:42 PM. The on-call response SLA is 15 minutes. What is the right first action?",
+      "options": [
+        {
+          "id": "opt-monitor-remote",
+          "label": "Open the monitoring dashboard remotely and check the alert context before calling anyone",
+          "score": { "diagnosis": 0, "evidence": 0, "resolution": 0 },
+          "feedback": "You can do this, but the SLA requires acknowledging the page first. Acknowledge, then investigate."
+        },
+        {
+          "id": "opt-ack-then-investigate",
+          "label": "Acknowledge the page within the SLA, then open the monitoring dashboard to investigate",
+          "score": { "diagnosis": 1, "evidence": 1, "resolution": 1 },
+          "feedback": "Correct — acknowledge first to stop the escalation timer, then investigate the alert with full attention."
+        },
+        {
+          "id": "opt-ignore-until-morning",
+          "label": "Defer the page to the morning — the primary circuit is still up",
+          "score": { "diagnosis": -1, "evidence": -1, "resolution": -1 },
+          "feedback": "Deferring a P1 with the secondary already down is a gamble you will not win. Acknowledge and act now."
+        }
+      ]
+    },
+    {
+      "id": "dp-major-incident",
+      "prompt": "The monitoring dashboard confirms: secondary circuit is down, primary at 92% and climbing. SIS nightly sync is scheduled for 2:00 AM. Should you declare a major incident?",
+      "options": [
+        {
+          "id": "opt-declare-mi",
+          "label": "Yes — declare a major incident, open the bridge, and engage the CIO and network vendor",
+          "score": { "diagnosis": 1, "evidence": 1, "resolution": 1 },
+          "feedback": "Correct — single-circuit operation with a critical scheduled job is a P1. Declare MI, open the bridge, and engage stakeholders."
+        },
+        {
+          "id": "opt-wait-and-see",
+          "label": "Wait and see — the primary might stabilize on its own",
+          "score": { "diagnosis": -1, "evidence": -1, "resolution": -1 },
+          "feedback": "Waiting until the primary fails leaves no time to recover. Declare MI now and gain the response time."
+        },
+        {
+          "id": "opt-skip-sync",
+          "label": "Skip the SIS nightly sync to reduce primary load and wait until morning",
+          "score": { "diagnosis": -1, "evidence": -1, "resolution": -1 },
+          "feedback": "Skipping the sync without authorization will create data integrity issues. Pause the sync only with CIO approval and a plan to resume."
+        }
+      ]
+    }
+  ],
+  "ticket": {
+    "type": "major-incident",
+    "category": "Incident Response / Network",
+    "priority": "p1",
+    "impact": "high",
+    "urgency": "high",
+    "sla": "24x7",
+    "initialDescription": "Pager alert at 23:42: secondary internet circuit down. Primary circuit at 92% utilization and rising. SIS nightly sync at 02:00. Standardized testing window opens Monday.",
+    "requester": {
+      "name": "Network Monitoring",
+      "role": "System",
+      "identifiers": { "alert_id": "ALR-NET-2026-0901" }
+    }
+  },
+  "location": {
+    "id": "on-call",
+    "name": "On-Call Response (Remote)",
+    "objects": [
+      {
+        "id": "monitor",
+        "name": "Network Monitoring Dashboard",
+        "state": {
+          "primary_circuit_util_pct": 92,
+          "secondary_circuit_status": "down",
+          "secondary_outage_started": "2026-08-27T23:38:00",
+          "isp_ticket_open": false,
+          "sis_sync_scheduled": "2026-08-28T02:00:00"
+        }
+      },
+      {
+        "id": "contacts",
+        "name": "On-Call Contacts",
+        "state": {
+          "isp_support": "1-800-555-0143",
+          "network_vendor_oncall": "pager 555-0144",
+          "cio_phone": "555-0145"
+        }
+      }
+    ]
+  },
+  "nodes": [
+    {
+      "id": "intro",
+      "kind": "intro",
+      "title": "Receive the page",
+      "body": "Your pager just went off at 11:42 PM Saturday. The alert is P1. Note the on-call response SLA: acknowledge within 15 minutes. Take a breath and act, do not react.",
+      "transitions": [{ "event": "page-received", "to": "decide-ack" }]
+    },
+    {
+      "id": "decide-ack",
+      "kind": "decide",
+      "title": "Acknowledge the page",
+      "body": "Choose the right first action when a P1 page arrives after hours.",
+      "decisionPointId": "dp-ack-sla",
+      "transitions": [
+        { "event": "decision-made", "to": "investigate" }
+      ]
+    },
+    {
+      "id": "investigate",
+      "kind": "inspect",
+      "title": "Investigate the alert",
+      "body": "Open the monitoring dashboard remotely. Capture the circuit statuses, utilization, and the scheduled SIS sync time. Save the monitoring snapshot as evidence.",
+      "locationId": "on-call",
+      "objectId": "monitor",
+      "transitions": [
+        { "event": "snapshot-saved", "to": "decide-mi" }
+      ]
+    },
+    {
+      "id": "decide-mi",
+      "kind": "decide",
+      "title": "Decide on major incident",
+      "body": "Secondary down, primary at 92% and climbing, SIS sync at 02:00. Should you declare a major incident?",
+      "decisionPointId": "dp-major-incident",
+      "transitions": [
+        { "event": "decision-made", "to": "engage" }
+      ]
+    },
+    {
+      "id": "engage",
+      "kind": "remediate",
+      "title": "Engage ISP and notify CIO",
+      "body": "Open the ISP support ticket. Get a technician ETA. Notify the CIO via phone (not email). Open the major incident bridge. Save the ISP ticket and the CIO notification as evidence.",
+      "locationId": "on-call",
+      "objectId": "contacts",
+      "transitions": [
+        { "event": "isp-engaged", "to": "monitor" }
+      ]
+    },
+    {
+      "id": "monitor",
+      "kind": "inspect",
+      "title": "Monitor and decide on the sync",
+      "body": "Monitor the primary circuit utilization. With CIO approval, decide whether to pause the 02:00 SIS sync or let it run. Document the decision and the rationale.",
+      "locationId": "on-call",
+      "objectId": "monitor",
+      "transitions": [
+        { "event": "sync-decided", "to": "resolve" }
+      ]
+    },
+    {
+      "id": "resolve",
+      "kind": "inspect",
+      "title": "Validate the recovery",
+      "body": "Confirm the secondary circuit is restored and primary utilization has dropped. Validate the SIS sync outcome. Capture the resolution timeline and save as evidence.",
+      "locationId": "on-call",
+      "objectId": "monitor",
+      "transitions": [
+        { "event": "validation-saved", "to": "document" }
+      ]
+    },
+    {
+      "id": "document",
+      "kind": "document",
+      "title": "Document the on-call response",
+      "body": "Write the on-call incident log: page time, acknowledgement time, investigation, ISP engagement, sync decision, resolution time, and lessons learned. Send the summary to the CIO and the on-call rotation lead by morning.",
+      "prompt": "Write the on-call incident summary for the CIO: timeline, decisions, resolution, and any follow-up actions for the network team.",
+      "transitions": [
+        { "event": "log-sent", "to": "debrief" }
+      ]
+    },
+    {
+      "id": "debrief",
+      "kind": "debrief",
+      "title": "Debrief",
+      "body": "Review the on-call response. Key lessons: acknowledge within the SLA, declare a major incident when the impact warrants it, engage the ISP and CIO early, and document everything while it is fresh.",
+      "transitions": []
+    }
+  ],
+  "startNode": "intro",
+  "terminalNodes": ["debrief"],
+  "scoring": {
+    "weights": {
+      "diagnosis": 1,
+      "evidence": 1,
+      "troubleshooting": 0.8,
+      "resolution": 1,
+      "validation": 0.6
+    },
+    "thresholds": { "jobReady": 3 }
+  },
+  "methodology": [
+    "identify",
+    "scope",
+    "gather-evidence",
+    "hypothesize",
+    "test",
+    "change",
+    "validate",
+    "document",
+    "follow-up"
+  ],
+  "kbOpportunity": "After-hours on-call response: acknowledge within SLA → investigate monitoring data → declare major incident if warranted → engage ISP and notify CIO → make authorized decisions on scheduled jobs → validate and document while fresh.",
+  "skills": ["incident-response", "networking"]
+}

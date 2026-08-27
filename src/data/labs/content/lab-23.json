@@ -1,0 +1,220 @@
+{
+  "id": "lab-23",
+  "schemaVersion": 1,
+  "contentVersion": 1,
+  "week": 7,
+  "order": 23,
+  "track": "mdm",
+  "title": "Application Deployment",
+  "persona": "Ms. Chen, History Department Chair",
+  "channel": "email",
+  "scenario": "The History Department has adopted a new digital textbook reader app for the spring term. The app needs to be deployed to 30 student iPads and 6 teacher MacBooks. The MDM deployment was attempted yesterday, but Ms. Chen reports that 4 student iPads still do not have the app, and 2 teacher MacBooks show 'Install Error — Developer signature invalid'. The deadline is the start of class on Monday morning.",
+  "impact": "Instructional: 6 teachers and 30 students will not have the required digital textbook reader on the first day of the new term. The History Department's lesson plans for the new unit are not possible without it.",
+  "objectives": [
+    "Identify which devices are in what deployment state (installed, pending, failed)",
+    "Distinguish the cause of the iPad failures from the MacBook failures",
+    "Choose the correct remediation for each failure mode",
+    "Redeploy and validate on the affected devices",
+    "Document the deployment outcome and any escalations"
+  ],
+  "tools": [
+    "MDM console (JAMF / equivalent)",
+    "Apple App Store / VPP (Volume Purchase Program)",
+    "Developer-signed installer log",
+    "Service desk ticket system"
+  ],
+  "evidence": [
+    { "id": "ev-ios-state", "description": "List of iPads still missing the app and their state in the MDM", "kind": "note" },
+    { "id": "ev-mac-error", "description": "Exact error message for the MacBook install failures", "kind": "log" },
+    { "id": "ev-app-config", "description": "Screenshot of the MDM app deployment configuration and VPP license count", "kind": "screenshot" }
+  ],
+  "decisionPoints": [
+    {
+      "id": "dp-diagnosis",
+      "prompt": "Investigation shows the 4 iPads are supervised and the app is scoped to them, but the VPP license count is 0 available (35 assigned, 35 used). The 2 MacBooks fail with 'Developer signature invalid'. What is the root cause?",
+      "options": [
+        {
+          "id": "opt-vpp-and-sig",
+          "label": "iPads: exhausted VPP license pool. MacBooks: corrupted/re-signed package. Two separate root causes.",
+          "score": { "diagnosis": 0.9, "evidence": 0.9, "resolution": 0.9 },
+          "feedback": "Correct — two different failures, two different causes. iPads are blocked by VPP exhaustion, MacBooks are blocked by a signed package problem. Each needs its own fix."
+        },
+        {
+          "id": "opt-network",
+          "label": "All 6 devices share a network reachability problem to the App Store and MDM",
+          "score": { "diagnosis": 0.2, "evidence": 0.1, "resolution": 0.1 },
+          "feedback": "The errors are different ('VPP exhausted' and 'signature invalid'), not network errors. Two different root causes, not one."
+        },
+        {
+          "id": "opt-supervised",
+          "label": "The iPads are not supervised, so they cannot receive VPP-distributed apps",
+          "score": { "diagnosis": 0.3, "evidence": 0.2, "resolution": 0.3 },
+          "feedback": "iPads in the MDM that are scoped to a VPP app but not supervised usually show a different error. The VPP license pool being zero is the actual blocker."
+        }
+      ]
+    },
+    {
+      "id": "dp-resolution",
+      "prompt": "What is the correct set of remediations to apply?",
+      "options": [
+        {
+          "id": "opt-both",
+          "label": "Buy more VPP licenses for iPads and re-upload a fresh signed .pkg for MacBooks, then redeploy",
+          "score": { "diagnosis": 0.9, "evidence": 0.9, "resolution": 0.9 },
+          "feedback": "Correct — each failure has its own cause. New VPP licenses resolve the iPad pool exhaustion; a clean signed .pkg resolves the MacBook signature error."
+        },
+        {
+          "id": "opt-redeploy",
+          "label": "Just redeploy the same packages to all 6 devices and wait",
+          "score": { "diagnosis": 0.2, "evidence": 0.1, "resolution": 0.0 },
+          "feedback": "Redeploying without addressing the causes will produce the same failures. VPP exhaustion and a bad signature are not transient."
+        },
+        {
+          "id": "opt-installer",
+          "label": "Manually install the app on each device using the App Store",
+          "score": { "diagnosis": 0.3, "evidence": 0.2, "resolution": 0.2 },
+          "feedback": "Manual installs work but bypass MDM management. The goal is to deploy through MDM so the app is tracked and removable centrally."
+        }
+      ]
+    }
+  ],
+  "ticket": {
+    "type": "incident",
+    "category": "MDM / Application Deployment",
+    "priority": "p2",
+    "impact": "medium",
+    "urgency": "high",
+    "sla": "business-hours",
+    "initialDescription": "Digital textbook reader app not on 4 student iPads (VPP exhausted) and 2 teacher MacBooks (signature invalid). Monday class start is the deadline.",
+    "requester": {
+      "name": "Ms. Chen",
+      "role": "Faculty",
+      "identifiers": { "department": "History Dept", "location": "rm. 204" }
+    }
+  },
+  "location": {
+    "id": "mdm-console",
+    "name": "MDM Administration Console",
+    "objects": [
+      {
+        "id": "vpp-status",
+        "name": "VPP License Dashboard",
+        "state": {
+          "appName": "HistoryReader",
+          "totalLicenses": 35,
+          "inUse": 35,
+          "available": 0
+        }
+      },
+      {
+        "id": "mac-pkg",
+        "name": "MacBook .pkg Installer (last upload)",
+        "state": {
+          "packageName": "HistoryReader-2.1.pkg",
+          "developerSignature": "INVALID (tampered or re-signed)",
+          "sizeMB": 184
+        }
+      }
+    ]
+  },
+  "nodes": [
+    {
+      "id": "intake",
+      "kind": "intro",
+      "title": "Open the ticket",
+      "body": "Open the ticket. Note the app, the device populations, and the two distinct failure modes (iPad vs MacBook). Confirm the Monday deadline.",
+      "transitions": [{ "event": "ticket-opened", "to": "inspect-mdm" }]
+    },
+    {
+      "id": "inspect-mdm",
+      "kind": "inspect",
+      "title": "Inspect deployment state in MDM",
+      "body": "Open the app deployment view. Note the iPad count, MacBook count, the VPP license usage, and the exact error message on the MacBook installs. Save evidence.",
+      "locationId": "mdm-console",
+      "objectId": "vpp-status",
+      "transitions": [
+        { "event": "evidence-saved", "to": "decide-diagnosis" }
+      ]
+    },
+    {
+      "id": "decide-diagnosis",
+      "kind": "decide",
+      "title": "Identify the root cause(s)",
+      "body": "Two different failures are present. What is the root cause of each?",
+      "decisionPointId": "dp-diagnosis",
+      "transitions": [
+        { "event": "decision-made", "to": "decide-resolution" }
+      ]
+    },
+    {
+      "id": "decide-resolution",
+      "kind": "decide",
+      "title": "Choose the remediation set",
+      "body": "Which set of actions correctly addresses both failure modes?",
+      "decisionPointId": "dp-resolution",
+      "transitions": [
+        { "event": "decision-made", "to": "remediate" }
+      ]
+    },
+    {
+      "id": "remediate",
+      "kind": "remediate",
+      "title": "Apply both fixes",
+      "body": "Purchase additional VPP licenses for the HistoryReader app and assign them to the school. Re-upload a clean, developer-signed .pkg for the MacBooks. Trigger redeployment to all affected devices.",
+      "transitions": [
+        { "event": "fix-applied", "to": "validate" }
+      ]
+    },
+    {
+      "id": "validate",
+      "kind": "remediate",
+      "title": "Validate on each platform",
+      "body": "Confirm the 4 iPads now show the app installed. Confirm the 2 MacBooks now report successful install. Spot-check one of each to verify the app launches and signs in.",
+      "transitions": [
+        { "event": "validation-saved", "to": "document" }
+      ]
+    },
+    {
+      "id": "document",
+      "kind": "document",
+      "title": "Document the outcome",
+      "body": "Close the ticket with: deployment statistics, root causes (VPP exhaustion, package signature), and remediation. Notify Ms. Chen that the app is ready for Monday.",
+      "prompt": "Write a brief follow-up to Ms. Chen confirming the app is deployed and ready for class.",
+      "transitions": [
+        { "event": "followup-saved", "to": "debrief" }
+      ]
+    },
+    {
+      "id": "debrief",
+      "kind": "debrief",
+      "title": "Debrief",
+      "body": "Review your score. Consider how to spot VPP exhaustion and signature issues in a pre-deployment test cycle.",
+      "transitions": []
+    }
+  ],
+  "startNode": "intake",
+  "terminalNodes": ["debrief"],
+  "scoring": {
+    "weights": {
+      "diagnosis": 1.2,
+      "evidence": 1,
+      "troubleshooting": 1,
+      "resolution": 1.2,
+      "validation": 0.8
+    },
+    "thresholds": { "jobReady": 3 }
+  },
+  "methodology": [
+    "identify",
+    "scope",
+    "gather-evidence",
+    "hypothesize",
+    "test",
+    "change",
+    "validate",
+    "document",
+    "follow-up"
+  ],
+  "kbOpportunity": "When MDM app deployment shows mixed failures, treat each error as its own root cause: VPP exhaustion is a licensing problem; signature invalid is a package problem. Different fixes for each.",
+  "skills": ["mdm", "apple", "documentation"]
+}

@@ -1,0 +1,214 @@
+{
+  "id": "lab-13",
+  "schemaVersion": 1,
+  "contentVersion": 1,
+  "week": 4,
+  "order": 13,
+  "track": "apple",
+  "title": "iPhone/iPad Enrollment",
+  "persona": "IT Technician (Self-Service)",
+  "channel": "in-person",
+  "scenario": "The school received 40 new iPads (10th generation) for the 6th-grade science classrooms. IT needs to enroll them in Apple School Manager (ASM) and push the standard configuration profile via MDM (Jamf). Three of the 40 iPads fail MDM enrollment with 'Device not found in Apple School Manager.' Several iPads are arriving without a pre-assigned school Apple ID.",
+  "impact": "Operational: 40 iPads are unusable in classrooms until enrolled and configured. 6th-grade science instruction is blocked.",
+  "objectives": [
+    "Enroll all 40 iPads in Apple School Manager",
+    "Assign ASM device IDs to all devices",
+    "Enroll devices in Jamf MDM",
+    "Push the standard configuration profile to all enrolled devices",
+    "Assign devices to the appropriate classroom groups",
+    "Resolve the three MDM enrollment failures",
+    "Handle the unassigned Apple ID situation"
+  ],
+  "tools": [
+    "Apple School Manager (web portal)",
+    "Jamf Pro MDM console",
+    "Apple Configurator (for DEP devices)",
+    "Device enrollment spreadsheet"
+  ],
+  "evidence": [
+    { "id": "ev-asm-enrollment", "description": "Apple School Manager enrollment confirmation showing all 40 device IDs", "kind": "note" },
+    { "id": "ev-mdm-report", "description": "MDM enrollment report showing 37 of 40 devices successfully enrolled", "kind": "screenshot" },
+    { "id": "ev-asm-device-list", "description": "ASM device assignment list showing which devices are assigned to classrooms", "kind": "screenshot" }
+  ],
+  "decisionPoints": [
+    {
+      "id": "dp-enrollment-failure",
+      "prompt": "Three of the 40 iPads show 'Device not found in Apple School Manager' during MDM enrollment. What is the correct first action?",
+      "options": [
+        {
+          "id": "opt-asm-assign",
+          "label": "Check the ASM device list and assign the three serial numbers to the school in ASM before re-attempting enrollment",
+          "score": { "diagnosis": 1, "evidence": 1, "resolution": 1 },
+          "feedback": "Correct. The devices may be in Apple's system but not yet claimed by the school's ASM organization. Assigning them in ASM first is the right step before retrying MDM enrollment."
+        },
+        {
+          "id": "opt-return-doa",
+          "label": "Mark the three devices as DOA and initiate a return/exchange with the vendor",
+          "score": { "diagnosis": 0, "evidence": 0, "resolution": 0 },
+          "feedback": "Premature. The devices may be perfectly functional — they just need to be claimed in ASM first. Always exhaust the reconciliation step before declaring a device DOA."
+        },
+        {
+          "id": "opt-force-enroll",
+          "label": "Use Apple Configurator to force-enroll the three devices bypassing ASM",
+          "score": { "diagnosis": -1, "evidence": 0, "resolution": -1 },
+          "feedback": "Bypassing ASM breaks the device identity chain and removes MDM supervision capability. Devices must be enrolled through the proper DEP/ASM workflow."
+        }
+      ]
+    },
+    {
+      "id": "dp-apple-id",
+      "prompt": "Several iPads arrived without a pre-assigned school Apple ID. The unassigned Apple IDs need to be resolved. What is the correct path?",
+      "options": [
+        {
+          "id": "opt-dep-token",
+          "label": "Use the school's DEP token to claim the devices in ASM, then assign Managed Apple IDs through the automated workflow",
+          "score": { "diagnosis": 1, "evidence": 1, "resolution": 1 },
+          "feedback": "Correct. The school's Device Enrollment Program token is the proper mechanism to claim devices in ASM. Managed Apple IDs for students and staff should be assigned through the automated ASM workflow."
+        },
+        {
+          "id": "opt-apple-support",
+          "label": "Contact Apple support to reconcile the order and get the Apple IDs assigned",
+          "score": { "diagnosis": 0, "evidence": 0, "resolution": 0 },
+          "feedback": "Apple support is rarely needed for this — the DEP token and ASM workflow handle it. Contacting Apple should be a last resort after trying the token-based assignment."
+        },
+        {
+          "id": "opt-skip",
+          "label": "Skip the Apple ID assignment — students can use personal Apple IDs for the iPads",
+          "score": { "diagnosis": -1, "evidence": 0, "resolution": -1 },
+          "feedback": "Personal Apple IDs on school-managed devices violate COPPA and MDM policy. School-owned devices must use Managed Apple IDs assigned through ASM."
+        }
+      ]
+    }
+  ],
+  "ticket": {
+    "type": "request",
+    "category": "Device Enrollment / MDM",
+    "priority": "p2",
+    "impact": "high",
+    "urgency": "high",
+    "sla": "week",
+    "initialDescription": "40 new iPad 10th gen units received for 6th-grade science. Need ASM enrollment, MDM enrollment, configuration profile push, and classroom assignment. 3 units showing enrollment failure.",
+    "requester": {
+      "name": "IT Department",
+      "role": "IT Operations"
+    }
+  },
+  "location": {
+    "id": "it-storage-room",
+    "name": "IT Storage Room",
+    "objects": [
+      {
+        "id": "ipad-carton-1",
+        "name": "iPad 10th Gen (40 units, partially enrolled)",
+        "state": {
+          "model": "iPad 10th Generation",
+          "quantity": 40,
+          "enrolled_asm": 40,
+          "enrolled_mdm": 37,
+          "assigned_classroom": 37,
+          "unassigned_count": 3
+        }
+      },
+      {
+        "id": "mac-mini-asm",
+        "name": "Mac mini (ASM Admin Console)",
+        "state": {
+          "role": "ASM Administration",
+          "logged_in": true,
+          "devices_claimed": 40,
+          "mdm_server": "Jamf Pro school-smarts"
+        }
+      }
+    ]
+  },
+  "nodes": [
+    {
+      "id": "intake",
+      "kind": "intro",
+      "title": "Inventory and plan",
+      "body": "You have 40 new iPads to enroll. Review the shipment manifest, note the three enrollment failures flagged by the team, and plan the ASM and MDM enrollment steps. Open a project ticket.",
+      "transitions": [{ "event": "plan-saved", "to": "asm-enrollment" }]
+    },
+    {
+      "id": "asm-enrollment",
+      "kind": "remediate",
+      "title": "Enroll all devices in Apple School Manager",
+      "body": "Log into ASM. Upload the device serial numbers from the packing slip. Confirm all 40 devices appear in the ASM device list. Assign them to the '6th Grade Science' location in ASM. Document the ASM enrollment confirmation.",
+      "transitions": [{ "event": "asm-complete", "to": "mdm-enrollment" }]
+    },
+    {
+      "id": "mdm-enrollment",
+      "kind": "remediate",
+      "title": "Enroll devices in Jamf MDM",
+      "body": "In Jamf Pro, initiate bulk MDM enrollment for the 40 devices. Monitor the enrollment progress. 37 of 40 succeed. For the three that fail, record the serial numbers and error message ('Device not found in Apple School Manager').",
+      "transitions": [{ "event": "mdm-complete", "to": "decide-enrollment-failure" }]
+    },
+    {
+      "id": "decide-enrollment-failure",
+      "kind": "decide",
+      "title": "Handle the three enrollment failures",
+      "body": "Three iPads failed MDM enrollment with 'Device not found in Apple School Manager.' Determine the correct first action.",
+      "decisionPointId": "dp-enrollment-failure",
+      "transitions": [{ "event": "decision-made", "to": "apple-id-issue" }]
+    },
+    {
+      "id": "apple-id-issue",
+      "kind": "decide",
+      "title": "Resolve unassigned Apple IDs",
+      "body": "Several iPads lack pre-assigned Managed Apple IDs. Determine the correct path to assign them to students and staff.",
+      "decisionPointId": "dp-apple-id",
+      "transitions": [{ "event": "decision-made", "to": "remediate-remaining" }]
+    },
+    {
+      "id": "remediate-remaining",
+      "kind": "remediate",
+      "title": "Apply fixes and complete enrollment",
+      "body": "Use the DEP token to claim the failed devices in ASM, then retry MDM enrollment. Push the standard configuration profile to all 40 devices via Jamf. Assign devices to classroom groups. Document the final enrollment report.",
+      "transitions": [{ "event": "fixes-applied", "to": "validate" }]
+    },
+    {
+      "id": "validate",
+      "kind": "remediate",
+      "title": "Validate all devices are configured",
+      "body": "Confirm 40 of 40 devices are enrolled in MDM with the standard profile applied. Spot-check device settings on three units. Verify the three previously-failed devices now appear in Jamf.",
+      "transitions": [{ "event": "validation-saved", "to": "document" }]
+    },
+    {
+      "id": "document",
+      "kind": "document",
+      "title": "Document the enrollment",
+      "body": "Write a deployment report: total devices enrolled, MDM compliance status, any devices still pending, and next steps for student distribution.",
+      "prompt": "Write a brief handoff summary for the science teachers receiving these iPads.",
+      "transitions": [{ "event": "followup-saved", "to": "debrief" }]
+    },
+    {
+      "id": "debrief",
+      "kind": "debrief",
+      "title": "Debrief",
+      "body": "Review your score.",
+      "transitions": []
+    }
+  ],
+  "startNode": "intake",
+  "terminalNodes": ["debrief"],
+  "scoring": {
+    "weights": {
+      "diagnosis": 0.8,
+      "evidence": 1,
+      "troubleshooting": 1,
+      "resolution": 1.2,
+      "validation": 1
+    },
+    "thresholds": { "jobReady": 3 }
+  },
+  "methodology": [
+    "scope",
+    "identify",
+    "gather-evidence",
+    "change",
+    "validate",
+    "document"
+  ],
+  "kbOpportunity": "MDM enrollment failure 'Device not found in Apple School Manager' — use the school's DEP token in ASM to claim devices before retrying enrollment. Never bypass ASM with direct Apple Configurator enrollment on DEP devices.",
+  "skills": ["apple", "mdm", "ticketing"]
+}

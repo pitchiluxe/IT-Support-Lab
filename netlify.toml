@@ -1,0 +1,30 @@
+[build]
+  command = "pnpm build"
+  publish = "dist"
+
+[build.environment]
+  # Enable the 3D campus in production. Set to false to disable it.
+  VITE_ENABLE_3D = "false"
+
+# SPA routing: all paths return index.html so React Router handles them.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# Disable Netlify's default cache headers on assets — the app is versioned
+# via content hashes in the Vite build and browser caching is handled by
+# the Workbox service worker.
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+    X-Content-Type-Options = "nosniff"
+
+[[headers]]
+  for = "/index.html"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"

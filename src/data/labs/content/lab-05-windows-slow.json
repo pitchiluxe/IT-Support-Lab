@@ -1,0 +1,184 @@
+{
+  "id": "lab-05-windows-slow",
+  "schemaVersion": 1,
+  "contentVersion": 1,
+  "week": 2,
+  "order": 5,
+  "track": "windows",
+  "title": "Windows 11 Slow Computer",
+  "persona": "Mr. Rodriguez, Facilities Coordinator",
+  "channel": "email",
+  "scenario": "Mr. Rodriguez in the facilities office submits a ticket: his Windows 11 desktop has become extremely slow over the past week. Applications freeze, startup takes over 10 minutes, and the computer is essentially unusable for his daily work managing work orders.",
+  "impact": "Operational: Mr. Rodriguez manages maintenance work orders for the entire campus. Every hour of downtime delays building repairs, vendor scheduling, and safety inspections.",
+  "objectives": [
+    "Reproduce the reported performance issue",
+    "Gather diagnostic evidence: CPU, RAM, disk, startup items, event logs",
+    "Form a ranked list of possible causes",
+    "Address the highest-impact, lowest-risk root cause first",
+    "Validate performance is restored before closing the ticket",
+    "Document findings and any preventive recommendations"
+  ],
+  "tools": [
+    "Windows Task Manager",
+    "Resource Monitor",
+    "Event Viewer",
+    "Startup Apps settings",
+    "Disk Cleanup / Storage settings",
+    "Windows Update history"
+  ],
+  "evidence": [
+    { "id": "ev-taskman", "description": "Screenshot of Task Manager — CPU, Memory, and Disk usage tabs", "kind": "screenshot" },
+    { "id": "ev-eventlog", "description": "Relevant error or warning events from Event Viewer over the past 7 days", "kind": "log" },
+    { "id": "ev-startup", "description": "List of startup applications currently enabled", "kind": "config" }
+  ],
+  "decisionPoints": [
+    {
+      "id": "dp-diagnosis",
+      "prompt": "After reviewing the diagnostics, what is the primary cause of the slowness?",
+      "options": [
+        {
+          "id": "opt-disk-full",
+          "label": "Disk is nearly full (less than 5% free) causing paging and disk thrashing",
+          "score": { "diagnosis": 0.8, "evidence": 0.9, "resolution": 0.9 },
+          "feedback": "Strong diagnosis — disk-full machines show exactly these symptoms."
+        },
+        {
+          "id": "opt-ram",
+          "label": "Insufficient RAM — Task Manager shows memory near 100% at idle",
+          "score": { "diagnosis": 0.9, "evidence": 1.0, "resolution": 0.9 },
+          "feedback": "Correct — this machine is under-provisioned with only 8 GB."
+        },
+        {
+          "id": "opt-malware",
+          "label": "Malware or crypto-miner running in the background",
+          "score": { "diagnosis": 0.2, "evidence": 0.1, "resolution": 0.2 },
+          "feedback": "Possible but unlikely on a domain-joined school machine."
+        }
+      ]
+    }
+  ],
+  "ticket": {
+    "type": "incident",
+    "category": "Windows / Performance",
+    "priority": "p2",
+    "impact": "medium",
+    "urgency": "high",
+    "sla": "business-hours",
+    "initialDescription": "Windows 11 desktop in facilities office is extremely slow. Startup takes 10+ minutes. Applications freeze.",
+    "requester": {
+      "name": "Mr. Rodriguez",
+      "role": "Staff",
+      "identifiers": { "location": "Facilities Bldg rm 104" }
+    }
+  },
+  "location": {
+    "id": "facilities-office",
+    "name": "Facilities Office (Room 104)",
+    "objects": [
+      {
+        "id": "facilities-pc",
+        "name": "Windows 11 Desktop (Dell OptiPlex 7090)",
+        "state": {
+          "os": "Windows 11 Pro 22H2",
+          "cpu": { "name": "Intel Core i5-11500", "usage": 95 },
+          "ram": { "total_gb": 8, "used_gb": 7.8, "usage": 97 },
+          "disk_c": { "total_gb": 256, "free_gb": 4, "free_pct": 1.6, "type": "SSD" },
+          "startup_items": 14,
+          "uptime_days": 47,
+          "last_update": "2024-08-14",
+          "antivirus": "Defender — active"
+        }
+      }
+    ]
+  },
+  "nodes": [
+    {
+      "id": "intro",
+      "kind": "intro",
+      "title": "Acknowledge and triage",
+      "body": "Review the ticket. Acknowledge receipt to Mr. Rodriguez. Note the urgency and the operational impact. Begin the investigation.",
+      "transitions": [{ "event": "intake-recorded", "to": "collect-evidence" }]
+    },
+    {
+      "id": "collect-evidence",
+      "kind": "inspect",
+      "title": "Collect diagnostic evidence",
+      "body": "Inspect the Windows 11 desktop. Review Task Manager (CPU, Memory, Disk), Storage settings, Startup apps, and Event Viewer. Document all findings as evidence.",
+      "locationId": "facilities-office",
+      "objectId": "facilities-pc",
+      "transitions": [{ "event": "evidence-saved", "to": "decide-diagnosis" }]
+    },
+    {
+      "id": "decide-diagnosis",
+      "kind": "decide",
+      "title": "Determine root cause",
+      "body": "Based on the evidence you collected, identify the most likely cause of the performance problem. Rank the causes and document your reasoning.",
+      "decisionPointId": "dp-diagnosis",
+      "transitions": [{ "event": "decision-made", "to": "hypothesize" }]
+    },
+    {
+      "id": "hypothesize",
+      "kind": "intro",
+      "title": "State your hypothesis and remediation plan",
+      "body": "State your hypothesis, then describe the remediation steps you will take. Prioritize the least-disruptive fix that addresses the root cause.",
+      "prompt": "Hypothesis: ___ | Remediation plan: ___",
+      "transitions": [{ "event": "hypothesis-saved", "to": "remediate" }]
+    },
+    {
+      "id": "remediate",
+      "kind": "remediate",
+      "title": "Remediate",
+      "body": "Execute your remediation plan. Document each step taken.",
+      "locationId": "facilities-office",
+      "objectId": "facilities-pc",
+      "transitions": [{ "event": "remediation-complete", "to": "validate" }]
+    },
+    {
+      "id": "validate",
+      "kind": "remediate",
+      "title": "Validate",
+      "body": "Re-run the same diagnostics. Confirm performance metrics have improved. Have Mr. Rodriguez test his daily workflow.",
+      "locationId": "facilities-office",
+      "objectId": "facilities-pc",
+      "transitions": [{ "event": "validation-saved", "to": "document" }]
+    },
+    {
+      "id": "document",
+      "kind": "document",
+      "title": "Document",
+      "body": "Write the ticket resolution. Include root cause, steps taken, validation results, and any preventive recommendations.",
+      "prompt": "Write a follow-up message to Mr. Rodriguez.",
+      "transitions": [{ "event": "followup-saved", "to": "debrief" }]
+    },
+    {
+      "id": "debrief",
+      "kind": "debrief",
+      "title": "Debrief",
+      "body": "Review your score. Note areas of strength and areas to improve.",
+      "transitions": []
+    }
+  ],
+  "startNode": "intro",
+  "terminalNodes": ["debrief"],
+  "scoring": {
+    "weights": {
+      "diagnosis": 1.2,
+      "evidence": 1,
+      "troubleshooting": 1,
+      "resolution": 1,
+      "validation": 0.8
+    },
+    "thresholds": { "jobReady": 3 }
+  },
+  "methodology": [
+    "identify",
+    "reproduce",
+    "gather-evidence",
+    "hypothesize",
+    "change",
+    "validate",
+    "document"
+  ],
+  "kbOpportunity": "Windows 11 performance baseline for Dell OptiPlex — minimum RAM and disk requirements.",
+  "skills": ["windows", "ticketing", "documentation"]
+}

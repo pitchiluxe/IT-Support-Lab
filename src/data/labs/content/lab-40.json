@@ -1,0 +1,217 @@
+{
+  "id": "lab-40",
+  "schemaVersion": 1,
+  "contentVersion": 1,
+  "week": 10,
+  "order": 40,
+  "track": "projects",
+  "title": "Vendor Management",
+  "persona": "Mr. Thompson, Director of Technology",
+  "channel": "in-person",
+  "scenario": "Mr. Thompson asks you to review the school's relationship with TechServe Solutions, the vendor that provides our shared-helpdesk staffing. Over the past 90 days, their average response time to P2 tickets has exceeded the SLA by 4.2 hours and two critical incidents were reopened after TechServe marked them resolved. The contract is up for renewal in 6 weeks.",
+  "impact": "Operational and financial: poor vendor performance creates IT debt, erodes faculty trust, and sets a bad precedent for contract renewals. The school spends $72,000 annually on TechServe.",
+  "objectives": [
+    "Pull the SLA performance data from the past 90 days",
+    "Calculate the actual vs. contracted performance metrics",
+    "Document the specific incidents that breached SLA",
+    "Prepare a vendor performance review brief for Mr. Thompson",
+    "Draft the negotiation points for the contract renewal",
+    "Recommend whether to renew, restructure, or replace the vendor"
+  ],
+  "tools": [
+    "Ticket system reports",
+    "SLA contract document",
+    "Vendor scorecard template",
+    "Performance review brief template",
+    "Contract renewal calendar"
+  ],
+  "evidence": [
+    { "id": "ev-sla-report", "description": "SLA performance report: P1/P2 response and resolution times for past 90 days vs. contract targets", "kind": "log" },
+    { "id": "ev-breach-incidents", "description": "List of specific incidents that breached SLA with timestamps and impact", "kind": "note" },
+    { "id": "ev-performance-brief", "description": "Vendor performance review brief with metrics, breach analysis, and recommendation", "kind": "note" }
+  ],
+  "decisionPoints": [
+    {
+      "id": "dp-recommendation",
+      "prompt": "Based on the 90-day SLA data, what is the most appropriate recommendation for the TechServe contract renewal?",
+      "options": [
+        {
+          "id": "opt-renew-as-is",
+          "label": "Renew the contract as-is — the SLA misses are within an acceptable margin",
+          "score": { "diagnosis": 0, "evidence": -1, "resolution": -1 },
+          "feedback": "4.2-hour average SLA miss and reopened incidents are not within an acceptable margin on a $72K contract. Renewing as-is rewards poor performance."
+        },
+        {
+          "id": "opt-renew-with-penalties",
+          "label": "Renew with service-level penalties, a 90-day probationary period, and quarterly reviews",
+          "score": { "diagnosis": 1, "evidence": 1, "resolution": 1 },
+          "feedback": "Correct — restructuring with penalties and reviews gives TechServe a chance to improve while protecting the school. It is the standard approach for underperforming vendors."
+        },
+        {
+          "id": "opt-terminate",
+          "label": "Terminate the contract immediately and find a new vendor",
+          "score": { "diagnosis": 0, "evidence": 0, "resolution": 0 },
+          "feedback": "Termination without a transition plan would leave the school without helpdesk coverage. Restructure first, then re-evaluate at the next renewal."
+        }
+      ]
+    },
+    {
+      "id": "dp-negotiation",
+      "prompt": "During the renewal negotiation, TechServe offers a 5% discount in exchange for removing the SLA penalty clauses. What is the right response?",
+      "options": [
+        {
+          "id": "opt-accept-discount",
+          "label": "Accept the discount — a price reduction offsets the SLA performance issues",
+          "score": { "diagnosis": -1, "evidence": -1, "resolution": -1 },
+          "feedback": "Accepting a discount while removing SLA penalties is a net loss for the school. Performance accountability is worth more than a 5% discount."
+        },
+        {
+          "id": "opt-counter-proposal",
+          "label": "Counter-propose: keep the 5% discount but retain SLA penalties and add a monthly scorecard review",
+          "score": { "diagnosis": 1, "evidence": 1, "resolution": 1 },
+          "feedback": "Correct — negotiate to get the discount and improve accountability. Monthly scorecard reviews are low-effort and give early warning of performance drift."
+        },
+        {
+          "id": "opt-walk-away",
+          "label": "Walk away from the negotiation and issue an RFP for a new vendor",
+          "score": { "diagnosis": 0, "evidence": 0, "resolution": 0 },
+          "feedback": "An RFP is a valid option but should be the fallback, not the first move. Give TechServe a chance to meet revised terms."
+        }
+      ]
+    }
+  ],
+  "ticket": {
+    "type": "request",
+    "category": "Projects / Vendor Management",
+    "priority": "p3",
+    "impact": "medium",
+    "urgency": "low",
+    "sla": "week",
+    "initialDescription": "Mr. Thompson requests a vendor performance review for TechServe Solutions (helpdesk staffing). Contract renewal in 6 weeks. SLA performance has been below target for 90 days.",
+    "requester": {
+      "name": "Mr. Thompson",
+      "role": "Administrator",
+      "identifiers": { "title": "Director of Technology", "office": "rm. 305" }
+    }
+  },
+  "location": {
+    "id": "vendor-review-room",
+    "name": "IT Vendor Review Workspace",
+    "objects": [
+      {
+        "id": "sla-report",
+        "name": "SLA Performance Report (90 days)",
+        "state": {
+          "vendor": "TechServe Solutions",
+          "contract_value_annual": 72000,
+          "p1_avg_response_hours": 1.2,
+          "p1_sla_target_hours": 1.0,
+          "p2_avg_response_hours": 6.8,
+          "p2_sla_target_hours": 2.5,
+          "reopened_incidents": 2,
+          "satisfaction_score_avg": 3.4,
+          "sla_breach_count": 18
+        }
+      },
+      {
+        "id": "contract-doc",
+        "name": "TechServe Contract",
+        "state": {
+          "term_months": 12,
+          "renewal_date": "2026-10-15",
+          "sla_penalties": "yes - 10% credit per breach",
+          "termination_notice_days": 30
+        }
+      }
+    ]
+  },
+  "nodes": [
+    {
+      "id": "intro",
+      "kind": "intro",
+      "title": "Review the request",
+      "body": "Review the request from Mr. Thompson. Confirm the scope: which vendor, which contract, what performance data is needed, and the renewal deadline. Note that 6 weeks is tight.",
+      "transitions": [{ "event": "scope-confirmed", "to": "pull-data" }]
+    },
+    {
+      "id": "pull-data",
+      "kind": "inspect",
+      "title": "Pull SLA performance data",
+      "body": "Export the SLA performance report for the past 90 days. Note P1 and P2 response times, resolution times, SLA breach count, and the two reopened incidents. Save the report as evidence.",
+      "locationId": "vendor-review-room",
+      "objectId": "sla-report",
+      "transitions": [
+        { "event": "sla-report-saved", "to": "document-breaches" }
+      ]
+    },
+    {
+      "id": "document-breaches",
+      "kind": "inspect",
+      "title": "Document specific SLA breaches",
+      "body": "Pull the two reopened incident tickets and note the timeline: when TechServe marked them resolved, when they were reopened, and the impact. Save the breach documentation as evidence.",
+      "locationId": "vendor-review-room",
+      "objectId": "sla-report",
+      "transitions": [
+        { "event": "breach-list-saved", "to": "decide-recommendation" }
+      ]
+    },
+    {
+      "id": "decide-recommendation",
+      "kind": "decide",
+      "title": "Make the renewal recommendation",
+      "body": "Based on the data, recommend how the school should handle the TechServe contract renewal.",
+      "decisionPointId": "dp-recommendation",
+      "transitions": [
+        { "event": "decision-made", "to": "decide-negotiation" }
+      ]
+    },
+    {
+      "id": "decide-negotiation",
+      "kind": "decide",
+      "title": "Handle the counter-offer",
+      "body": "TechServe offers a 5% discount in exchange for removing SLA penalty clauses. Respond to the negotiation.",
+      "decisionPointId": "dp-negotiation",
+      "transitions": [
+        { "event": "decision-made", "to": "document" }
+      ]
+    },
+    {
+      "id": "document",
+      "kind": "document",
+      "title": "Write the performance review brief",
+      "body": "Write the vendor performance review brief for Mr. Thompson: executive summary, 90-day metrics, specific breach analysis, the recommendation, and the proposed negotiation terms.",
+      "prompt": "Write the vendor performance review brief for Mr. Thompson. Include: 90-day SLA data, breach analysis, recommendation, and negotiation points.",
+      "transitions": [
+        { "event": "brief-saved", "to": "debrief" }
+      ]
+    },
+    {
+      "id": "debrief",
+      "kind": "debrief",
+      "title": "Debrief",
+      "body": "Review the vendor management process. Key lessons: data-driven performance reviews, contractual accountability, and negotiating from evidence rather than sentiment.",
+      "transitions": []
+    }
+  ],
+  "startNode": "intro",
+  "terminalNodes": ["debrief"],
+  "scoring": {
+    "weights": {
+      "diagnosis": 1,
+      "evidence": 1.2,
+      "troubleshooting": 0.6,
+      "resolution": 1,
+      "validation": 0.6
+    },
+    "thresholds": { "jobReady": 3 }
+  },
+  "methodology": [
+    "identify",
+    "gather-evidence",
+    "hypothesize",
+    "document",
+    "follow-up"
+  ],
+  "kbOpportunity": "Vendor management cycle: pull SLA data → calculate performance vs. contract → document breaches with specifics → performance brief → negotiate from evidence → restructure or replace decision.",
+  "skills": ["projects"]
+}

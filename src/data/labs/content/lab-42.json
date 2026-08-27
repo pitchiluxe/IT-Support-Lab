@@ -1,0 +1,215 @@
+{
+  "id": "lab-42",
+  "schemaVersion": 1,
+  "contentVersion": 1,
+  "week": 11,
+  "order": 42,
+  "track": "operations",
+  "title": "End-User Training Materials",
+  "persona": "Ms. Anderson, Director of Curriculum",
+  "channel": "email",
+  "scenario": "Ms. Anderson, Director of Curriculum, asks the IT team to develop a 30-minute back-to-school training session for all faculty on the new shared iPad carts, the updated Google Classroom workflow, and the school's acceptable use policy refresh. Sessions must be delivered during the in-service week before school starts.",
+  "impact": "Strategic: faculty confidence with classroom technology directly affects the quality of day-one instruction. A confusing or overscheduled training increases help-desk tickets and erodes momentum for the new year.",
+  "objectives": [
+    "Define the learning objectives for the 30-minute session",
+    "Identify the three topics and the time budget for each",
+    "Create hands-on practice activities for the iPad carts and Google Classroom",
+    "Develop a one-page quick reference card faculty can keep at their desk",
+    "Pilot the session with two teachers and refine the materials",
+    "Schedule and deliver the training to all faculty during in-service week"
+  ],
+  "tools": [
+    "Google Slides",
+    "Lesson plan template",
+    "Quick reference card template",
+    "iPad cart reservation system",
+    "Faculty roster and room assignments"
+  ],
+  "evidence": [
+    { "id": "ev-learning-objectives", "description": "Stated learning objectives aligned to the 30-minute time budget", "kind": "note" },
+    { "id": "ev-quick-ref-card", "description": "One-page quick reference card ready for printing", "kind": "note" },
+    { "id": "ev-pilot-feedback", "description": "Pilot feedback from two teachers with refinement notes", "kind": "note" }
+  ],
+  "decisionPoints": [
+    {
+      "id": "dp-time-allocation",
+      "prompt": "You have 30 minutes and three topics: iPad carts, Google Classroom update, and AUP refresh. How do you allocate time?",
+      "options": [
+        {
+          "id": "opt-equal-thirds",
+          "label": "Equal 10 minutes per topic",
+          "score": { "diagnosis": 0, "evidence": 0, "resolution": 0 },
+          "feedback": "Equal thirds ignore the relative weight. AUP refresh is a 2-minute reminder, not a 10-minute deep dive."
+        },
+        {
+          "id": "opt-weighted-hands-on",
+          "label": "12 min iPad hands-on, 12 min Google Classroom demo, 6 min AUP and Q&A",
+          "score": { "diagnosis": 1, "evidence": 1, "resolution": 1 },
+          "feedback": "Correct — weight by importance and time-on-task. Hands-on practice is the highest-value use of training time."
+        },
+        {
+          "id": "opt-lecture-heavy",
+          "label": "Spend 25 minutes on slides and 5 minutes on Q&A",
+          "score": { "diagnosis": -1, "evidence": -1, "resolution": -1 },
+          "feedback": "Lecture-heavy training loses attention fast. Faculty learn by doing, not by watching."
+        }
+      ]
+    },
+    {
+      "id": "dp-aup-content",
+      "prompt": "Faculty push back on the AUP refresh: 'we already signed this last year.' How should the training handle the AUP?",
+      "options": [
+        {
+          "id": "opt-skip-aup",
+          "label": "Skip the AUP entirely to keep the session on track",
+          "score": { "diagnosis": -1, "evidence": -1, "resolution": 0 },
+          "feedback": "The AUP is required by the school. Skipping it creates compliance gaps and undermines the IT-policy refresh."
+        },
+        {
+          "id": "opt-highlight-changes",
+          "label": "Cover only what changed this year in 2 minutes and acknowledge the prior signature",
+          "score": { "diagnosis": 1, "evidence": 1, "resolution": 1 },
+          "feedback": "Correct — respect the faculty's prior knowledge, surface only the deltas, and re-acknowledge acceptance in writing."
+        },
+        {
+          "id": "opt-full-aup-recap",
+          "label": "Walk through the entire AUP line by line as in past years",
+          "score": { "diagnosis": -1, "evidence": 0, "resolution": -1 },
+          "feedback": "Full recaps waste the limited time and signal that IT does not respect the faculty's time."
+        }
+      ]
+    }
+  ],
+  "ticket": {
+    "type": "request",
+    "category": "Documentation / Training",
+    "priority": "p3",
+    "impact": "medium",
+    "urgency": "low",
+    "sla": "week",
+    "initialDescription": "Ms. Anderson requests a 30-minute faculty training session for in-service week: iPad carts, Google Classroom update, AUP refresh. Must cover all 90 faculty members in rotating sessions.",
+    "requester": {
+      "name": "Ms. Anderson",
+      "role": "Administrator",
+      "identifiers": { "title": "Director of Curriculum", "office": "rm. 312" }
+    }
+  },
+  "location": {
+    "id": "training-room",
+    "name": "Faculty Training Room and iPad Cart",
+    "objects": [
+      {
+        "id": "session-plan",
+        "name": "Draft Session Plan",
+        "state": {
+          "topics": ["iPad carts", "Google Classroom update", "AUP refresh"],
+          "duration_min": 30,
+          "audience": "all faculty",
+          "delivery": "rotating in-service sessions",
+          "pilot_complete": false
+        }
+      },
+      {
+        "id": "ipad-cart",
+        "name": "Shared iPad Cart (sample)",
+        "state": {
+          "device_count": 25,
+          "model": "iPad 10th gen",
+          "mdm_managed": true,
+          "reservation_system": "shared calendar"
+        }
+      }
+    ]
+  },
+  "nodes": [
+    {
+      "id": "intro",
+      "kind": "intro",
+      "title": "Define the learning objectives",
+      "body": "Write three learning objectives: by the end of the session, faculty will (1) reserve and deploy a shared iPad cart, (2) use the new Google Classroom workflow, and (3) acknowledge the AUP deltas. Time-box each objective.",
+      "transitions": [{ "event": "objectives-saved", "to": "decide-time" }]
+    },
+    {
+      "id": "decide-time",
+      "kind": "decide",
+      "title": "Allocate the 30 minutes",
+      "body": "Choose the right time allocation for the three topics.",
+      "decisionPointId": "dp-time-allocation",
+      "transitions": [
+        { "event": "decision-made", "to": "build-materials" }
+      ]
+    },
+    {
+      "id": "build-materials",
+      "kind": "inspect",
+      "title": "Build the training materials",
+      "body": "Build the slide deck, the hands-on practice activities, and the one-page quick reference card. Save the materials as evidence. Make the slides minimal — focus on hands-on practice.",
+      "locationId": "training-room",
+      "objectId": "session-plan",
+      "transitions": [
+        { "event": "materials-saved", "to": "decide-aup" }
+      ]
+    },
+    {
+      "id": "decide-aup",
+      "kind": "decide",
+      "title": "Decide how to handle the AUP",
+      "body": "Faculty have raised concerns about the AUP refresher. Choose the right approach.",
+      "decisionPointId": "dp-aup-content",
+      "transitions": [
+        { "event": "decision-made", "to": "pilot" }
+      ]
+    },
+    {
+      "id": "pilot",
+      "kind": "inspect",
+      "title": "Pilot the session",
+      "body": "Run the session with two teachers. Collect their feedback, time each section, and identify any confusing steps. Refine the materials. Save the pilot feedback as evidence.",
+      "locationId": "training-room",
+      "objectId": "session-plan",
+      "transitions": [
+        { "event": "pilot-feedback-saved", "to": "document" }
+      ]
+    },
+    {
+      "id": "document",
+      "kind": "document",
+      "title": "Schedule the full training",
+      "body": "Schedule the rotating in-service sessions for all 90 faculty. Reserve the training room and the iPad cart. Send a calendar invite with the agenda and a link to the quick reference card.",
+      "prompt": "Write the calendar invite to all faculty with the agenda, what to bring, and a link to the quick reference card.",
+      "transitions": [
+        { "event": "training-scheduled", "to": "debrief" }
+      ]
+    },
+    {
+      "id": "debrief",
+      "kind": "debrief",
+      "title": "Debrief",
+      "body": "Review the training design. Key lessons: weight time by importance, prioritize hands-on practice, and respect prior knowledge with delta-only refreshes.",
+      "transitions": []
+    }
+  ],
+  "startNode": "intro",
+  "terminalNodes": ["debrief"],
+  "scoring": {
+    "weights": {
+      "diagnosis": 0.6,
+      "evidence": 0.8,
+      "troubleshooting": 0.4,
+      "resolution": 1,
+      "validation": 0.8
+    },
+    "thresholds": { "jobReady": 3 }
+  },
+  "methodology": [
+    "identify",
+    "scope",
+    "gather-evidence",
+    "change",
+    "validate",
+    "document",
+    "follow-up"
+  ],
+  "kbOpportunity": "Faculty training design: learning objectives → weighted time allocation → hands-on practice → quick reference card → pilot with 2 teachers → refine → schedule full rollout.",
+  "skills": ["documentation", "customer-service"]
+}

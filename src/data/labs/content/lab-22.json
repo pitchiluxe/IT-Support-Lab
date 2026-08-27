@@ -1,0 +1,225 @@
+{
+  "id": "lab-22",
+  "schemaVersion": 1,
+  "contentVersion": 1,
+  "week": 6,
+  "order": 22,
+  "track": "mdm",
+  "title": "Configuration Profile Deployment",
+  "persona": "Mr. Rodriguez, Facilities Coordinator",
+  "channel": "portal",
+  "scenario": "A new Wi-Fi configuration profile needs to be deployed to all 80 staff MacBooks. The change ticket was approved on Monday, the profile was built and tested in MDM, and deployment was scheduled for Tuesday after school. On Wednesday morning, the IT team discovers that 62 of 80 devices report the profile as 'Installed' but 18 are still 'Pending' or 'Failed'. The 18 affected users are spread across multiple departments. The deadline is the start of next week.",
+  "impact": "Operational: 18 staff members will lose access to the secure staff Wi-Fi network on Monday morning if their devices do not receive the new profile. Workstation authentication, file sharing, and printing that depend on Wi-Fi will be unavailable for these users.",
+  "objectives": [
+    "Identify which devices are not receiving the profile and why",
+    "Distinguish between 'Pending' (will arrive) and 'Failed' (will not arrive) states",
+    "Choose the correct remediation for the failed devices",
+    "Verify the fix reaches the affected devices",
+    "Document the deployment outcome and any escalations",
+    "Communicate the change result to the change owner"
+  ],
+  "tools": [
+    "MDM console (JAMF / equivalent)",
+    "Smart group / scoped targeting review",
+    "Device inventory report",
+    "Service desk ticket system",
+    "Change management log"
+  ],
+  "evidence": [
+    { "id": "ev-failed-list", "description": "List of the 18 devices not yet showing 'Installed' and their status", "kind": "note" },
+    { "id": "ev-scope", "description": "Confirmation that all 80 devices were in the profile's target smart group", "kind": "screenshot" },
+    { "id": "ev-error", "description": "Error message for any device in 'Failed' state from the MDM console", "kind": "log" }
+  ],
+  "decisionPoints": [
+    {
+      "id": "dp-diagnosis",
+      "prompt": "After review, 10 of the 18 are 'Pending' and 8 are 'Failed' with the error 'User not in scope for profile'. What is the most likely cause?",
+      "options": [
+        {
+          "id": "opt-scope",
+          "label": "The 8 'Failed' devices belong to users who are not in the profile's target smart group",
+          "score": { "diagnosis": 0.9, "evidence": 0.9, "resolution": 0.9 },
+          "feedback": "Correct — the error 'User not in scope for profile' is the literal explanation. The 8 users fall outside the target group criteria (likely a department filter or staff roster that does not include them)."
+        },
+        {
+          "id": "opt-network",
+          "label": "The 8 failed devices are all on the guest Wi-Fi and cannot reach the MDM server",
+          "score": { "diagnosis": 0.3, "evidence": 0.2, "resolution": 0.3 },
+          "feedback": "If the issue were network reachability, the error would say 'device not reachable' or 'server timeout', not 'user not in scope'."
+        },
+        {
+          "id": "opt-os",
+          "label": "The 8 devices are running an old macOS version that does not support the profile payload",
+          "score": { "diagnosis": 0.2, "evidence": 0.1, "resolution": 0.2 },
+          "feedback": "OS-version mismatches produce different errors. The exact 'user not in scope' message points to targeting, not payload compatibility."
+        }
+      ]
+    },
+    {
+      "id": "dp-resolution",
+      "prompt": "What is the correct remediation to deliver the profile to the 8 'Failed' devices before the Monday deadline?",
+      "options": [
+        {
+          "id": "opt-adjust-scope",
+          "label": "Update the smart group criteria so the 8 affected users are included, redeploy the profile, and validate",
+          "score": { "diagnosis": 0.9, "evidence": 0.9, "resolution": 0.9 },
+          "feedback": "Correct — adjusting the scope is the right fix because the issue is targeting, not the profile or the device. Redeploy and validate."
+        },
+        {
+          "id": "opt-force-install",
+          "label": "Force-install the profile onto each of the 8 devices individually from the console",
+          "score": { "diagnosis": 0.3, "evidence": 0.2, "resolution": 0.3 },
+          "feedback": "Force-installing on devices that are 'not in scope' may be rejected or may succeed but leave a coverage gap if other devices join the same scope later. Fix the scope itself."
+        },
+        {
+          "id": "opt-ignore",
+          "label": "Leave the 8 devices un-fixed and document that they will be addressed in the next change window",
+          "score": { "diagnosis": 0.1, "evidence": 0.0, "resolution": -0.5 },
+          "feedback": "The change is approved and scheduled for completion before Monday. Walking away violates the change plan and leaves 18 users without secure Wi-Fi."
+        }
+      ]
+    }
+  ],
+  "ticket": {
+    "type": "change",
+    "category": "MDM / Configuration Profile",
+    "priority": "p3",
+    "impact": "medium",
+    "urgency": "medium",
+    "sla": "business-hours",
+    "initialDescription": "Wi-Fi configuration profile deployment to 80 staff MacBooks: 62 installed, 10 pending, 8 failed with 'User not in scope' error. Deadline Monday.",
+    "requester": {
+      "name": "Mr. Rodriguez",
+      "role": "Operations",
+      "identifiers": { "department": "Facilities", "location": "facility B" }
+    }
+  },
+  "location": {
+    "id": "mdm-console",
+    "name": "MDM Administration Console",
+    "objects": [
+      {
+        "id": "mdm-dashboard",
+        "name": "MDM Deployment Dashboard",
+        "state": {
+          "totalDevices": 80,
+          "installed": 62,
+          "pending": 10,
+          "failed": 8,
+          "profileName": "Staff Wi-Fi v2"
+        }
+      },
+      {
+        "id": "smart-group",
+        "name": "Profile Target Smart Group",
+        "state": {
+          "name": "All Staff macOS Devices",
+          "currentMembership": 72,
+          "expectedMembership": 80
+        }
+      }
+    ]
+  },
+  "nodes": [
+    {
+      "id": "intake",
+      "kind": "intro",
+      "title": "Open the change ticket",
+      "body": "Open the change ticket. Review the scope of the change (80 devices, profile, deadline) and the current deployment status in the MDM console.",
+      "transitions": [{ "event": "ticket-opened", "to": "inspect-dashboard" }]
+    },
+    {
+      "id": "inspect-dashboard",
+      "kind": "inspect",
+      "title": "Inspect the deployment dashboard",
+      "body": "Review the MDM console for the Wi-Fi profile. Note counts of Installed, Pending, and Failed. Click into the Failed list and capture the exact error message for each. Save the screenshot.",
+      "locationId": "mdm-console",
+      "objectId": "mdm-dashboard",
+      "transitions": [
+        { "event": "evidence-saved", "to": "decide-diagnosis" }
+      ]
+    },
+    {
+      "id": "decide-diagnosis",
+      "kind": "decide",
+      "title": "Identify the cause",
+      "body": "Based on the error message 'User not in scope for profile', what is the most likely cause?",
+      "decisionPointId": "dp-diagnosis",
+      "transitions": [
+        { "event": "decision-made", "to": "decide-resolution" }
+      ]
+    },
+    {
+      "id": "decide-resolution",
+      "kind": "decide",
+      "title": "Choose the remediation",
+      "body": "The change is approved and on a deadline. Which remediation correctly addresses the 8 failed devices?",
+      "decisionPointId": "dp-resolution",
+      "transitions": [
+        { "event": "decision-made", "to": "remediate" }
+      ]
+    },
+    {
+      "id": "remediate",
+      "kind": "remediate",
+      "title": "Update scope and redeploy",
+      "body": "Adjust the smart group criteria so the 8 affected users are included. Redeploy the profile. Verify the dashboard now shows 80 installed (or 70 installed + 10 pending that will resolve).",
+      "locationId": "mdm-console",
+      "objectId": "smart-group",
+      "transitions": [
+        { "event": "fix-applied", "to": "validate" }
+      ]
+    },
+    {
+      "id": "validate",
+      "kind": "remediate",
+      "title": "Validate",
+      "body": "Confirm the profile is now installed on all 80 devices. Spot-check 2 of the 8 previously failed devices to confirm Wi-Fi works on the new SSID. Document the validation.",
+      "transitions": [
+        { "event": "validation-saved", "to": "document" }
+      ]
+    },
+    {
+      "id": "document",
+      "kind": "document",
+      "title": "Document the change outcome",
+      "body": "Close the change ticket with: deployment statistics, root cause (smart group criteria), remediation (scope adjustment), and validation evidence. Notify the change owner of completion.",
+      "prompt": "Write a brief change-completion note to the change owner summarizing the outcome.",
+      "transitions": [
+        { "event": "followup-saved", "to": "debrief" }
+      ]
+    },
+    {
+      "id": "debrief",
+      "kind": "debrief",
+      "title": "Debrief",
+      "body": "Review your score. Think about how to spot targeting errors before a change window opens, not after.",
+      "transitions": []
+    }
+  ],
+  "startNode": "intake",
+  "terminalNodes": ["debrief"],
+  "scoring": {
+    "weights": {
+      "diagnosis": 1,
+      "evidence": 1,
+      "troubleshooting": 1,
+      "resolution": 1.2,
+      "validation": 1
+    },
+    "thresholds": { "jobReady": 3 }
+  },
+  "methodology": [
+    "identify",
+    "scope",
+    "gather-evidence",
+    "hypothesize",
+    "test",
+    "change",
+    "validate",
+    "document",
+    "follow-up"
+  ],
+  "kbOpportunity": "When MDM profile deployment shows 'User not in scope' failures, the smart group criteria is the cause — not the device or network. Adjust the scope and redeploy.",
+  "skills": ["mdm", "documentation", "projects"]
+}

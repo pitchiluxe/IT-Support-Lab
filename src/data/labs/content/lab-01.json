@@ -1,0 +1,271 @@
+{
+  "id": "lab-01",
+  "schemaVersion": 1,
+  "contentVersion": 1,
+  "week": 1,
+  "order": 1,
+  "track": "service-desk",
+  "title": "Faculty Laptop Cannot Connect to Wi-Fi",
+  "persona": "Mrs. Hayes, 4th-grade teacher",
+  "channel": "phone",
+  "scenario": "Mrs. Hayes, a 4th-grade teacher, calls the IT Service Desk at 8:42 AM. Her class starts at 9:00 AM and her MacBook cannot connect to the school Wi-Fi. The laptop shows the network is visible but authentication keeps failing. She is in classroom 12B, projecting from her laptop, and her lesson plan depends on accessing Google Classroom. You are the technician who takes the call.",
+  "impact": "Instructional: 22 students in a K-4 classroom will lose the first 30+ minutes of the morning literacy block if connectivity is not restored. Parent communication tools and the digital reading app are also unavailable.",
+  "objectives": [
+    "Identify the affected user, device, and time-of-onset",
+    "Determine scope: is this an isolated device or multiple users?",
+    "Gather evidence before making any change",
+    "Form a hypothesis and choose the least-risky test",
+    "Restore connectivity or escalate with documented findings",
+    "Document the ticket and follow up with the user"
+  ],
+  "tools": [
+    "Service desk ticket system",
+    "MDM console (read-only)",
+    "Network status board",
+    "Standard intake form"
+  ],
+  "evidence": [
+    { "id": "ev-scope", "description": "Confirm scope: is this affecting one user or multiple?", "kind": "note" },
+    { "id": "ev-time", "description": "Record when the problem started and what changed", "kind": "note" },
+    { "id": "ev-auth", "description": "Capture the exact Wi-Fi error or auth message seen by the user", "kind": "note" }
+  ],
+  "decisionPoints": [
+    {
+      "id": "dp-cause",
+      "prompt": "Based on the evidence so far, what is the most likely cause?",
+      "options": [
+        {
+          "id": "opt-wifi-password",
+          "label": "The teacher forgot the Wi-Fi password and is using an old one",
+          "score": { "diagnosis": 0.6, "evidence": 0.2, "resolution": 0.2 },
+          "feedback": "Reasonable first guess, but you have no evidence yet that the password is wrong vs. an account lockout vs. an AP issue."
+        },
+        {
+          "id": "opt-account-locked",
+          "label": "The teacher's account is locked in the directory and Wi-Fi auth is rejecting valid credentials",
+          "score": { "diagnosis": 0.9, "evidence": 0.8, "resolution": 0.9 },
+          "feedback": "Strong hypothesis — and the best next test is a known-good device, not a password change."
+        },
+        {
+          "id": "opt-ap-outage",
+          "label": "The classroom's access point has lost uplink and no one in the room can connect",
+          "score": { "diagnosis": 0.3, "evidence": -0.4, "resolution": 0.1 },
+          "feedback": "If true, more users would have called. You have not yet asked about scope."
+        }
+      ]
+    },
+    {
+      "id": "dp-test",
+      "prompt": "Which test do you want to run first to confirm or rule out account lockout?",
+      "options": [
+        {
+          "id": "opt-reset-pwd",
+          "label": "Reset the teacher's password in the directory",
+          "score": { "diagnosis": 0.0, "evidence": -0.5, "resolution": -0.3 },
+          "feedback": "A password reset changes state before you have confirmed the cause. Avoid destructive changes without evidence."
+        },
+        {
+          "id": "opt-second-device",
+          "label": "Ask the teacher to try a known-good school device with her credentials in the same room",
+          "score": { "diagnosis": 0.9, "evidence": 0.9, "resolution": 0.6 },
+          "feedback": "This is the right next test — it isolates whether the issue is account-side or device-side with zero side effects."
+        },
+        {
+          "id": "opt-reboot-ap",
+          "label": "Reboot the access point in classroom 12B",
+          "score": { "diagnosis": 0.4, "evidence": 0.0, "resolution": 0.0 },
+          "feedback": "Reasonable, but you do not yet know if the AP is the problem. Test the account first; reboot only if scope indicates AP."
+        }
+      ]
+    },
+    {
+      "id": "dp-resolution",
+      "prompt": "The known-good device also cannot authenticate with the teacher's credentials. What is the correct resolution?",
+      "options": [
+        {
+          "id": "opt-unlock-account",
+          "label": "Unlock the account in the directory, verify the user can reconnect, and document the change",
+          "score": { "diagnosis": 1.0, "evidence": 1.0, "resolution": 1.0 },
+          "feedback": "Correct — minimal, evidence-supported, and reversible."
+        },
+        {
+          "id": "opt-walk-user",
+          "label": "Walk the user through re-typing the password on her laptop",
+          "score": { "diagnosis": 0.0, "evidence": 0.0, "resolution": -0.5 },
+          "feedback": "You have evidence the password is not the issue. Re-typing wastes class time and the user is already authenticated."
+        },
+        {
+          "id": "opt-rebuild-laptop",
+          "label": "Rebuild the laptop from a standard image",
+          "score": { "diagnosis": -1.0, "evidence": -1.0, "resolution": -1.0 },
+          "feedback": "Destructive, unsupported by evidence, and would lose class time for the rest of the day."
+        }
+      ]
+    }
+  ],
+  "ticket": {
+    "type": "incident",
+    "category": "Network / Wi-Fi",
+    "priority": "p2",
+    "impact": "high",
+    "urgency": "high",
+    "sla": "business-hours",
+    "initialDescription": "Teacher (Mrs. Hayes) in classroom 12B reports MacBook will not authenticate to school Wi-Fi. Class starts in 18 minutes.",
+    "requester": {
+      "name": "Mrs. Hayes",
+      "role": "Faculty",
+      "identifiers": { "extension": "ext. 4521", "location": "rm. 12B" }
+    }
+  },
+  "location": {
+    "id": "faculty-office",
+    "name": "Classroom 12B (Faculty Office Proxy)",
+    "objects": [
+      {
+        "id": "faculty-mac",
+        "name": "Faculty MacBook (Mrs. Hayes)",
+        "state": {
+          "wifi": { "ssid": "SCHOOL-STAFF", "connected": false, "lastAuthError": "EAP authentication failed (802.1X)" },
+          "ip": "169.254.42.18",
+          "mac": "f0:18:2a:7c:11:ee",
+          "os": "macOS 14.6",
+          "lastSeen": 1724781720000,
+          "battery": 64
+        }
+      },
+      {
+        "id": "campus-phone",
+        "name": "Classroom Phone (Cisco 8841)",
+        "state": {
+          "line": "4521",
+          "status": "idle",
+          "voicemail": 0,
+          "registered": true
+        }
+      }
+    ]
+  },
+  "nodes": [
+    {
+      "id": "intake",
+      "kind": "intro",
+      "title": "Intake",
+      "body": "You receive a call. Ask who is calling, what is affected, and what time the problem started. Document the answers before doing anything else.",
+      "transitions": [{ "event": "intake-recorded", "to": "inspect-mac" }]
+    },
+    {
+      "id": "inspect-mac",
+      "kind": "inspect",
+      "title": "Inspect the teacher's MacBook",
+      "body": "Open the MacBook's network state. Note the Wi-Fi error message, the IP address, the OS version, and the last time it authenticated. Save this as evidence.",
+      "locationId": "faculty-office",
+      "objectId": "faculty-mac",
+      "transitions": [
+        { "event": "evidence-saved", "to": "decide-cause" }
+      ]
+    },
+    {
+      "id": "decide-cause",
+      "kind": "decide",
+      "title": "Decide the most likely cause",
+      "body": "Based on the evidence you have collected, choose the most likely cause of the Wi-Fi authentication failure.",
+      "decisionPointId": "dp-cause",
+      "transitions": [
+        { "event": "decision-made", "to": "scope-check" }
+      ]
+    },
+    {
+      "id": "scope-check",
+      "kind": "intro",
+      "title": "Determine scope",
+      "body": "Before changing anything, ask: is anyone else in classroom 12B or the building having the same problem? Check the network status board. Document scope.",
+      "transitions": [
+        { "event": "scope-recorded", "to": "decide-test" }
+      ]
+    },
+    {
+      "id": "decide-test",
+      "kind": "decide",
+      "title": "Choose the next test",
+      "body": "Pick the least-risky test that will confirm or rule out your hypothesis. Record what you will test and why.",
+      "decisionPointId": "dp-test",
+      "transitions": [
+        { "event": "decision-made", "to": "hypothesize" }
+      ]
+    },
+    {
+      "id": "hypothesize",
+      "kind": "intro",
+      "title": "State your hypothesis",
+      "body": "In your own words, write a one-sentence hypothesis and what evidence would confirm or refute it. This becomes part of the ticket.",
+      "prompt": "My hypothesis is: ___",
+      "transitions": [
+        { "event": "hypothesis-saved", "to": "decide-resolution" }
+      ]
+    },
+    {
+      "id": "decide-resolution",
+      "kind": "decide",
+      "title": "Resolve",
+      "body": "The known-good test confirmed the account is locked. Choose the correct resolution.",
+      "decisionPointId": "dp-resolution",
+      "transitions": [
+        { "event": "decision-made", "to": "validate" }
+      ]
+    },
+    {
+      "id": "validate",
+      "kind": "remediate",
+      "title": "Validate the fix",
+      "body": "Have the teacher reconnect to Wi-Fi. Confirm she can reach Google Classroom and the lesson-plan site. Save a validation note.",
+      "locationId": "faculty-office",
+      "objectId": "faculty-mac",
+      "transitions": [
+        { "event": "validation-saved", "to": "document" }
+      ]
+    },
+    {
+      "id": "document",
+      "kind": "document",
+      "title": "Document the ticket",
+      "body": "Write a clear customer-facing follow-up message. Summarize what was wrong, what you did, and what the user should do if it happens again.",
+      "prompt": "Write a follow-up message to Mrs. Hayes. Plain language, no jargon, no internal IDs.",
+      "transitions": [
+        { "event": "followup-saved", "to": "debrief" }
+      ]
+    },
+    {
+      "id": "debrief",
+      "kind": "debrief",
+      "title": "Debrief",
+      "body": "Review your score and identify what to practice next.",
+      "transitions": []
+    }
+  ],
+  "startNode": "intake",
+  "terminalNodes": ["debrief"],
+  "scoring": {
+    "weights": {
+      "diagnosis": 1,
+      "evidence": 1.2,
+      "troubleshooting": 1,
+      "resolution": 1,
+      "validation": 0.8
+    },
+    "thresholds": { "jobReady": 3 }
+  },
+  "methodology": [
+    "identify",
+    "scope",
+    "reproduce",
+    "gather-evidence",
+    "hypothesize",
+    "test",
+    "change",
+    "validate",
+    "document",
+    "follow-up"
+  ],
+  "kbOpportunity": "Account lockout causing Wi-Fi auth failure — recognize by pattern of recent failed logins and inability to authenticate from a second device.",
+  "skills": ["customer-service", "ticketing", "networking"]
+}

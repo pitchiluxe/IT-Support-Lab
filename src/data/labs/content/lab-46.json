@@ -1,0 +1,218 @@
+{
+  "id": "lab-46",
+  "schemaVersion": 1,
+  "contentVersion": 1,
+  "week": 11,
+  "order": 46,
+  "track": "operations",
+  "title": "CIO Escalation",
+  "persona": "Mrs. Kaplan, Director of Admissions",
+  "channel": "email",
+  "scenario": "Mrs. Kaplan, Director of Admissions, emails the help desk asking for direct administrator access to the SIS so she can pull her own reports without waiting on IT. She has been frustrated with turnaround times and is escalating to 'whoever is in charge of IT.' She wants this resolved by tomorrow.",
+  "impact": "Strategic: granting broad administrative access to the SIS bypasses the principle of least privilege and creates an audit and security gap. The CIO must be aware and must own the policy decision, not the help desk.",
+  "objectives": [
+    "Recognize the request as a policy escalation, not a routine ticket",
+    "Acknowledge Mrs. Kaplan with empathy and a clear timeline",
+    "Document the request and the policy implication",
+    "Escalate to the CIO with a clear briefing and your recommendation",
+    "Implement the CIO's decision promptly and document it",
+    "Follow up with Mrs. Kaplan to confirm the resolution and the next steps"
+  ],
+  "tools": [
+    "Ticket system",
+    "Role-based access control (RBAC) documentation",
+    "CIO briefing template",
+    "Communication templates",
+    "Audit log review"
+  ],
+  "evidence": [
+    { "id": "ev-policy-doc", "description": "Excerpt of the RBAC policy and the principle of least privilege", "kind": "note" },
+    { "id": "ev-cio-brief", "description": "Escalation brief to the CIO with request, policy implication, and recommendation", "kind": "note" },
+    { "id": "ev-decision-record", "description": "Record of the CIO's decision and the access changes implemented", "kind": "note" }
+  ],
+  "decisionPoints": [
+    {
+      "id": "dp-initial-response",
+      "prompt": "Mrs. Kaplan has escalated past the help desk and is impatient. What is the right first response?",
+      "options": [
+        {
+          "id": "opt-grant-access",
+          "label": "Grant her the access she requested to make the problem go away quickly",
+          "score": { "diagnosis": -1, "evidence": -1, "resolution": -1 },
+          "feedback": "Granting broad admin access bypasses the principle of least privilege and creates an audit and security gap. The CIO must own this decision."
+        },
+        {
+          "id": "opt-acknowledge-escalate",
+          "label": "Acknowledge with empathy, set a clear timeline, and escalate to the CIO with a recommendation",
+          "score": { "diagnosis": 1, "evidence": 1, "resolution": 1 },
+          "feedback": "Correct — empathy, a clear timeline, and a structured escalation. The CIO decides the policy; you implement it."
+        },
+        {
+          "id": "opt-deflect-no-ownership",
+          "label": "Reply that the help desk cannot help and refer her to the CIO directly without a brief",
+          "score": { "diagnosis": -1, "evidence": -1, "resolution": -1 },
+          "feedback": "Throwing a senior stakeholder at the CIO without a brief wastes the CIO's time and signals that you are not owning the issue."
+        }
+      ]
+    },
+    {
+      "id": "dp-recommendation",
+      "prompt": "The CIO asks for your recommendation. The Director needs faster access to admissions reports. What is the right recommendation?",
+      "options": [
+        {
+          "id": "opt-full-sis-admin",
+          "label": "Grant full SIS administrator access scoped to the Admissions OU",
+          "score": { "diagnosis": 0, "evidence": 0, "resolution": 0 },
+          "feedback": "OU-scoped admin is the right principle, but full admin is broader than needed. Recommend read-only or a custom reports role first."
+        },
+        {
+          "id": "opt-custom-reports-role",
+          "label": "Create a custom SIS reports role with read-only access to admissions data, scoped to the Admissions OU",
+          "score": { "diagnosis": 1, "evidence": 1, "resolution": 1 },
+          "feedback": "Correct — least-privilege role that solves the operational need without granting admin rights. Pair it with a training session and a quarterly access review."
+        },
+        {
+          "id": "opt-keep-status-quo",
+          "label": "Keep the status quo and ask her to file tickets for each report",
+          "score": { "diagnosis": -1, "evidence": -1, "resolution": -1 },
+          "feedback": "The current process is clearly not meeting her operational need. A new role is a better solution than defending the status quo."
+        }
+      ]
+    }
+  ],
+  "ticket": {
+    "type": "request",
+    "category": "Security / Access Escalation",
+    "priority": "p2",
+    "impact": "medium",
+    "urgency": "high",
+    "sla": "business-hours",
+    "initialDescription": "Director of Admissions (Mrs. Kaplan) requests direct administrator access to the SIS for self-service reporting. Frustrated with IT turnaround. Wants resolution by tomorrow. Escalated past the help desk.",
+    "requester": {
+      "name": "Mrs. Kaplan",
+      "role": "Administrator",
+      "identifiers": { "title": "Director of Admissions", "office": "rm. 110" }
+    }
+  },
+  "location": {
+    "id": "it-service-desk",
+    "name": "IT Service Desk",
+    "objects": [
+      {
+        "id": "rbac-policy",
+        "name": "RBAC and Least-Privilege Policy",
+        "state": {
+          "principle": "least privilege",
+          "approver_for_new_role": "CIO",
+          "audit_required": true,
+          "review_cadence_months": 6
+        }
+      },
+      {
+        "id": "current-roles",
+        "name": "Current SIS Roles for Admissions",
+        "state": {
+          "admissions_user": "read-only on admissions data",
+          "admissions_manager": "OU-scoped admin (not currently granted)",
+          "reports_team": "full report access"
+        }
+      }
+    ]
+  },
+  "nodes": [
+    {
+      "id": "intro",
+      "kind": "intro",
+      "title": "Receive the escalated request",
+      "body": "Read Mrs. Kaplan's email carefully. Recognize the escalation: a senior stakeholder is past the help desk and wants action. Take a breath and follow the process, not the pressure.",
+      "transitions": [{ "event": "request-recognized", "to": "acknowledge" }]
+    },
+    {
+      "id": "acknowledge",
+      "kind": "intro",
+      "title": "Acknowledge with empathy",
+      "body": "Reply to Mrs. Kaplan: thank her for raising the concern, acknowledge the operational friction, and set a clear timeline (e.g. 'I will brief the CIO today and follow up with you by EOD tomorrow').",
+      "transitions": [{ "event": "ack-sent", "to": "decide-initial" }]
+    },
+    {
+      "id": "decide-initial",
+      "kind": "decide",
+      "title": "Choose the first response",
+      "body": "Decide how to respond to Mrs. Kaplan's escalation. Do not grant access on your own.",
+      "decisionPointId": "dp-initial-response",
+      "transitions": [
+        { "event": "decision-made", "to": "brief-cio" }
+      ]
+    },
+    {
+      "id": "brief-cio",
+      "kind": "inspect",
+      "title": "Prepare the CIO brief",
+      "body": "Write the brief: who is asking, what they need, the policy implication, the operational impact if denied, and your recommendation. Save the brief as evidence.",
+      "locationId": "it-service-desk",
+      "objectId": "rbac-policy",
+      "transitions": [
+        { "event": "brief-saved", "to": "decide-rec" }
+      ]
+    },
+    {
+      "id": "decide-rec",
+      "kind": "decide",
+      "title": "Form your recommendation",
+      "body": "The CIO asks for your recommendation. Pick the right least-privilege solution.",
+      "decisionPointId": "dp-recommendation",
+      "transitions": [
+        { "event": "decision-made", "to": "implement" }
+      ]
+    },
+    {
+      "id": "implement",
+      "kind": "remediate",
+      "title": "Implement the CIO's decision",
+      "body": "Apply the CIO-approved access change. Create the custom reports role, assign Mrs. Kaplan, log the change in the audit log, and schedule the next access review. Save the decision record as evidence.",
+      "locationId": "it-service-desk",
+      "objectId": "current-roles",
+      "transitions": [
+        { "event": "decision-implemented", "to": "document" }
+      ]
+    },
+    {
+      "id": "document",
+      "kind": "document",
+      "title": "Follow up with Mrs. Kaplan",
+      "body": "Send the follow-up to Mrs. Kaplan: explain the new role, how to use it, the support contact, and the next access review date. Confirm she can self-serve her reports.",
+      "prompt": "Write the follow-up email to Mrs. Kaplan: confirm the new SIS role, how to access it, who to contact for help, and the next review date.",
+      "transitions": [
+        { "event": "followup-sent", "to": "debrief" }
+      ]
+    },
+    {
+      "id": "debrief",
+      "kind": "debrief",
+      "title": "Debrief",
+      "body": "Review the escalation. Key lessons: senior escalations are policy decisions, not help desk decisions. Empathy plus a structured brief plus a least-privilege recommendation is the right pattern.",
+      "transitions": []
+    }
+  ],
+  "startNode": "intro",
+  "terminalNodes": ["debrief"],
+  "scoring": {
+    "weights": {
+      "diagnosis": 1,
+      "evidence": 1,
+      "troubleshooting": 0.6,
+      "resolution": 1,
+      "validation": 0.6
+    },
+    "thresholds": { "jobReady": 3 }
+  },
+  "methodology": [
+    "identify",
+    "scope",
+    "gather-evidence",
+    "document",
+    "follow-up"
+  ],
+  "kbOpportunity": "CIO escalation playbook: acknowledge with empathy → brief with request, policy, impact, recommendation → CIO owns the policy decision → implement and audit → follow up with stakeholder.",
+  "skills": ["incident-response", "documentation"]
+}

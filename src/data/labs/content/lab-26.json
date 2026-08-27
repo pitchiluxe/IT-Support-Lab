@@ -1,0 +1,223 @@
+{
+  "id": "lab-26",
+  "schemaVersion": 1,
+  "contentVersion": 1,
+  "week": 7,
+  "order": 26,
+  "track": "network",
+  "title": "Basic Network Troubleshooting",
+  "persona": "Mr. Thompson, Math Teacher",
+  "channel": "phone",
+  "scenario": "Mr. Thompson calls the IT Service Desk. His classroom desktop in room 118 cannot reach any websites. The computer shows it is connected to the network with a valid IP address, but browsers show 'DNS_PROBE_FINISHED_NO_INTERNET'. Other teachers in nearby classrooms are working normally. He has not changed anything on the machine. Class starts in 15 minutes.",
+  "impact": "Instructional: A 9th-grade math teacher cannot use web-based lesson materials. The 25 students in his first period will be without the planned digital content until connectivity is restored.",
+  "objectives": [
+    "Identify the affected device, user, and time of onset",
+    "Confirm scope: is this one device or multiple?",
+    "Run basic network tests from the device (IP, ping, DNS)",
+    "Form a hypothesis and choose the least-risky fix",
+    "Restore connectivity or escalate with evidence",
+    "Document and follow up"
+  ],
+  "tools": [
+    "Windows Command Prompt (ipconfig, ping, nslookup)",
+    "Network status board",
+    "Service desk ticket system",
+    "DHCP client tools"
+  ],
+  "evidence": [
+    { "id": "ev-ipconfig", "description": "Output of ipconfig /all showing IP, gateway, and DNS servers", "kind": "command-output" },
+    { "id": "ev-ping", "description": "Ping results to gateway and to an external IP (8.8.8.8)", "kind": "command-output" },
+    { "id": "ev-scope", "description": "Check network status board and nearby rooms to confirm scope", "kind": "note" }
+  ],
+  "decisionPoints": [
+    {
+      "id": "dp-diagnosis",
+      "prompt": "ipconfig shows a valid IP and gateway, ping to the gateway succeeds, ping to 8.8.8.8 fails, and nslookup times out. What is the most likely cause?",
+      "options": [
+        {
+          "id": "opt-dns",
+          "label": "DNS resolution is broken — the machine can reach the network and external IPs but cannot resolve names",
+          "score": { "diagnosis": 0.9, "evidence": 0.9, "resolution": 0.9 },
+          "feedback": "Correct — the signature is clear: ping by IP works, but name resolution fails. DNS is the broken layer."
+        },
+        {
+          "id": "opt-isp",
+          "label": "The school's internet uplink is down",
+          "score": { "diagnosis": 0.2, "evidence": 0.0, "resolution": 0.2 },
+          "feedback": "If the uplink were down, ping to 8.8.8.8 would also fail. The scope check (other rooms working) also rules out a wide outage."
+        },
+        {
+          "id": "opt-cable",
+          "label": "The Ethernet cable is unplugged or damaged",
+          "score": { "diagnosis": 0.2, "evidence": 0.0, "resolution": 0.2 },
+          "feedback": "If the cable were bad, ipconfig would not show a valid IP and gateway. The device is on the network."
+        }
+      ]
+    },
+    {
+      "id": "dp-resolution",
+      "prompt": "Which is the correct, least-risky remediation?",
+      "options": [
+        {
+          "id": "opt-flush-dns",
+          "label": "Flush the DNS cache (ipconfig /flushdns) and reconfigure the device to use the school's DNS servers explicitly",
+          "score": { "diagnosis": 0.9, "evidence": 0.8, "resolution": 0.9 },
+          "feedback": "Correct — flushing the local cache removes any stale entries, and explicit DNS configuration ensures the device uses the right resolver."
+        },
+        {
+          "id": "opt-reimage",
+          "label": "Re-image the workstation with a standard image",
+          "score": { "diagnosis": 0.0, "evidence": -0.5, "resolution": -0.8 },
+          "feedback": "Destructive. A DNS configuration change does not require rebuilding the machine."
+        },
+        {
+          "id": "opt-ignore",
+          "label": "Tell the teacher to use his phone as a hotspot instead",
+          "score": { "diagnosis": 0.1, "evidence": 0.0, "resolution": 0.0 },
+          "feedback": "Bypassing the school network does not fix the underlying DNS problem and may introduce security concerns. Restore the school network."
+        }
+      ]
+    }
+  ],
+  "ticket": {
+    "type": "incident",
+    "category": "Network / DNS",
+    "priority": "p2",
+    "impact": "medium",
+    "urgency": "high",
+    "sla": "business-hours",
+    "initialDescription": "Classroom desktop in rm. 118 cannot reach websites. 'DNS_PROBE_FINISHED_NO_INTERNET'. Other rooms fine. Class in 15 minutes.",
+    "requester": {
+      "name": "Mr. Thompson",
+      "role": "Faculty",
+      "identifiers": { "extension": "ext. 5118", "location": "rm. 118" }
+    }
+  },
+  "location": {
+    "id": "rm-118",
+    "name": "Classroom 118",
+    "objects": [
+      {
+        "id": "faculty-desktop",
+        "name": "Faculty Desktop (Mr. Thompson)",
+        "state": {
+          "os": "Windows 11",
+          "ip": "10.40.18.42",
+          "gateway": "10.40.18.1",
+          "dnsServers": ["10.40.0.10", "10.40.0.11"],
+          "browserError": "DNS_PROBE_FINISHED_NO_INTERNET"
+        }
+      }
+    ]
+  },
+  "nodes": [
+    {
+      "id": "intake",
+      "kind": "intro",
+      "title": "Take the call",
+      "body": "Take the call. Verify the user, the room, and the time the problem started. Open a P2 ticket. Note that class starts in 15 minutes.",
+      "transitions": [{ "event": "ticket-opened", "to": "scope-check" }]
+    },
+    {
+      "id": "scope-check",
+      "kind": "intro",
+      "title": "Confirm scope",
+      "body": "Check the network status board and call or message a teacher in a nearby room to confirm the issue is isolated to room 118. Document the scope.",
+      "transitions": [
+        { "event": "scope-saved", "to": "inspect-device" }
+      ]
+    },
+    {
+      "id": "inspect-device",
+      "kind": "inspect",
+      "title": "Run network diagnostics",
+      "body": "Run ipconfig /all, ping the gateway, ping 8.8.8.8, and run nslookup for a known hostname. Save all output to the ticket. Look for the layer at which things break.",
+      "locationId": "rm-118",
+      "objectId": "faculty-desktop",
+      "transitions": [
+        { "event": "evidence-saved", "to": "decide-diagnosis" }
+      ]
+    },
+    {
+      "id": "decide-diagnosis",
+      "kind": "decide",
+      "title": "Identify the cause",
+      "body": "Based on the diagnostics, what is causing the connectivity issue?",
+      "decisionPointId": "dp-diagnosis",
+      "transitions": [
+        { "event": "decision-made", "to": "decide-resolution" }
+      ]
+    },
+    {
+      "id": "decide-resolution",
+      "kind": "decide",
+      "title": "Choose the remediation",
+      "body": "Pick the least-risky fix to restore connectivity.",
+      "decisionPointId": "dp-resolution",
+      "transitions": [
+        { "event": "decision-made", "to": "remediate" }
+      ]
+    },
+    {
+      "id": "remediate",
+      "kind": "remediate",
+      "title": "Restore DNS",
+      "body": "Walk the user (or visit the room) through flushing the DNS cache and confirming the DNS server entries. Test by opening a browser and loading a known site. Document the result.",
+      "transitions": [
+        { "event": "fix-applied", "to": "validate" }
+      ]
+    },
+    {
+      "id": "validate",
+      "kind": "remediate",
+      "title": "Validate",
+      "body": "Confirm the teacher can reach the lesson site and the school's portal. Confirm the browser no longer shows the DNS error. Have him ready the classroom materials.",
+      "transitions": [
+        { "event": "validation-saved", "to": "document" }
+      ]
+    },
+    {
+      "id": "document",
+      "kind": "document",
+      "title": "Document the fix",
+      "body": "Close the ticket with: the failing layer (DNS), the action taken, and the validation evidence. Send a brief follow-up to the teacher.",
+      "prompt": "Write a brief follow-up to Mr. Thompson confirming the fix.",
+      "transitions": [
+        { "event": "followup-saved", "to": "debrief" }
+      ]
+    },
+    {
+      "id": "debrief",
+      "kind": "debrief",
+      "title": "Debrief",
+      "body": "Review your score. Think about the OSI-layer pattern: when ping by IP works but name lookup fails, DNS is the broken layer.",
+      "transitions": []
+    }
+  ],
+  "startNode": "intake",
+  "terminalNodes": ["debrief"],
+  "scoring": {
+    "weights": {
+      "diagnosis": 1.2,
+      "evidence": 1,
+      "troubleshooting": 1,
+      "resolution": 1,
+      "validation": 0.8
+    },
+    "thresholds": { "jobReady": 3 }
+  },
+  "methodology": [
+    "identify",
+    "scope",
+    "reproduce",
+    "gather-evidence",
+    "hypothesize",
+    "test",
+    "change",
+    "validate",
+    "document",
+    "follow-up"
+  ],
+  "kbOpportunity": "When ping to IP works but websites fail, the broken layer is DNS. Flush DNS cache and confirm DNS server settings before any device rebuild.",
+  "skills": ["networking", "ticketing", "documentation"]
+}

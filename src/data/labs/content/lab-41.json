@@ -1,0 +1,213 @@
+{
+  "id": "lab-41",
+  "schemaVersion": 1,
+  "contentVersion": 1,
+  "week": 10,
+  "order": 41,
+  "track": "operations",
+  "title": "Knowledge Base Authoring",
+  "persona": "Mr. Thompson, Director of Technology",
+  "channel": "email",
+  "scenario": "Mr. Thompson has noticed that the same Wi-Fi authentication problem has generated 14 tickets over the past month. He asks you to author a knowledge base article so that any technician — and faculty power users — can resolve the common case without opening a ticket. The article should target the right audience and not leak sensitive information.",
+  "impact": "Operational: a well-written KB article reduces repeat ticket volume, improves first-time resolution, and shortens training time for new technicians. A poorly written article creates confusion and support burden.",
+  "objectives": [
+    "Identify the recurring pattern from the past 30 days of tickets",
+    "Define the target audience: technician or end user",
+    "Draft the KB article using the school standard template",
+    "Include symptoms, scope check, and step-by-step resolution",
+    "Add troubleshooting decision points and a clear escalation path",
+    "Review the article for accuracy, tone, and security before publishing"
+  ],
+  "tools": [
+    "Ticket system reports",
+    "KB authoring template",
+    "Existing KB article style guide",
+    "Peer review checklist",
+    "Publishing platform"
+  ],
+  "evidence": [
+    { "id": "ev-pattern-report", "description": "Ticket pattern report showing the recurring Wi-Fi issue frequency and common cause", "kind": "log" },
+    { "id": "ev-draft-article", "description": "Draft KB article in the school template with all required sections", "kind": "note" },
+    { "id": "ev-review-checklist", "description": "Completed peer review checklist confirming accuracy, tone, and security", "kind": "note" }
+  ],
+  "decisionPoints": [
+    {
+      "id": "dp-audience",
+      "prompt": "Who is the primary audience for this KB article?",
+      "options": [
+        {
+          "id": "opt-end-user",
+          "label": "End users (faculty and staff) — they can self-serve the most common case",
+          "score": { "diagnosis": 1, "evidence": 1, "resolution": 1 },
+          "feedback": "Correct — if the issue is recurring and the fix is simple, an end-user-targeted article deflects the most tickets. Pair it with a technician companion article for edge cases."
+        },
+        {
+          "id": "opt-technician",
+          "label": "Technicians only — keep it as an internal playbook for the help desk",
+          "score": { "diagnosis": 0, "evidence": 0, "resolution": 0 },
+          "feedback": "A technician-only article is acceptable but reduces the deflection impact. Aim for end-user first when the fix is safe and self-serviceable."
+        },
+        {
+          "id": "opt-both-audiences",
+          "label": "Write one article that tries to serve both audiences at the same time",
+          "score": { "diagnosis": -1, "evidence": -1, "resolution": -1 },
+          "feedback": "One article for two audiences is rarely effective — the language and depth are different. Write two articles, or two sections with a clear handoff."
+        }
+      ]
+    },
+    {
+      "id": "dp-content-security",
+      "prompt": "The draft article includes the step 'unlock the account in the directory using the admin tool.' What is the right editorial decision?",
+      "options": [
+        {
+          "id": "opt-keep-as-is",
+          "label": "Keep it as written — technicians need the unlock step and end users can be told to call the desk",
+          "score": { "diagnosis": 0, "evidence": 0, "resolution": 0 },
+          "feedback": "The unlock step is sensitive. It belongs in a technician-only article, not in an end-user-facing article. Split the article."
+        },
+        {
+          "id": "opt-remove-rewrite",
+          "label": "Remove the unlock step from the end-user article and replace with 'call the service desk' or 'open a ticket'",
+          "score": { "diagnosis": 1, "evidence": 1, "resolution": 1 },
+          "feedback": "Correct — remove the sensitive step from the end-user article. Provide a clear self-service path that does not require admin credentials or actions."
+        },
+        {
+          "id": "opt-add-warning",
+          "label": "Add a warning label and keep the unlock step visible to all readers",
+          "score": { "diagnosis": -1, "evidence": -1, "resolution": -1 },
+          "feedback": "A warning label is not enough. Sensitive steps should not be exposed to end users at all — that is a documentation and security problem."
+        }
+      ]
+    }
+  ],
+  "ticket": {
+    "type": "request",
+    "category": "Documentation / Knowledge Base",
+    "priority": "p3",
+    "impact": "low",
+    "urgency": "low",
+    "sla": "week",
+    "initialDescription": "Mr. Thompson requests a KB article for the recurring Wi-Fi authentication issue. 14 tickets in 30 days. Target: reduce repeat volume, support both technicians and end users where appropriate.",
+    "requester": {
+      "name": "Mr. Thompson",
+      "role": "Administrator",
+      "identifiers": { "title": "Director of Technology", "office": "rm. 305" }
+    }
+  },
+  "location": {
+    "id": "kb-authoring-workspace",
+    "name": "KB Authoring Workspace",
+    "objects": [
+      {
+        "id": "ticket-pattern",
+        "name": "Wi-Fi Authentication Ticket Pattern",
+        "state": {
+          "tickets_30d": 14,
+          "common_root_cause": "account lockout after 5 failed password attempts",
+          "common_user": "faculty and staff",
+          "common_classroom": "main building",
+          "first_time_resolution_pct": 78
+        }
+      },
+      {
+        "id": "kb-template",
+        "name": "KB Article Template",
+        "state": {
+          "sections": ["Title", "Audience", "Summary", "Symptoms", "Scope", "Resolution", "Escalation", "Related"],
+          "max_length_words": 350,
+          "review_required": true
+        }
+      }
+    ]
+  },
+  "nodes": [
+    {
+      "id": "intro",
+      "kind": "intro",
+      "title": "Analyze the ticket pattern",
+      "body": "Pull the past 30 days of Wi-Fi authentication tickets. Note the common root cause, the affected users, the affected locations, and the first-time resolution rate. Confirm the recurring pattern is real and worth an article.",
+      "transitions": [{ "event": "pattern-confirmed", "to": "decide-audience" }]
+    },
+    {
+      "id": "decide-audience",
+      "kind": "decide",
+      "title": "Choose the audience",
+      "body": "Decide who the article is primarily for: end users, technicians, or split into two.",
+      "decisionPointId": "dp-audience",
+      "transitions": [
+        { "event": "decision-made", "to": "draft-article" }
+      ]
+    },
+    {
+      "id": "draft-article",
+      "kind": "inspect",
+      "title": "Draft the KB article",
+      "body": "Use the school KB template. Fill in: title, audience, summary, symptoms, scope, step-by-step resolution, escalation path, and related articles. Save the draft as evidence.",
+      "locationId": "kb-authoring-workspace",
+      "objectId": "kb-template",
+      "transitions": [
+        { "event": "draft-saved", "to": "decide-security" }
+      ]
+    },
+    {
+      "id": "decide-security",
+      "kind": "decide",
+      "title": "Review for sensitive content",
+      "body": "The draft includes the step 'unlock the account in the directory using the admin tool.' Decide how to handle it.",
+      "decisionPointId": "dp-content-security",
+      "transitions": [
+        { "event": "decision-made", "to": "review" }
+      ]
+    },
+    {
+      "id": "review",
+      "kind": "inspect",
+      "title": "Peer review",
+      "body": "Have a peer review the article against the checklist: accuracy, tone, security, screenshots, escalation path. Save the completed checklist as evidence.",
+      "locationId": "kb-authoring-workspace",
+      "objectId": "kb-template",
+      "transitions": [
+        { "event": "review-saved", "to": "document" }
+      ]
+    },
+    {
+      "id": "document",
+      "kind": "document",
+      "title": "Publish and announce",
+      "body": "Publish the article in the KB platform with the right audience tag. Send a brief announcement to the help desk and reference it from the new-ticket template.",
+      "prompt": "Write the announcement to the help desk team explaining the new KB article, when to use it, and how to link to it from a ticket.",
+      "transitions": [
+        { "event": "article-published", "to": "debrief" }
+      ]
+    },
+    {
+      "id": "debrief",
+      "kind": "debrief",
+      "title": "Debrief",
+      "body": "Review the KB authoring workflow. Key lessons: write for the right audience, never expose sensitive steps to end users, and always peer review before publishing.",
+      "transitions": []
+    }
+  ],
+  "startNode": "intro",
+  "terminalNodes": ["debrief"],
+  "scoring": {
+    "weights": {
+      "diagnosis": 0.6,
+      "evidence": 1.2,
+      "troubleshooting": 0.4,
+      "resolution": 1,
+      "validation": 0.6
+    },
+    "thresholds": { "jobReady": 3 }
+  },
+  "methodology": [
+    "identify",
+    "scope",
+    "gather-evidence",
+    "document",
+    "validate",
+    "follow-up"
+  ],
+  "kbOpportunity": "KB authoring checklist: confirm recurring pattern → define audience → use school template → review for sensitive content → peer review → publish with audience tag → measure deflection.",
+  "skills": ["documentation"]
+}

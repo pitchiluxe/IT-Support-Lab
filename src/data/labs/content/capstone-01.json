@@ -1,0 +1,340 @@
+{
+  "id": "capstone-01",
+  "schemaVersion": 1,
+  "contentVersion": 1,
+  "week": 12,
+  "order": 99,
+  "track": "capstone",
+  "title": "School IT Support Command Center",
+  "persona": "On-Call IT Technician",
+  "channel": "phone",
+  "scenario": "You are the on-call IT technician at Westminster Schools for the day. It is 8:00 AM on a Tuesday. The school has 1,200 students and 150 faculty. Three requests arrive simultaneously before 8:15 AM: (1) Mrs. Brooks reports a printer jam blocking the main office — the headmaster's presentation materials are at the printer, (2) Mr. Ellis reports his Windows laptop will not boot for standardized testing in 2 hours, (3) Mrs. Okafor, a parent, calls about her son's locked Google account that has his homework on it. You must triage, prioritize, and handle all three — plus an urgent escalation at midday.",
+  "impact": "Command center: this is the culmination. The learner demonstrates mastery of triage, prioritization, evidence gathering, escalation judgment, customer communication, and documentation — all under realistic time pressure.",
+  "objectives": [
+    "Triage three simultaneous requests and prioritize by business impact and SLA",
+    "Resolve the highest-priority issue first and communicate appropriately to all requesters",
+    "Gather evidence before making changes on every ticket",
+    "Escalate when the scope exceeds your authority",
+    "Handle the urgent midday escalation with composure",
+    "Document all tickets and send an end-of-day summary",
+    "Demonstrate the full IT troubleshooting methodology across all cases"
+  ],
+  "tools": [
+    "Service desk ticket system",
+    "MDM console",
+    "Network monitoring board",
+    "Directory admin console",
+    "Major incident bridge",
+    "End-of-day report template"
+  ],
+  "evidence": [
+    { "id": "ev-triage-log", "description": "Triage log showing prioritization rationale and time of each decision", "kind": "note" },
+    { "id": "ev-ticket-documentation", "description": "All four tickets fully documented with resolution notes and evidence", "kind": "note" },
+    { "id": "ev-eod-summary", "description": "End-of-day summary sent to the CIO with all tickets and status", "kind": "note" }
+  ],
+  "decisionPoints": [
+    {
+      "id": "dp-triage-1",
+      "prompt": "Three requests arrived within 5 minutes. Which one do you tackle first?",
+      "options": [
+        {
+          "id": "opt-printer-first",
+          "label": "Mrs. Brooks's printer jam — the headmaster's presentation materials are blocked",
+          "score": { "diagnosis": 1, "evidence": 1, "resolution": 1 },
+          "feedback": "Correct prioritization — executive access to materials has high visibility. The printer jam is likely a quick fix if you can access the jam, and the headmaster's materials are a time-sensitive executive need."
+        },
+        {
+          "id": "opt-laptop-first",
+          "label": "Mr. Ellis's laptop — standardized testing starts in 2 hours",
+          "score": { "diagnosis": 1, "evidence": 1, "resolution": 1 },
+          "feedback": "Also defensible — testing in 2 hours is a hard deadline. The trade-off is that a non-booting laptop may take longer than the printer jam."
+        },
+        {
+          "id": "opt-parent-first",
+          "label": "Mrs. Okafor's Google account lockout — she is worried and her son has homework on it",
+          "score": { "diagnosis": 0, "evidence": 0, "resolution": 0 },
+          "feedback": "The parent's concern is understandable, but the homework is likely accessible via another device or after school. The executive materials and the testing deadline are more time-critical."
+        }
+      ]
+    },
+    {
+      "id": "dp-triage-2",
+      "prompt": "The printer jam is resolved. Two requests remain. Which next?",
+      "options": [
+        {
+          "id": "opt-laptop-next",
+          "label": "Mr. Ellis's laptop — 1 hour 40 minutes until standardized testing",
+          "score": { "diagnosis": 1, "evidence": 1, "resolution": 1 },
+          "feedback": "Correct — the testing deadline is now 100 minutes. The parent call can wait until after testing is confirmed. A loaner device is the fastest path for a non-booting laptop."
+        },
+        {
+          "id": "opt-parent-next",
+          "label": "Mrs. Okafor's account lockout — clear it now while you have a window",
+          "score": { "diagnosis": 0, "evidence": 0, "resolution": 0 },
+          "feedback": "Clearing an account lockout takes minutes. Testing starts in 100 minutes and a laptop that won't boot is more complex. Do the fast task last."
+        }
+      ]
+    },
+    {
+      "id": "dp-laptop-fix",
+      "prompt": "Mr. Ellis's laptop will not boot. Diagnostics show the SSD has failed. Standardized testing is in 90 minutes. What is the fastest path to a working machine?",
+      "options": [
+        {
+          "id": "opt-rebuild",
+          "label": "Attempt to rebuild the laptop from a USB recovery drive — it will take at least 45 minutes",
+          "score": { "diagnosis": 0, "evidence": 0, "resolution": -1 },
+          "feedback": "A rebuild is too slow for a 90-minute window. Even if it works, 45 minutes leaves no buffer and the testing window will be missed."
+        },
+        {
+          "id": "opt-loaner",
+          "label": "Issue a loaner device from the pool and restore the user's profile from backup",
+          "score": { "diagnosis": 1, "evidence": 1, "resolution": 1 },
+          "feedback": "Correct — a loaner from the pool is the fastest path. Validate it boots, has the testing client, and that Mr. Ellis can log in. This is the standard playbook for a failed boot during a testing window."
+        },
+        {
+          "id": "opt-replace-ssd",
+          "label": "Replace the SSD in the laptop — you have a spare in the bench drawer",
+          "score": { "diagnosis": 0, "evidence": 0, "resolution": -1 },
+          "feedback": "SSD replacement takes time and requires re-imaging. With 90 minutes until testing, there is no buffer for this path."
+        }
+      ]
+    },
+    {
+      "id": "dp-midday-escalation",
+      "prompt": "At 12:30 PM, the CIO calls: a faculty member clicked a phishing link and the attacker may have accessed their email. What is the correct first action?",
+      "options": [
+        {
+          "id": "opt-reset-password",
+          "label": "Reset the faculty member's password immediately to cut off the attacker",
+          "score": { "diagnosis": 1, "evidence": 1, "resolution": 1 },
+          "feedback": "Correct — password reset is the fastest way to stop active access. Do it immediately, then assess the scope."
+        },
+        {
+          "id": "opt-wait-for-report",
+          "label": "Wait for the full security investigation to complete before taking action",
+          "score": { "diagnosis": -1, "evidence": -1, "resolution": -1 },
+          "feedback": "Waiting allows the attacker to continue accessing email, send phishing from the school's domain, and exfiltrate data. Act immediately."
+        },
+        {
+          "id": "opt-disable-account",
+          "label": "Disable the faculty member's entire account — it is the safest option",
+          "score": { "diagnosis": 0, "evidence": 0, "resolution": 0 },
+          "feedback": "Disabling the whole account cuts off access but also prevents the faculty member from working. A password reset achieves the same access control with less disruption."
+        }
+      ]
+    }
+  ],
+  "ticket": {
+    "type": "major-incident",
+    "category": "Incident Response / Command Center",
+    "priority": "p1",
+    "impact": "high",
+    "urgency": "high",
+    "sla": "24x7",
+    "initialDescription": "On-call IT command center day. Three simultaneous requests: printer jam (headmaster's materials), non-booting laptop (testing in 2 hours), and a parent's locked account. Plus a midday phishing escalation from the CIO.",
+    "requester": {
+      "name": "Multiple",
+      "role": "Mixed",
+      "identifiers": { "shift": "day shift", "role": "on-call technician" }
+    }
+  },
+  "location": {
+    "id": "command-center",
+    "name": "IT Command Center (Service Desk)",
+    "objects": [
+      {
+        "id": "inbox",
+        "name": "Service Desk Inbox",
+        "state": {
+          "tickets_open": 4,
+          "tkt-printer": { "status": "new", "priority": "p2", "title": "Printer jam — main office" },
+          "tkt-laptop": { "status": "new", "priority": "p2", "title": "Windows laptop will not boot" },
+          "tkt-parent": { "status": "new", "priority": "p3", "title": "Student Google account locked" },
+          "tkt-phishing": { "status": "new", "priority": "p1", "title": "Phishing — faculty email access" }
+        }
+      },
+      {
+        "id": "loaner-pool",
+        "name": "Loaner Device Pool",
+        "state": {
+          "available": 3,
+          "windows_loaners": 2,
+          "mac_loaners": 1,
+          "checkout_log": "spreadsheet"
+        }
+      },
+      {
+        "id": "phishing-case",
+        "name": "Phishing Incident (midday)",
+        "state": {
+          "reporter": "CIO",
+          "affected_user": "faculty member",
+          "reported_at": "12:30",
+          "access_window": "unknown",
+          "password_reset_done": false
+        }
+      }
+    ]
+  },
+  "nodes": [
+    {
+      "id": "morning-briefing",
+      "kind": "intro",
+      "title": "Morning briefing",
+      "body": "It is 8:00 AM. You open the service desk inbox and find three tickets submitted in the last 10 minutes. Take a breath. Read all three carefully. Note the deadlines. Do not start working — triage first.",
+      "transitions": [{ "event": "inbox-read", "to": "triage-1" }]
+    },
+    {
+      "id": "triage-1",
+      "kind": "decide",
+      "title": "Triage: which request first?",
+      "body": "Three requests arrived simultaneously. Choose which to tackle first based on impact, urgency, and complexity.",
+      "decisionPointId": "dp-triage-1",
+      "transitions": [
+        { "event": "decision-made", "to": "handle-printer" },
+        { "event": "decision-made", "to": "handle-laptop" }
+      ]
+    },
+    {
+      "id": "handle-printer",
+      "kind": "remediate",
+      "title": "Resolve the printer jam",
+      "body": "Walk Mrs. Brooks through opening the paper tray and clearing the jam. Confirm the headmaster's materials print successfully. Update the ticket with resolution notes.",
+      "locationId": "command-center",
+      "objectId": "inbox",
+      "transitions": [
+        { "event": "printer-resolved", "to": "triage-2" }
+      ]
+    },
+    {
+      "id": "handle-laptop",
+      "kind": "inspect",
+      "title": "Diagnose the laptop",
+      "body": "Walk Mr. Ellis through running diagnostics on his laptop. Save the diagnostic report. Note: the SSD has failed. Standardized testing is in 90 minutes.",
+      "locationId": "command-center",
+      "objectId": "inbox",
+      "transitions": [
+        { "event": "diagnosis-saved", "to": "decide-laptop-fix" }
+      ]
+    },
+    {
+      "id": "decide-laptop-fix",
+      "kind": "decide",
+      "title": "Choose the fix path",
+      "body": "SSD failed. 90 minutes until testing. Choose the fastest path to a working machine.",
+      "decisionPointId": "dp-laptop-fix",
+      "transitions": [
+        { "event": "decision-made", "to": "execute-loaner" }
+      ]
+    },
+    {
+      "id": "execute-loaner",
+      "kind": "remediate",
+      "title": "Issue a loaner device",
+      "body": "Issue a loaner Windows laptop to Mr. Ellis. Validate it boots, has the testing client, and the testing window is accessible. Confirm he can log in. Update the ticket.",
+      "locationId": "command-center",
+      "objectId": "loaner-pool",
+      "transitions": [
+        { "event": "loaner-issued", "to": "triage-2" }
+      ]
+    },
+    {
+      "id": "triage-2",
+      "kind": "decide",
+      "title": "Second triage: which remains?",
+      "body": "The printer is resolved. Two requests remain. Choose the next priority.",
+      "decisionPointId": "dp-triage-2",
+      "transitions": [
+        { "event": "decision-made", "to": "handle-parent" }
+      ]
+    },
+    {
+      "id": "handle-parent",
+      "kind": "inspect",
+      "title": "Handle the parent's locked account",
+      "body": "Verify the student's identity in the SIS (parent's name, student's name, grade). Reset the student's Google account password. Confirm the homework is accessible. Send the new password to the verified parent contact.",
+      "locationId": "command-center",
+      "objectId": "inbox",
+      "transitions": [
+        { "event": "account-reset", "to": "midday-escalation" }
+      ]
+    },
+    {
+      "id": "midday-escalation",
+      "kind": "decide",
+      "title": "Midday escalation: phishing incident",
+      "body": "The CIO calls: a faculty member clicked a phishing link and the attacker may have email access. This is a security incident. Choose the first action.",
+      "decisionPointId": "dp-midday-escalation",
+      "transitions": [
+        { "event": "decision-made", "to": "handle-phishing" }
+      ]
+    },
+    {
+      "id": "handle-phishing",
+      "kind": "remediate",
+      "title": "Contain the phishing incident",
+      "body": "Reset the faculty member's password immediately. Enable MFA if not already active. Review the email access logs to determine the window of exposure. Open a security incident ticket. Brief the CIO with the containment status.",
+      "locationId": "command-center",
+      "objectId": "phishing-case",
+      "transitions": [
+        { "event": "incident-contained", "to": "evening-wrap" }
+      ]
+    },
+    {
+      "id": "evening-wrap",
+      "kind": "document",
+      "title": "End-of-day wrap-up",
+      "body": "It is 5:00 PM. Review all four tickets. Confirm each has resolution notes, evidence, and follow-up actions. Write the end-of-day summary for the CIO: what happened, what was resolved, what is open, and what the next-day priorities are.",
+      "prompt": "Write the end-of-day summary for the CIO: 4 tickets handled, resolutions, open items, and next-day priorities.",
+      "transitions": [
+        { "event": "eod-sent", "to": "debrief" }
+      ]
+    },
+    {
+      "id": "debrief",
+      "kind": "debrief",
+      "title": "End-of-day debrief",
+      "body": "Review the full day. You handled four requests across different domains, methodologies, and severity levels. Consider: what did you prioritize correctly? What would you do differently? What patterns from earlier labs did you apply today?",
+      "transitions": []
+    }
+  ],
+  "startNode": "morning-briefing",
+  "terminalNodes": ["debrief"],
+  "scoring": {
+    "weights": {
+      "diagnosis": 1,
+      "evidence": 1.2,
+      "troubleshooting": 1,
+      "resolution": 1,
+      "validation": 1
+    },
+    "thresholds": { "jobReady": 4 }
+  },
+  "methodology": [
+    "identify",
+    "scope",
+    "gather-evidence",
+    "hypothesize",
+    "test",
+    "change",
+    "validate",
+    "document",
+    "follow-up"
+  ],
+  "kbOpportunity": "Command center prioritization: triage all incoming requests before acting → rank by impact, urgency, and SLA → handle highest priority first, communicate to all → contain security incidents immediately → document everything → end-of-day summary.",
+  "skills": [
+    "customer-service",
+    "windows",
+    "apple",
+    "google-workspace",
+    "networking",
+    "classroom-tech",
+    "incident-response",
+    "ticketing",
+    "documentation",
+    "hardware-lifecycle",
+    "mdm",
+    "projects",
+    "security-awareness"
+  ]
+}

@@ -1,0 +1,221 @@
+{
+  "id": "lab-20",
+  "schemaVersion": 1,
+  "contentVersion": 1,
+  "week": 6,
+  "order": 20,
+  "track": "google-workspace",
+  "title": "Google Workspace Training Support",
+  "persona": "Mrs. Hayes, 4th-grade Teacher",
+  "channel": "in-person",
+  "scenario": "Mrs. Hayes, a 4th-grade teacher, comes to the IT office in person. She received a new set of student iPads and needs help setting up Google Classroom for the first time so she can distribute reading assignments to her 18 students. She has a class in an hour. She is comfortable with email but has never used Classroom, shared drives, or assignment distribution.",
+  "impact": "Instructional: A K-4 teacher cannot distribute digital reading assignments to 18 students. Without Google Classroom set up, the literacy block will revert to non-digital materials for at least one period.",
+  "objectives": [
+    "Assess the teacher's current skill level and what she has already tried",
+    "Explain Google Classroom at the right level of detail for a new user",
+    "Walk her through creating a class, adding students, and distributing the first assignment",
+    "Provide a written quick-reference she can use later",
+    "Confirm she can find her class on her laptop and on a student iPad",
+    "Document the session and any follow-up training she requested"
+  ],
+  "tools": [
+    "Google Classroom (classroom.google.com)",
+    "Google Drive shared folder",
+    "IT training quick-reference PDF",
+    "Service desk ticket system",
+    "Demo student iPad for testing"
+  ],
+  "evidence": [
+    { "id": "ev-skill", "description": "Notes on the teacher's existing Google Workspace comfort level and what she tried", "kind": "note" },
+    { "id": "ev-classroom", "description": "Screenshot of the created Classroom with one test assignment visible", "kind": "screenshot" },
+    { "id": "ev-handout", "description": "A short printed or saved quick-reference given to the teacher", "kind": "config" }
+  ],
+  "decisionPoints": [
+    {
+      "id": "dp-approach",
+      "prompt": "Mrs. Hayes has 30 minutes and an hour until class. What is the right teaching approach?",
+      "options": [
+        {
+          "id": "opt-do-it-for-her",
+          "label": "Set up the entire Classroom for her while she watches, then hand it over",
+          "score": { "diagnosis": 0.4, "evidence": 0.2, "resolution": 0.3 },
+          "feedback": "Faster today, but she will not be able to make changes tomorrow. For a training request, the teacher needs to drive the mouse."
+        },
+        {
+          "id": "opt-guided-do",
+          "label": "Walk her through each step, letting her click every button while you guide and explain",
+          "score": { "diagnosis": 0.9, "evidence": 0.9, "resolution": 0.9 },
+          "feedback": "Correct — guided practice builds competence. She will remember what she did herself and be able to make changes next time."
+        },
+        {
+          "id": "opt-hand-off",
+          "label": "Hand her a written manual and tell her to come back if she has questions",
+          "score": { "diagnosis": 0.2, "evidence": 0.1, "resolution": 0.2 },
+          "feedback": "She is here in person and the class is in an hour. A handout alone does not meet the immediate need."
+        }
+      ]
+    },
+    {
+      "id": "dp-followup",
+      "prompt": "The Classroom is set up and she is comfortable. What follow-up should you offer?",
+      "options": [
+        {
+          "id": "opt-quickref",
+          "label": "Provide a 1-page quick-reference, schedule a 15-minute follow-up next week, and add her to office hours",
+          "score": { "diagnosis": 0.9, "evidence": 0.9, "resolution": 0.9 },
+          "feedback": "Correct — ongoing support plus a written reference sets her up for independence and gives her a path for more advanced questions."
+        },
+        {
+          "id": "opt-no-followup",
+          "label": "Close the ticket — the immediate need is met and she can email IT if she needs more help",
+          "score": { "diagnosis": 0.4, "evidence": 0.3, "resolution": 0.4 },
+          "feedback": "Acceptable, but misses the chance to build her longer-term confidence. Training requests benefit from structured follow-up."
+        },
+        {
+          "id": "opt-full-training",
+          "label": "Schedule a full 2-hour Classroom deep-dive training session for the next week",
+          "score": { "diagnosis": 0.3, "evidence": 0.2, "resolution": 0.2 },
+          "feedback": "Too much for a teacher who only needs to distribute reading assignments. A 15-minute follow-up and a quick-reference are a better fit."
+        }
+      ]
+    }
+  ],
+  "ticket": {
+    "type": "request",
+    "category": "Google Workspace / Training",
+    "priority": "p3",
+    "impact": "low",
+    "urgency": "medium",
+    "sla": "business-hours",
+    "initialDescription": "Teacher (Mrs. Hayes) needs help setting up Google Classroom for the first time and distributing a reading assignment to 18 students. Class in 60 minutes.",
+    "requester": {
+      "name": "Mrs. Hayes",
+      "role": "Faculty",
+      "identifiers": { "grade": "4th grade", "location": "rm. 12B" }
+    }
+  },
+  "location": {
+    "id": "training-room",
+    "name": "IT Training Room",
+    "objects": [
+      {
+        "id": "training-display",
+        "name": "Wall Display with Demo Projector",
+        "state": {
+          "input": "HDMI 1",
+          "resolution": "1920x1080",
+          "status": "on"
+        }
+      },
+      {
+        "id": "demo-ipad",
+        "name": "Demo Student iPad",
+        "state": {
+          "model": "iPad 10th gen",
+          "osVersion": "iPadOS 17.5",
+          "classroomApp": "installed"
+        }
+      }
+    ]
+  },
+  "nodes": [
+    {
+      "id": "intake",
+      "kind": "intro",
+      "title": "Greet and assess",
+      "body": "Welcome Mrs. Hayes. Ask her to describe what she is trying to accomplish, what she has already tried, and what her comfort level is with Google Workspace. Save your notes to the ticket.",
+      "transitions": [{ "event": "intake-saved", "to": "plan-session" }]
+    },
+    {
+      "id": "plan-session",
+      "kind": "intro",
+      "title": "Plan the session",
+      "body": "Based on the time available and her goal (one Classroom with one assignment), outline the steps: create class, add students, create assignment, distribute. Tell her you will guide while she clicks.",
+      "transitions": [
+        { "event": "plan-saved", "to": "decide-approach" }
+      ]
+    },
+    {
+      "id": "decide-approach",
+      "kind": "decide",
+      "title": "Choose your teaching approach",
+      "body": "How will you balance doing vs. guiding, given the time pressure?",
+      "decisionPointId": "dp-approach",
+      "transitions": [
+        { "event": "decision-made", "to": "guide-classroom" }
+      ]
+    },
+    {
+      "id": "guide-classroom",
+      "kind": "remediate",
+      "title": "Guide her through creating the Classroom",
+      "body": "Have her open classroom.google.com, click the + to create a class, name it, and add the 18 students from her roster. Then create an assignment and attach the reading PDF. Confirm she can see it on the demo iPad.",
+      "locationId": "training-room",
+      "objectId": "demo-ipad",
+      "transitions": [
+        { "event": "classroom-created", "to": "validate" }
+      ]
+    },
+    {
+      "id": "validate",
+      "kind": "remediate",
+      "title": "Validate her confidence",
+      "body": "Ask her to show you how she would add a second assignment. Ask what she would do if a student tells her the assignment is not on their iPad. Confirm she can troubleshoot the basics.",
+      "transitions": [
+        { "event": "validation-saved", "to": "decide-followup" }
+      ]
+    },
+    {
+      "id": "decide-followup",
+      "kind": "decide",
+      "title": "Plan follow-up",
+      "body": "The immediate need is met. What follow-up do you offer?",
+      "decisionPointId": "dp-followup",
+      "transitions": [
+        { "event": "decision-made", "to": "document" }
+      ]
+    },
+    {
+      "id": "document",
+      "kind": "document",
+      "title": "Document the session",
+      "body": "Write a ticket note covering: what was taught, what artifacts were created (classroom link, quick reference), and any follow-up commitments. Save the quick-reference file to the ticket attachments.",
+      "prompt": "Write a brief follow-up to Mrs. Hayes summarizing what she learned and reminding her of the next-week check-in.",
+      "transitions": [
+        { "event": "followup-saved", "to": "debrief" }
+      ]
+    },
+    {
+      "id": "debrief",
+      "kind": "debrief",
+      "title": "Debrief",
+      "body": "Review your score. Think about the difference between 'doing it for a user' and 'guiding a user to do it themselves' in a time-pressured training request.",
+      "transitions": []
+    }
+  ],
+  "startNode": "intake",
+  "terminalNodes": ["debrief"],
+  "scoring": {
+    "weights": {
+      "diagnosis": 0.8,
+      "evidence": 1,
+      "troubleshooting": 0.8,
+      "resolution": 1.2,
+      "validation": 1
+    },
+    "thresholds": { "jobReady": 3 }
+  },
+  "methodology": [
+    "identify",
+    "scope",
+    "gather-evidence",
+    "hypothesize",
+    "test",
+    "change",
+    "validate",
+    "document",
+    "follow-up"
+  ],
+  "kbOpportunity": "For training requests, guide the user to do the work themselves — even under time pressure — so they build independence. Pair with a written quick-reference and a follow-up check-in.",
+  "skills": ["google-workspace", "customer-service", "documentation"]
+}

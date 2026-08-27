@@ -1,0 +1,239 @@
+{
+  "id": "lab-30",
+  "schemaVersion": 1,
+  "contentVersion": 1,
+  "week": 8,
+  "order": 30,
+  "track": "classroom-tech",
+  "title": "Classroom Pre-Flight Check",
+  "persona": "Mr. Davis, Middle School Science Teacher",
+  "channel": "in-person",
+  "scenario": "Mr. Davis stops by the IT office before school. Tomorrow is the first day of a new science unit and he wants to be sure the classroom is ready. The room (rm. 207) has a ceiling projector, a wall input plate with HDMI and USB-C, a teacher MacBook, a document camera, classroom speakers, and a wireless microphone. He wants help running through a 'pre-flight check' so nothing fails in front of 25 sixth-graders.",
+  "impact": "Instructional: A new science unit starts tomorrow for 25 sixth-graders. If the classroom technology fails during the lesson, the teacher loses the day and the students miss the planned hands-on demonstration.",
+  "objectives": [
+    "Walk the room systematically and verify each technology component",
+    "Document any issues found before they impact teaching",
+    "Fix the smallest, easiest problems in the moment",
+    "Escalate anything that requires parts, change windows, or vendors",
+    "Hand the teacher a 'pre-flight checklist' to use independently next time",
+    "Document the visit and any follow-up tickets opened"
+  ],
+  "tools": [
+    "Visual inspection (cables, displays, power)",
+    "Teacher MacBook (test display output)",
+    "Document camera test page",
+    "Wireless microphone battery check",
+    "Service desk ticket system"
+  ],
+  "evidence": [
+    { "id": "ev-checklist", "description": "Completed pre-flight checklist signed off by the technician and the teacher", "kind": "config" },
+    { "id": "ev-issues", "description": "Any issues found — failed component, loose cable, missing adapter", "kind": "note" },
+    { "id": "ev-escalation", "description": "Any follow-up tickets opened for issues that could not be fixed in-room", "kind": "note" }
+  ],
+  "decisionPoints": [
+    {
+      "id": "dp-approach",
+      "prompt": "What is the best approach to the pre-flight walkthrough?",
+      "options": [
+        {
+          "id": "opt-checklist",
+          "label": "Use a written pre-flight checklist covering every component, verify each in order, and have the teacher sign off",
+          "score": { "diagnosis": 0.9, "evidence": 0.9, "resolution": 0.9 },
+          "feedback": "Correct — a structured checklist ensures nothing is skipped and gives the teacher a tool to use independently next time."
+        },
+        {
+          "id": "opt-visual-only",
+          "label": "Just look at the room and confirm everything looks right",
+          "score": { "diagnosis": 0.2, "evidence": 0.2, "resolution": 0.2 },
+          "feedback": "Visual inspection alone misses issues that only show up at power-on (no signal, dead battery, failed network). A powered test is required."
+        },
+        {
+          "id": "opt-just-do",
+          "label": "Skip the checklist, do the test yourself, and tell the teacher the room is ready",
+          "score": { "diagnosis": 0.4, "evidence": 0.3, "resolution": 0.4 },
+          "feedback": "Faster today, but the teacher cannot repeat the check tomorrow. A checklist builds teacher independence."
+        }
+      ]
+    },
+    {
+      "id": "dp-issue",
+      "prompt": "The pre-flight finds: projector works, MacBook mirrors correctly, speakers work, but the wireless microphone will not pair. What is the correct action?",
+      "options": [
+        {
+          "id": "opt-escalate",
+          "label": "Document the mic issue, swap in a loaner mic from IT stock, and open a follow-up ticket to repair the original",
+          "score": { "diagnosis": 0.9, "evidence": 0.9, "resolution": 0.9 },
+          "feedback": "Correct — restore the teacher's working state today (loaner mic) and follow up on the broken unit so the underlying issue is resolved."
+        },
+        {
+          "id": "opt-ignore",
+          "label": "Note the issue and tell the teacher to teach without the mic for tomorrow's lesson",
+          "score": { "diagnosis": 0.1, "evidence": 0.0, "resolution": 0.0 },
+          "feedback": "The mic is part of the room's standard kit. Ignoring it means the teacher cannot use the equipment tomorrow as planned."
+        },
+        {
+          "id": "opt-replace",
+          "label": "Order a brand-new mic and wait for it to arrive before the lesson",
+          "score": { "diagnosis": 0.3, "evidence": 0.2, "resolution": 0.1 },
+          "feedback": "Ordering a new mic does not help tomorrow. A loaner from existing stock restores service now."
+        }
+      ]
+    }
+  ],
+  "ticket": {
+    "type": "request",
+    "category": "Classroom Tech / Pre-Flight",
+    "priority": "p3",
+    "impact": "medium",
+    "urgency": "medium",
+    "sla": "business-hours",
+    "initialDescription": "Pre-flight classroom technology check for rm. 207. New science unit starts tomorrow. Verify display, audio, mic, doc cam, network.",
+    "requester": {
+      "name": "Mr. Davis",
+      "role": "Faculty",
+      "identifiers": { "extension": "ext. 5207", "location": "rm. 207" }
+    }
+  },
+  "location": {
+    "id": "rm-207",
+    "name": "Classroom 207",
+    "objects": [
+      {
+        "id": "ceiling-projector-207",
+        "name": "Ceiling Projector",
+        "state": {
+          "power": "on",
+          "display": "ready",
+          "lastFilterClean": 1724400000000
+        }
+      },
+      {
+        "id": "teacher-mac-207",
+        "name": "Teacher MacBook",
+        "state": {
+          "model": "MacBook Pro 14",
+          "os": "macOS 14.6",
+          "externalDisplay": "detected"
+        }
+      },
+      {
+        "id": "wireless-mic-207",
+        "name": "Wireless Microphone (lapel)",
+        "state": {
+          "battery": "unknown",
+          "paired": false,
+          "receiverStatus": "red"
+        }
+      },
+      {
+        "id": "doc-cam-207",
+        "name": "Document Camera",
+        "state": {
+          "model": "Epson DC-21",
+          "power": "on",
+          "preview": "ok"
+        }
+      }
+    ]
+  },
+  "nodes": [
+    {
+      "id": "intake",
+      "kind": "intro",
+      "title": "Greet and plan",
+      "body": "Greet Mr. Davis. Confirm the goal: verify all classroom tech is ready for tomorrow's new science unit. Open a request ticket. Plan the walkthrough order.",
+      "transitions": [{ "event": "ticket-opened", "to": "decide-approach" }]
+    },
+    {
+      "id": "decide-approach",
+      "kind": "decide",
+      "title": "Choose the approach",
+      "body": "How will you run the pre-flight?",
+      "decisionPointId": "dp-approach",
+      "transitions": [
+        { "event": "decision-made", "to": "walk-room" }
+      ]
+    },
+    {
+      "id": "walk-room",
+      "kind": "remediate",
+      "title": "Walk the room and verify each component",
+      "body": "Verify each item on the checklist: projector on and showing the MacBook, speakers audible, doc camera preview, Wi-Fi on the MacBook, network drive reachable. Save the completed checklist to the ticket.",
+      "locationId": "rm-207",
+      "objectId": "ceiling-projector-207",
+      "transitions": [
+        { "event": "checklist-saved", "to": "decide-issue" }
+      ]
+    },
+    {
+      "id": "decide-issue",
+      "kind": "decide",
+      "title": "Address the mic issue",
+      "body": "The wireless microphone will not pair. What is the correct action?",
+      "decisionPointId": "dp-issue",
+      "transitions": [
+        { "event": "decision-made", "to": "swap-mic" }
+      ]
+    },
+    {
+      "id": "swap-mic",
+      "kind": "remediate",
+      "title": "Restore service with a loaner",
+      "body": "Swap in a known-good loaner mic from IT stock, pair it with the receiver, and confirm audio works. Open a follow-up ticket to repair or replace the original mic.",
+      "transitions": [
+        { "event": "fix-applied", "to": "validate" }
+      ]
+    },
+    {
+      "id": "validate",
+      "kind": "remediate",
+      "title": "Validate end-to-end",
+      "body": "Have Mr. Davis run through his planned lesson flow: open lesson plan, mirror to projector, share audio through the speakers, demonstrate with the doc cam, use the mic. Confirm everything works for the planned demo.",
+      "transitions": [
+        { "event": "validation-saved", "to": "document" }
+      ]
+    },
+    {
+      "id": "document",
+      "kind": "document",
+      "title": "Document and follow up",
+      "body": "Save the completed checklist to the ticket. Document the loaner mic and the open follow-up ticket for the broken mic. Hand Mr. Davis a printed copy of the checklist for future use.",
+      "prompt": "Write a brief follow-up to Mr. Davis summarizing what was checked, the loaner mic, and the open follow-up for the broken unit.",
+      "transitions": [
+        { "event": "followup-saved", "to": "debrief" }
+      ]
+    },
+    {
+      "id": "debrief",
+      "kind": "debrief",
+      "title": "Debrief",
+      "body": "Review your score. Consider how a pre-flight checklist can be standardized across the school so any teacher can run one independently.",
+      "transitions": []
+    }
+  ],
+  "startNode": "intake",
+  "terminalNodes": ["debrief"],
+  "scoring": {
+    "weights": {
+      "diagnosis": 0.8,
+      "evidence": 1,
+      "troubleshooting": 1,
+      "resolution": 1,
+      "validation": 1.2
+    },
+    "thresholds": { "jobReady": 3 }
+  },
+  "methodology": [
+    "identify",
+    "scope",
+    "gather-evidence",
+    "hypothesize",
+    "test",
+    "change",
+    "validate",
+    "document",
+    "follow-up"
+  ],
+  "kbOpportunity": "A pre-flight checklist for every classroom — display, audio, mic, doc cam, network — catches issues before they reach students. Pair the check with a loaner pool so service is restored same-day.",
+  "skills": ["classroom-tech", "documentation"]
+}

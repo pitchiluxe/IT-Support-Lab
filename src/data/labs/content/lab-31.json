@@ -1,0 +1,223 @@
+{
+  "id": "lab-31",
+  "schemaVersion": 1,
+  "contentVersion": 1,
+  "week": 8,
+  "order": 31,
+  "track": "network",
+  "title": "VoIP / Telephone Troubleshooting",
+  "persona": "Mrs. Hayes, 4th-grade Teacher",
+  "channel": "phone",
+  "scenario": "Mrs. Hayes calls the IT Service Desk. Her classroom phone (Cisco 8841) shows 'No Service' on the display and cannot make or receive calls. The phone is plugged into the wall Ethernet jack and was working yesterday. She has tried unplugging and replugging the Ethernet cable, but the screen still shows 'No Service'. Other teachers in the wing are working normally. The school office is trying to reach her about a parent pickup.",
+  "impact": "Operational: A faculty phone is offline, blocking internal and external communication for that classroom. Parents and the office cannot reach the teacher for urgent messages.",
+  "objectives": [
+    "Verify the phone's state and network connection",
+    "Determine scope: is this one phone or building-wide?",
+    "Identify the most likely cause (network, DHCP, registration, hardware)",
+    "Apply the least-risky remediation",
+    "Validate the phone can make and receive a test call",
+    "Document the fix and follow up"
+  ],
+  "tools": [
+    "Cisco Unified Communications Manager (CUCM) admin",
+    "Switch port status (CLI or web)",
+    "DHCP console",
+    "Service desk ticket system"
+  ],
+  "evidence": [
+    { "id": "ev-phone-state", "description": "Phone display, model, and current state (registered / unregistered / no service)", "kind": "screenshot" },
+    { "id": "ev-port", "description": "Switch port status for the phone's Ethernet jack — up/down, VLAN, last error", "kind": "command-output" },
+    { "id": "ev-cucm", "description": "Phone registration status in CUCM and any recent configuration changes", "kind": "log" }
+  ],
+  "decisionPoints": [
+    {
+      "id": "dp-diagnosis",
+      "prompt": "The phone shows 'No Service'. The switch port is up and in the voice VLAN. The phone has no IP address (169.254.x.x). CUCM shows the phone as 'Unregistered'. What is the most likely cause?",
+      "options": [
+        {
+          "id": "opt-dhcp-voice",
+          "label": "The phone cannot reach the DHCP server on the voice VLAN, so it has no IP and cannot register with CUCM",
+          "score": { "diagnosis": 0.9, "evidence": 0.9, "resolution": 0.9 },
+          "feedback": "Correct — a phone with a 169.254.x.x address has not received a DHCP lease. On the voice VLAN, this means the DHCP helper or relay is misconfigured or the DHCP scope is exhausted."
+        },
+        {
+          "id": "opt-cucm",
+          "label": "CUCM is down for the entire school",
+          "score": { "diagnosis": 0.1, "evidence": 0.0, "resolution": 0.1 },
+          "feedback": "If CUCM were down, all phones in the building would show 'No Service'. Other teachers' phones are working, so CUCM is up."
+        },
+        {
+          "id": "opt-cable",
+          "label": "The Ethernet cable from the wall to the phone is damaged",
+          "score": { "diagnosis": 0.2, "evidence": 0.1, "resolution": 0.2 },
+          "feedback": "If the cable were damaged, the switch port would show down. The port is up, so the cable is OK."
+        }
+      ]
+    },
+    {
+      "id": "dp-resolution",
+      "prompt": "What is the correct, least-risky remediation?",
+      "options": [
+        {
+          "id": "opt-restart-phone",
+          "label": "Power-cycle the phone to trigger a fresh DHCP request, and if that fails, set a static IP on the phone",
+          "score": { "diagnosis": 0.8, "evidence": 0.7, "resolution": 0.8 },
+          "feedback": "Correct first step — a power-cycle often resolves transient DHCP issues. If the DHCP helper is misconfigured, the underlying fix is in the switch config; the phone should still register with a static IP."
+        },
+        {
+          "id": "opt-replace-phone",
+          "label": "Replace the phone with a spare from IT stock",
+          "score": { "diagnosis": 0.3, "evidence": 0.2, "resolution": 0.3 },
+          "feedback": "Replacing the phone may restore service temporarily, but the underlying DHCP/VLAN issue will likely affect the spare too. Fix the network first."
+        },
+        {
+          "id": "opt-cucm-license",
+          "label": "Add a new CUCM device license for this phone",
+          "score": { "diagnosis": 0.1, "evidence": 0.0, "resolution": 0.1 },
+          "feedback": "CUCM licenses are assigned in advance. The phone was registered yesterday, so the license is not the issue."
+        }
+      ]
+    }
+  ],
+  "ticket": {
+    "type": "incident",
+    "category": "Network / VoIP",
+    "priority": "p2",
+    "impact": "medium",
+    "urgency": "high",
+    "sla": "business-hours",
+    "initialDescription": "Classroom phone in rm. 12B shows 'No Service'. Other phones in wing are working. Office is trying to reach teacher for parent pickup.",
+    "requester": {
+      "name": "Mrs. Hayes",
+      "role": "Faculty",
+      "identifiers": { "extension": "ext. 4521", "location": "rm. 12B" }
+    }
+  },
+  "location": {
+    "id": "rm-12b",
+    "name": "Classroom 12B",
+    "objects": [
+      {
+        "id": "classroom-phone",
+        "name": "Classroom Phone (Cisco 8841)",
+        "state": {
+          "model": "Cisco 8841",
+          "display": "No Service",
+          "ip": "169.254.18.42",
+          "registered": false,
+          "vlan": "voice"
+        }
+      }
+    ]
+  },
+  "nodes": [
+    {
+      "id": "intake",
+      "kind": "intro",
+      "title": "Take the call",
+      "body": "Take the call. Note the phone model, the room, and the symptom. Confirm scope: are other phones in the wing working? Open a P2 ticket.",
+      "transitions": [{ "event": "ticket-opened", "to": "inspect-phone" }]
+    },
+    {
+      "id": "inspect-phone",
+      "kind": "inspect",
+      "title": "Inspect the phone and switch port",
+      "body": "Read the phone's display and current IP (under Settings > Network or by pressing the settings button). Note the switch port status and VLAN. Save evidence.",
+      "locationId": "rm-12B",
+      "objectId": "classroom-phone",
+      "transitions": [
+        { "event": "evidence-saved", "to": "inspect-cucm" }
+      ]
+    },
+    {
+      "id": "inspect-cucm",
+      "kind": "inspect",
+      "title": "Check CUCM registration",
+      "body": "In the CUCM admin, look up the phone by MAC. Note its registration status and any recent configuration changes. Save the evidence.",
+      "transitions": [
+        { "event": "evidence-saved", "to": "decide-diagnosis" }
+      ]
+    },
+    {
+      "id": "decide-diagnosis",
+      "kind": "decide",
+      "title": "Identify the cause",
+      "body": "Based on the evidence — 169.254 IP, switch port up on voice VLAN, CUCM shows unregistered — what is the most likely cause?",
+      "decisionPointId": "dp-diagnosis",
+      "transitions": [
+        { "event": "decision-made", "to": "decide-resolution" }
+      ]
+    },
+    {
+      "id": "decide-resolution",
+      "kind": "decide",
+      "title": "Choose the remediation",
+      "body": "Pick the correct, least-risky remediation.",
+      "decisionPointId": "dp-resolution",
+      "transitions": [
+        { "event": "decision-made", "to": "remediate" }
+      ]
+    },
+    {
+      "id": "remediate",
+      "kind": "remediate",
+      "title": "Restore registration",
+      "body": "Power-cycle the phone. If it still does not register, set a static IP in the voice scope and reconfigure TFTP. Verify the phone registers with CUCM and the display returns to the extension.",
+      "transitions": [
+        { "event": "fix-applied", "to": "validate" }
+      ]
+    },
+    {
+      "id": "validate",
+      "kind": "remediate",
+      "title": "Validate with a test call",
+      "body": "Place a test call from the phone to another extension and confirm two-way audio. Have the office call the phone to confirm inbound works.",
+      "transitions": [
+        { "event": "validation-saved", "to": "document" }
+      ]
+    },
+    {
+      "id": "document",
+      "kind": "document",
+      "title": "Document the fix",
+      "body": "Close the ticket with: the cause (DHCP / voice VLAN reachability), the fix (power-cycle or static IP), and validation. Note any follow-up to check the voice VLAN DHCP helper for the wing.",
+      "prompt": "Write a brief follow-up to Mrs. Hayes confirming the phone is working again.",
+      "transitions": [
+        { "event": "followup-saved", "to": "debrief" }
+      ]
+    },
+    {
+      "id": "debrief",
+      "kind": "debrief",
+      "title": "Debrief",
+      "body": "Review your score. A KB article on 'phone shows No Service' should cover the difference between a CUCM outage (all phones), a DHCP issue (169.254 IP), and a port/cable issue (port down).",
+      "transitions": []
+    }
+  ],
+  "startNode": "intake",
+  "terminalNodes": ["debrief"],
+  "scoring": {
+    "weights": {
+      "diagnosis": 1.2,
+      "evidence": 1,
+      "troubleshooting": 1,
+      "resolution": 1,
+      "validation": 0.8
+    },
+    "thresholds": { "jobReady": 3 }
+  },
+  "methodology": [
+    "identify",
+    "scope",
+    "reproduce",
+    "gather-evidence",
+    "hypothesize",
+    "test",
+    "change",
+    "validate",
+    "document",
+    "follow-up"
+  ],
+  "kbOpportunity": "A 'No Service' phone with a 169.254 IP is a DHCP/voice-VLAN reachability problem, not a CUCM outage. Power-cycle first, then static IP, then escalate the VLAN/DHCP helper.",
+  "skills": ["networking", "ticketing", "documentation"]
+}

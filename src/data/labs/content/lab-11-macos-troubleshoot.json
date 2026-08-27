@@ -1,0 +1,193 @@
+{
+  "id": "lab-11-macos-troubleshoot",
+  "schemaVersion": 1,
+  "contentVersion": 1,
+  "week": 3,
+  "order": 11,
+  "track": "apple",
+  "title": "macOS No Internet",
+  "persona": "Ms. Chen, Science Department Chair",
+  "channel": "in-person",
+  "scenario": "Ms. Chen brings her MacBook Pro (Apple Silicon, macOS 14.6) to the IT office in person before a department meeting. The machine cannot reach any websites. She can see the Wi-Fi network and is connected, but Safari shows 'Cannot connect to server' for all sites.",
+  "impact": "Instructional: A department meeting with 8 science teachers cannot proceed with their planned presentation if the presenting teacher's laptop is offline.",
+  "objectives": [
+    "Reproduce the reported connectivity issue",
+    "Test DNS resolution from the MacBook",
+    "Verify the network path with ping and traceroute",
+    "Distinguish between a device-side issue and a network-side issue",
+    "Restore connectivity or isolate the cause",
+    "Document the troubleshooting steps and resolution"
+  ],
+  "tools": [
+    "Safari and Chrome (browser tests)",
+    "Terminal (ping, nslookup/dig, traceroute)",
+    "Network Diagnostics (macOS)",
+    "Wi-Fi menu advanced settings",
+    "System Preferences / System Settings"
+  ],
+  "evidence": [
+    { "id": "ev-ping", "description": "Output of ping to 8.8.8.8 and an internal IP", "kind": "command-output" },
+    { "id": "ev-dns", "description": "DNS resolution test for a known hostname", "kind": "command-output" },
+    { "id": "ev-browser", "description": "Browser error message or behavior observed", "kind": "note" }
+  ],
+  "decisionPoints": [
+    {
+      "id": "dp-cause",
+      "prompt": "Ping to 8.8.8.8 succeeds but Safari cannot load any website. What is the most likely cause?",
+      "options": [
+        {
+          "id": "opt-dns",
+          "label": "DNS resolution is broken — the machine can reach the internet but cannot look up domain names",
+          "score": { "diagnosis": 0.9, "evidence": 0.9, "resolution": 0.9 },
+          "feedback": "Correct — this is the classic signature: ping works but HTTP fails because DNS cannot resolve names."
+        },
+        {
+          "id": "opt-proxy",
+          "label": "A proxy server is configured and is unreachable",
+          "score": { "diagnosis": 0.8, "evidence": 0.7, "resolution": 0.8 },
+          "feedback": "Possible in a school environment — check the proxy settings."
+        },
+        {
+          "id": "opt-router",
+          "label": "The access point's uplink is down",
+          "score": { "diagnosis": 0.1, "evidence": 0.2, "resolution": 0.1 },
+          "feedback": "If the uplink were down, ping to 8.8.8.8 would also fail."
+        }
+      ]
+    }
+  ],
+  "ticket": {
+    "type": "incident",
+    "category": "Network / macOS",
+    "priority": "p2",
+    "impact": "medium",
+    "urgency": "high",
+    "sla": "business-hours",
+    "initialDescription": "MacBook Pro (Apple Silicon, macOS 14.6) cannot load any websites. Wi-Fi connected but browsers show 'Cannot connect to server'.",
+    "requester": {
+      "name": "Ms. Chen",
+      "role": "Faculty"
+    }
+  },
+  "location": {
+    "id": "it-office",
+    "name": "IT Office",
+    "objects": [
+      {
+        "id": "chen-macbook",
+        "name": "MacBook Pro (Ms. Chen)",
+        "state": {
+          "model": "MacBook Pro 14-inch M3",
+          "os": "macOS 14.6 (Sonoma)",
+          "wifi": { "ssid": "SCHOOL-STAFF", "connected": true, "signal": -52, "channel": 36 },
+          "ip": "10.1.42.187",
+          "router": "10.1.42.1",
+          "dns": { "servers": ["192.168.1.1"], "search_domain": "school.local" },
+          "dns_working": false,
+          "ping_external": true,
+          "proxy": { "enabled": false },
+          "last_network_reset": "2024-09-02"
+        }
+      }
+    ]
+  },
+  "nodes": [
+    {
+      "id": "intro",
+      "kind": "intro",
+      "title": "Greet and acknowledge",
+      "body": "Welcome Ms. Chen. Confirm the issue and note the time constraint. Do not rush into changing settings — first understand the exact symptoms.",
+      "transitions": [{ "event": "intake-recorded", "to": "reproduce" }]
+    },
+    {
+      "id": "reproduce",
+      "kind": "inspect",
+      "title": "Reproduce the issue",
+      "body": "Open Safari and attempt to load a known site. Note the exact error. Check if this is a single-site issue or affects all sites.",
+      "locationId": "it-office",
+      "objectId": "chen-macbook",
+      "transitions": [{ "event": "issue-confirmed", "to": "gather-evidence" }]
+    },
+    {
+      "id": "gather-evidence",
+      "kind": "inspect",
+      "title": "Gather network evidence",
+      "body": "Run ping, DNS lookup, and traceroute from Terminal. Document the output as evidence. Check the DNS server settings in System Settings.",
+      "locationId": "it-office",
+      "objectId": "chen-macbook",
+      "transitions": [{ "event": "evidence-saved", "to": "decide-cause" }]
+    },
+    {
+      "id": "decide-cause",
+      "kind": "decide",
+      "title": "Identify the root cause",
+      "body": "Based on the evidence, choose the most likely cause of the connectivity issue.",
+      "decisionPointId": "dp-cause",
+      "transitions": [{ "event": "decision-made", "to": "hypothesize" }]
+    },
+    {
+      "id": "hypothesize",
+      "kind": "intro",
+      "title": "State hypothesis",
+      "body": "State your hypothesis in one sentence. What do you think is broken, and what evidence supports it?",
+      "prompt": "Hypothesis: ___",
+      "transitions": [{ "event": "hypothesis-saved", "to": "remediate" }]
+    },
+    {
+      "id": "remediate",
+      "kind": "remediate",
+      "title": "Fix the DNS issue",
+      "body": "Correct the DNS configuration on Ms. Chen's MacBook.",
+      "locationId": "it-office",
+      "objectId": "chen-macbook",
+      "transitions": [{ "event": "fix-applied", "to": "validate" }]
+    },
+    {
+      "id": "validate",
+      "kind": "remediate",
+      "title": "Validate",
+      "body": "Re-test DNS resolution. Have Ms. Chen open Safari and load the presentation site. Confirm full connectivity is restored.",
+      "locationId": "it-office",
+      "objectId": "chen-macbook",
+      "transitions": [{ "event": "validation-saved", "to": "document" }]
+    },
+    {
+      "id": "document",
+      "kind": "document",
+      "title": "Document and close",
+      "body": "Write a ticket resolution with root cause, steps, and validation.",
+      "prompt": "Write a follow-up message to Ms. Chen.",
+      "transitions": [{ "event": "followup-saved", "to": "debrief" }]
+    },
+    {
+      "id": "debrief",
+      "kind": "debrief",
+      "title": "Debrief",
+      "body": "Review your score.",
+      "transitions": []
+    }
+  ],
+  "startNode": "intro",
+  "terminalNodes": ["debrief"],
+  "scoring": {
+    "weights": {
+      "diagnosis": 1.2,
+      "evidence": 1,
+      "troubleshooting": 1.2,
+      "resolution": 1,
+      "validation": 1
+    },
+    "thresholds": { "jobReady": 3 }
+  },
+  "methodology": [
+    "identify",
+    "reproduce",
+    "gather-evidence",
+    "hypothesize",
+    "change",
+    "validate",
+    "document"
+  ],
+  "kbOpportunity": "macOS DNS troubleshooting — commands and settings to check when browsers fail but ping succeeds.",
+  "skills": ["apple", "networking", "ticketing", "documentation"]
+}

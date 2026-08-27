@@ -1,0 +1,223 @@
+{
+  "id": "lab-28",
+  "schemaVersion": 1,
+  "contentVersion": 1,
+  "week": 8,
+  "order": 28,
+  "track": "network",
+  "title": "Printer / Copier Troubleshooting",
+  "persona": "Mrs. Hayes, 4th-grade Teacher",
+  "channel": "phone",
+  "scenario": "Mrs. Hayes calls the IT Service Desk. The shared copier in the faculty workroom is showing an offline status and is not printing. She has tried printing from her laptop and from a teacher's desktop in the same room — neither can see the printer. The copier display shows 'Offline' and a red indicator. Other copiers in the building are working normally. She needs to print 25 copies of a worksheet for her class that begins in 30 minutes.",
+  "impact": "Instructional: 25 K-4 students will not receive the printed worksheet at the start of the literacy block if the copier is not restored. The teacher will need to improvise or delay the activity.",
+  "objectives": [
+    "Verify the copier's state (display, network, error lights)",
+    "Determine scope — is this one copier or building-wide?",
+    "Identify the most likely cause (network, driver, or hardware)",
+    "Apply the least-risky fix to restore printing",
+    "Validate a test page prints from a teacher's device",
+    "Document the fix and follow up"
+  ],
+  "tools": [
+    "Copier admin web interface",
+    "Service desk ticket system",
+    "Network ping / DHCP console",
+    "Standard printer driver package"
+  ],
+  "evidence": [
+    { "id": "ev-copier-state", "description": "Copier display screenshot and any error code", "kind": "screenshot" },
+    { "id": "ev-network", "description": "Ping the copier's IP from a wired workstation; check DHCP lease", "kind": "command-output" },
+    { "id": "ev-scope", "description": "Confirm other copiers in the building are online", "kind": "note" }
+  ],
+  "decisionPoints": [
+    {
+      "id": "dp-diagnosis",
+      "prompt": "The copier's IP is 10.40.12.50. Ping from a wired workstation times out. The DHCP console shows the copier's lease expired 4 hours ago and was not renewed. What is the most likely cause?",
+      "options": [
+        {
+          "id": "opt-dhcp",
+          "label": "The copier's DHCP lease expired and did not renew, likely because the port is on a different VLAN or has lost link",
+          "score": { "diagnosis": 0.9, "evidence": 0.9, "resolution": 0.9 },
+          "feedback": "Correct — a DHCP lease that expired and did not renew usually means the device has lost network reachability. The copier needs a static IP or its VLAN/link needs to be checked."
+        },
+        {
+          "id": "opt-driver",
+          "label": "The printer driver on the teacher's laptop is corrupted",
+          "score": { "diagnosis": 0.2, "evidence": 0.1, "resolution": 0.2 },
+          "feedback": "A driver issue would not affect the copier's display showing 'Offline' or its loss of network reachability. The evidence is at the network layer."
+        },
+        {
+          "id": "opt-paper",
+          "label": "The copier is out of paper or toner",
+          "score": { "diagnosis": 0.1, "evidence": 0.0, "resolution": 0.1 },
+          "feedback": "An out-of-paper or toner error would show a different message on the display, not 'Offline'."
+        }
+      ]
+    },
+    {
+      "id": "dp-resolution",
+      "prompt": "What is the correct remediation to restore the copier?",
+      "options": [
+        {
+          "id": "opt-static-ip",
+          "label": "Assign a static IP outside the DHCP pool, check the switch port, and re-add the printer on the teacher's laptop",
+          "score": { "diagnosis": 0.9, "evidence": 0.9, "resolution": 0.9 },
+          "feedback": "Correct — a static IP for a network copier is best practice. It prevents future lease issues. Verify the cable and switch port, then re-add on the client."
+        },
+        {
+          "id": "opt-power-cycle",
+          "label": "Power-cycle the copier and wait",
+          "score": { "diagnosis": 0.3, "evidence": 0.2, "resolution": 0.2 },
+          "feedback": "Power-cycling may not help if the underlying issue is a VLAN or switch port problem. A static IP plus link check is more reliable."
+        },
+        {
+          "id": "opt-replace",
+          "label": "Replace the copier with a new unit",
+          "score": { "diagnosis": 0.0, "evidence": 0.0, "resolution": -0.5 },
+          "feedback": "The copier is functional, the network is the issue. Replacing the unit is unwarranted and expensive."
+        }
+      ]
+    }
+  ],
+  "ticket": {
+    "type": "incident",
+    "category": "Network / Printer",
+    "priority": "p2",
+    "impact": "medium",
+    "urgency": "high",
+    "sla": "business-hours",
+    "initialDescription": "Faculty workroom copier offline. Cannot print from any device. Class in 30 minutes needs 25 copies of a worksheet.",
+    "requester": {
+      "name": "Mrs. Hayes",
+      "role": "Faculty",
+      "identifiers": { "grade": "4th grade", "location": "rm. 12B" }
+    }
+  },
+  "location": {
+    "id": "faculty-workroom",
+    "name": "Faculty Workroom",
+    "objects": [
+      {
+        "id": "workroom-copier",
+        "name": "Workroom Copier",
+        "state": {
+          "model": "WorkCentre-5855",
+          "ip": "10.40.12.50",
+          "display": "Offline",
+          "indicator": "red",
+          "dhcpLease": "expired 4 hours ago"
+        }
+      }
+    ]
+  },
+  "nodes": [
+    {
+      "id": "intake",
+      "kind": "intro",
+      "title": "Take the call",
+      "body": "Take the call. Note the copier location, the symptom (offline), the time it started, and the user's printing need. Open a P2 ticket.",
+      "transitions": [{ "event": "ticket-opened", "to": "scope-check" }]
+    },
+    {
+      "id": "scope-check",
+      "kind": "intro",
+      "title": "Confirm scope",
+      "body": "Confirm the issue is isolated to this one copier. Check whether other copiers in the building are responding. Document the scope.",
+      "transitions": [
+        { "event": "scope-saved", "to": "inspect-copier" }
+      ]
+    },
+    {
+      "id": "inspect-copier",
+      "kind": "inspect",
+      "title": "Inspect the copier and network",
+      "body": "At the copier, read the display, note any error codes, and capture the network state. From a wired workstation, ping the copier's IP. Check the DHCP lease for the device. Save evidence.",
+      "locationId": "faculty-workroom",
+      "objectId": "workroom-copier",
+      "transitions": [
+        { "event": "evidence-saved", "to": "decide-diagnosis" }
+      ]
+    },
+    {
+      "id": "decide-diagnosis",
+      "kind": "decide",
+      "title": "Identify the cause",
+      "body": "Based on the evidence — display shows Offline, lease expired, ping times out — what is the most likely cause?",
+      "decisionPointId": "dp-diagnosis",
+      "transitions": [
+        { "event": "decision-made", "to": "decide-resolution" }
+      ]
+    },
+    {
+      "id": "decide-resolution",
+      "kind": "decide",
+      "title": "Choose the remediation",
+      "body": "Pick the correct remediation to restore the copier.",
+      "decisionPointId": "dp-resolution",
+      "transitions": [
+        { "event": "decision-made", "to": "remediate" }
+      ]
+    },
+    {
+      "id": "remediate",
+      "kind": "remediate",
+      "title": "Restore the copier",
+      "body": "Check the network cable and switch port. Configure the copier with a static IP outside the DHCP pool. Verify it is reachable from a wired workstation. Have the teacher re-add the printer on her laptop.",
+      "transitions": [
+        { "event": "fix-applied", "to": "validate" }
+      ]
+    },
+    {
+      "id": "validate",
+      "kind": "remediate",
+      "title": "Validate",
+      "body": "Print a test page from a teacher's device. Confirm the worksheet prints correctly. Confirm the teacher is unblocked for her class.",
+      "transitions": [
+        { "event": "validation-saved", "to": "document" }
+      ]
+    },
+    {
+      "id": "document",
+      "kind": "document",
+      "title": "Document the fix",
+      "body": "Close the ticket with: the cause (expired DHCP lease / no static IP), the fix (static IP, port check, client re-add), and validation. Note the recommendation to use static IPs for all network copiers.",
+      "prompt": "Write a brief follow-up to Mrs. Hayes confirming the copier is back online and ready to print.",
+      "transitions": [
+        { "event": "followup-saved", "to": "debrief" }
+      ]
+    },
+    {
+      "id": "debrief",
+      "kind": "debrief",
+      "title": "Debrief",
+      "body": "Review your score. Consider why copiers should have static IPs and how to spot a lease vs. a port vs. a driver problem.",
+      "transitions": []
+    }
+  ],
+  "startNode": "intake",
+  "terminalNodes": ["debrief"],
+  "scoring": {
+    "weights": {
+      "diagnosis": 1.2,
+      "evidence": 1,
+      "troubleshooting": 1,
+      "resolution": 1,
+      "validation": 0.8
+    },
+    "thresholds": { "jobReady": 3 }
+  },
+  "methodology": [
+    "identify",
+    "scope",
+    "reproduce",
+    "gather-evidence",
+    "hypothesize",
+    "test",
+    "change",
+    "validate",
+    "document",
+    "follow-up"
+  ],
+  "kbOpportunity": "Copiers should have static IPs, not DHCP. A copier that loses its lease shows 'Offline' even though the device is powered on. Assign a static IP and check the switch port.",
+  "skills": ["networking", "classroom-tech", "ticketing"]
+}

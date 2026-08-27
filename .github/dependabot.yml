@@ -1,0 +1,17 @@
+# Dependabot: keep pnpm dependencies current. The action runs weekly and
+# opens PRs for any non-major version bumps; major versions still surface
+# in the Security tab. Grouped updates reduce PR noise.
+version: 2
+updates:
+  - package-ecosystem: pnpm
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      patch-and-minor:
+        update-types: [minor, patch]
+    ignore:
+      # `@react-three/*` is pinned to a React-18-compatible major; let
+      # the human review when fiber/drei ship React-19-only releases.
+      - dependency-name: '@react-three/*'
+    open-pull-requests-limit: 5

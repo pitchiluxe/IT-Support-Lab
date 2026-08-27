@@ -1,0 +1,263 @@
+{
+  "id": "lab-06",
+  "schemaVersion": 1,
+  "contentVersion": 1,
+  "week": 2,
+  "order": 6,
+  "track": "windows",
+  "title": "Windows Application Will Not Launch",
+  "persona": "Mrs. Kim, biology teacher",
+  "channel": "email",
+  "scenario": "Mrs. Kim, a biology teacher, emails the IT service desk. The grading software PowerSchool that she and all her colleagues use will not launch. The splash screen appears, then crashes with an error: 'Unable to connect to database. Error 0x80004005.' The entire science department is affected and mid-term grades are due Friday.",
+  "impact": "Operational. Grade submission deadline Friday for the entire science department. All biology teachers, chemistry teachers, and physics teachers are blocked from entering grades.",
+  "objectives": [
+    "Confirm scope: is this affecting one teacher or all PowerSchool users?",
+    "Verify network and database connectivity from an affected workstation",
+    "Check whether the error is a client-side or server-side problem",
+    "Determine if Windows Update or .NET Framework needs attention",
+    "Escalate appropriately if the problem is server-side",
+    "Validate that PowerSchool launches after the fix is applied"
+  ],
+  "tools": [
+    "Service desk ticket system",
+    "PowerSchool admin console",
+    "Windows Event Viewer",
+    "Network connectivity tests (ping, nslookup)",
+    "Server health dashboard"
+  ],
+  "evidence": [
+    { "id": "ev-scope", "description": "Confirm how many users and which departments are affected", "kind": "note" },
+    { "id": "ev-error-dialog", "description": "Screenshot of the PowerSchool error dialog with error code 0x80004005", "kind": "screenshot" },
+    { "id": "ev-network-test", "description": "Output from network connectivity test to the PowerSchool database server", "kind": "command-output" },
+    { "id": "ev-server-health", "description": "Result of the PowerSchool server health check", "kind": "note" }
+  ],
+  "decisionPoints": [
+    {
+      "id": "dp-scope",
+      "prompt": "Before investigating the server, you send a quick email to the science department. Multiple teachers reply within minutes confirming the same error. What does this scope tell you about the problem?",
+      "options": [
+        {
+          "id": "opt-scope-server",
+          "label": "Widespread failure strongly suggests a server-side or network problem, not an issue with Mrs. Kim's workstation alone",
+          "score": { "diagnosis": 1, "evidence": 1, "resolution": 1 },
+          "feedback": "Correct. Widespread simultaneous failure points away from client hardware and toward shared infrastructure like the database server, network path, or authentication service."
+        },
+        {
+          "id": "opt-scope-client",
+          "label": "The same client-side error on multiple machines means they all share a common bad update or corrupt config",
+          "score": { "diagnosis": 0, "evidence": 0, "resolution": 0 },
+          "feedback": "It is possible but unlikely that unrelated machines would all develop the same client-side corruption simultaneously. The pattern of simultaneous failure is a strong signal toward a shared resource."
+        },
+        {
+          "id": "opt-scope-wifi",
+          "label": "The science wing Wi-Fi access point is likely overloaded and causing database timeout errors",
+          "score": { "diagnosis": -1, "evidence": -1, "resolution": 0 },
+          "feedback": "A Wi-Fi overload would cause intermittent or slow connections, not a consistent 'unable to connect' error at the database layer. The error is at the database handshake, not the network layer."
+        }
+      ]
+    },
+    {
+      "id": "dp-diagnostic",
+      "prompt": "You check the PowerSchool server health dashboard. The web console is up and responsive. The database service reports 'Running.' You ping the database server and it responds. What is the next best diagnostic step?",
+      "options": [
+        {
+          "id": "opt-diag-dns",
+          "label": "Run nslookup against the PowerSchool database hostname to verify DNS resolution is returning the correct IP address",
+          "score": { "diagnosis": 1, "evidence": 1, "resolution": 1 },
+          "feedback": "Correct. A stale or incorrect DNS record for the database hostname would cause connection failures from every client while the server itself responds to ping. This is a common cause of widespread identical errors."
+        },
+        {
+          "id": "opt-diag-reinstall",
+          "label": "Reinstall PowerSchool client software on one of the affected machines to rule out a corrupt client install",
+          "score": { "diagnosis": 0, "evidence": -1, "resolution": 0 },
+          "feedback": "A reinstall would be time-consuming and does not address the fact that multiple machines fail simultaneously. You would be changing state on many machines without confirmed evidence of a client-side cause."
+        },
+        {
+          "id": "opt-diag-firewall",
+          "label": "Check if a recent Windows Firewall update is blocking outbound connections to the database server",
+          "score": { "diagnosis": 0, "evidence": 0, "resolution": 0 },
+          "feedback": "A group policy firewall change is possible, but you would have seen other application failures too, not just PowerSchool. The targeted database error is more consistent with a DNS or server-side issue."
+        }
+      ]
+    },
+    {
+      "id": "dp-escalation",
+      "prompt": "DNS resolution confirms the database hostname resolves to an old IP address that no longer exists on the network. The correct database server IP is known. What should you do?",
+      "options": [
+        {
+          "id": "opt-fix-dns",
+          "label": "Update the DNS A record for the PowerSchool database hostname and validate that clients can connect",
+          "score": { "diagnosis": 1, "evidence": 1, "resolution": 1 },
+          "feedback": "Correct. Updating the stale DNS record restores connectivity for all clients without any client-side changes. Validate by having a teacher confirm PowerSchool launches."
+        },
+        {
+          "id": "opt-wait-server",
+          "label": "Escalate to the database administrator and wait for them to fix the server-side connectivity before taking any action",
+          "score": { "diagnosis": 0, "evidence": 1, "resolution": -1 },
+          "feedback": "Escalation is appropriate, but waiting passively while teachers cannot submit grades is not. You have identified a fixable cause — update the DNS record and notify the DBA simultaneously."
+        },
+        {
+          "id": "opt-reinstall-all",
+          "label": "Push a PowerSchool reinstall to all 15 affected science department machines via group policy",
+          "score": { "diagnosis": -1, "evidence": -1, "resolution": -1 },
+          "feedback": "This would be disruptive, time-consuming, and addresses the wrong layer. The problem is in DNS, not the client software."
+        }
+      ]
+    }
+  ],
+  "ticket": {
+    "type": "incident",
+    "category": "Application / PowerSchool",
+    "priority": "p1",
+    "impact": "high",
+    "urgency": "high",
+    "sla": "business-hours",
+    "initialDescription": "Science department teachers cannot launch PowerSchool. Error: 'Unable to connect to database. Error 0x80004005.' Mid-term grades are due Friday.",
+    "requester": {
+      "name": "Mrs. Kim",
+      "role": "Faculty",
+      "identifiers": { "extension": "ext. 4712", "location": "science wing rm. 214" }
+    }
+  },
+  "location": {
+    "id": "teacher-workstation",
+    "name": "Teacher Workstation (Mrs. Kim's Windows 11 PC)",
+    "objects": [
+      {
+        "id": "ps-client",
+        "name": "PowerSchool Client 12.x",
+        "state": {
+          "appStatus": "crash",
+          "crashError": "Unable to connect to database. Error 0x80004005.",
+          "crashPhase": "splash-screen",
+          "lastSuccessfulLaunch": "2026-08-20T07:30:00Z",
+          "installedVersion": "12.2.1",
+          "dotNetVersion": "8.0",
+          "windowsVersion": "Windows 11 23H2"
+        }
+      },
+      {
+        "id": "ws-event-log",
+        "name": "Windows Event Log (Application)",
+        "state": {
+          "recentErrors": [
+            { "id": 1001, "source": "PowerSchool", "message": "Database connection failed: Error 0x80004005", "time": "2026-08-26T08:05:00Z" },
+            { "id": 1002, "source": "Application Error", "message": "Faulting application powerschool.exe", "time": "2026-08-26T08:05:02Z" }
+          ]
+        }
+      }
+    ]
+  },
+  "nodes": [
+    {
+      "id": "intake",
+      "kind": "intro",
+      "title": "Intake",
+      "body": "Review Mrs. Kim's email. Open a service ticket with the error code, affected user, time reported, and the grade submission deadline. Note the science department scope before investigating.",
+      "transitions": [{ "event": "ticket-created", "to": "inspect-workstation" }]
+    },
+    {
+      "id": "inspect-workstation",
+      "kind": "inspect",
+      "title": "Inspect the affected workstation",
+      "body": "Open the teacher workstation inspector. Note the PowerSchool client version, .NET Framework version, Windows version, and the exact error message. Capture a screenshot of the error dialog as evidence.",
+      "locationId": "teacher-workstation",
+      "objectId": "ps-client",
+      "transitions": [{ "event": "evidence-saved", "to": "scope-check" }]
+    },
+    {
+      "id": "scope-check",
+      "kind": "intro",
+      "title": "Determine scope",
+      "body": "Send a brief inquiry to the science department to confirm how many teachers are affected. A reply from three or more teachers confirms widespread impact. Record scope in the ticket.",
+      "transitions": [{ "event": "scope-recorded", "to": "decide-scope" }]
+    },
+    {
+      "id": "decide-scope",
+      "kind": "decide",
+      "title": "Interpret the scope",
+      "body": "Multiple science department teachers have confirmed the same error. Based on the scope you just gathered, choose the best interpretation of the problem.",
+      "decisionPointId": "dp-scope",
+      "transitions": [{ "event": "decision-made", "to": "inspect-server" }]
+    },
+    {
+      "id": "inspect-server",
+      "kind": "inspect",
+      "title": "Inspect the PowerSchool server",
+      "body": "Open the PowerSchool admin console and server health dashboard. Record whether the web console is responsive, whether the database service is running, and the result of a ping to the database server hostname.",
+      "locationId": "teacher-workstation",
+      "objectId": "ws-event-log",
+      "transitions": [{ "event": "evidence-saved", "to": "decide-diagnostic" }]
+    },
+    {
+      "id": "decide-diagnostic",
+      "kind": "decide",
+      "title": "Choose next diagnostic step",
+      "body": "The server health dashboard shows the web console is up and the database service reports running. A ping to the database server succeeds. The problem must be deeper in the connection path. Choose the next best diagnostic step.",
+      "decisionPointId": "dp-diagnostic",
+      "transitions": [{ "event": "decision-made", "to": "check-dns" }]
+    },
+    {
+      "id": "check-dns",
+      "kind": "intro",
+      "title": "Run DNS lookup",
+      "body": "Run nslookup for the PowerSchool database hostname. Compare the returned IP address against the known-good database server IP. Document whether the record is correct or stale.",
+      "transitions": [{ "event": "dns-result-recorded", "to": "decide-escalation" }]
+    },
+    {
+      "id": "decide-escalation",
+      "kind": "decide",
+      "title": "Determine the fix",
+      "body": "DNS resolution shows the PowerSchool database hostname resolves to an IP address that is no longer active on the network. The correct database server IP is known. Choose the appropriate response.",
+      "decisionPointId": "dp-escalation",
+      "transitions": [{ "event": "decision-made", "to": "validate" }]
+    },
+    {
+      "id": "validate",
+      "kind": "remediate",
+      "title": "Validate the fix",
+      "body": "After updating the DNS record, ask Mrs. Kim to try launching PowerSchool again. Confirm the splash screen completes and she can log in. Save a validation note to the ticket.",
+      "locationId": "teacher-workstation",
+      "objectId": "ps-client",
+      "transitions": [{ "event": "validation-saved", "to": "document" }]
+    },
+    {
+      "id": "document",
+      "kind": "document",
+      "title": "Document the resolution",
+      "body": "Write a customer-facing message to the science department. Confirm PowerSchool is restored, explain in plain language that a stale DNS record caused the outage, and note that no further action is needed from their end.",
+      "prompt": "Write a follow-up message to the science department. Confirm the fix. Plain language, no internal jargon, no server hostnames or IP addresses.",
+      "transitions": [{ "event": "followup-saved", "to": "debrief" }]
+    },
+    {
+      "id": "debrief",
+      "kind": "debrief",
+      "title": "Debrief",
+      "body": "Review your score and identify what to practice next.",
+      "transitions": []
+    }
+  ],
+  "startNode": "intake",
+  "terminalNodes": ["debrief"],
+  "scoring": {
+    "weights": {
+      "diagnosis": 1,
+      "evidence": 1,
+      "troubleshooting": 1,
+      "resolution": 1,
+      "validation": 1
+    },
+    "thresholds": { "jobReady": 3 }
+  },
+  "methodology": [
+    "identify",
+    "scope",
+    "gather-evidence",
+    "hypothesize",
+    "test",
+    "validate",
+    "document"
+  ],
+  "kbOpportunity": "Stale DNS records causing widespread identical application errors — the pattern of a database connection error affecting every client simultaneously is a strong indicator of a shared infrastructure problem, not client-side corruption.",
+  "skills": ["windows", "ticketing"]
+}

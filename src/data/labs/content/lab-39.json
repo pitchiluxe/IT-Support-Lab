@@ -1,0 +1,242 @@
+{
+  "id": "lab-39",
+  "schemaVersion": 1,
+  "contentVersion": 1,
+  "week": 10,
+  "order": 39,
+  "track": "projects",
+  "title": "Technology Change Management",
+  "persona": "Mr. Thompson, Director of Technology",
+  "channel": "email",
+  "scenario": "Mr. Thompson asks the IT team to formally migrate the school's printer fleet from direct IP printing to a centralized print server with secure release. This change affects every faculty and staff member. The change must be planned, reviewed by the Change Advisory Board, and rolled out during the next break week.",
+  "impact": "Strategic: a poorly planned change will disrupt printing for the entire school. The CAB process is mandatory for any change affecting more than 25 users. A failed change erodes trust in IT.",
+  "objectives": [
+    "Draft a formal change request following the school CAB template",
+    "Identify the scope, risk, and rollback plan for the change",
+    "Schedule the CAB review and present the change for approval",
+    "Communicate the change window and impact to all affected users",
+    "Execute the change during the approved maintenance window",
+    "Validate the change and document the outcome in the change log"
+  ],
+  "tools": [
+    "Change request template (CAB)",
+    "Print server management console",
+    "Risk assessment matrix",
+    "Communication templates",
+    "Change log / ticket system"
+  ],
+  "evidence": [
+    { "id": "ev-change-request", "description": "Completed change request with scope, risk, rollback, and approver list", "kind": "note" },
+    { "id": "ev-cab-minutes", "description": "CAB meeting minutes recording the approval decision and conditions", "kind": "note" },
+    { "id": "ev-post-change-validation", "description": "Post-change validation report and user communication", "kind": "note" }
+  ],
+  "decisionPoints": [
+    {
+      "id": "dp-change-scope",
+      "prompt": "The change affects 180 faculty and staff users. What is the correct change classification?",
+      "options": [
+        {
+          "id": "opt-skip-cab",
+          "label": "Standard change — skip CAB review because the change is well understood",
+          "score": { "diagnosis": -1, "evidence": -1, "resolution": -1 },
+          "feedback": "A change affecting 180 users with a network-wide service is not standard. It must go through CAB review."
+        },
+        {
+          "id": "opt-normal-cab",
+          "label": "Normal change — full CAB review with risk assessment, rollback, and approval required",
+          "score": { "diagnosis": 1, "evidence": 1, "resolution": 1 },
+          "feedback": "Correct — a fleet-wide print server migration is a normal change. CAB review is mandatory for transparency and risk control."
+        },
+        {
+          "id": "opt-emergency",
+          "label": "Emergency change — fast-track with no review because it improves security",
+          "score": { "diagnosis": -1, "evidence": -1, "resolution": -1 },
+          "feedback": "Emergency change classification is for unplanned outages only, not planned improvements. Fast-tracking planned changes violates process."
+        }
+      ]
+    },
+    {
+      "id": "dp-rollback-trigger",
+      "prompt": "Mid-rollout, 12 users report they cannot release print jobs. What is the correct response?",
+      "options": [
+        {
+          "id": "opt-keep-going",
+          "label": "Continue the rollout to all 180 users and address issues afterwards",
+          "score": { "diagnosis": -1, "evidence": -1, "resolution": -1 },
+          "feedback": "Continuing a rollout with known issues breaks your risk plan and may impact all 180 users before the cause is known."
+        },
+        {
+          "id": "opt-pause-investigate",
+          "label": "Pause the rollout, investigate the issue, and decide whether to proceed or invoke the rollback plan",
+          "score": { "diagnosis": 1, "evidence": 1, "resolution": 1 },
+          "feedback": "Correct — pause, investigate, then decide. The pre-approved rollback plan is the safety net, not a sign of failure."
+        },
+        {
+          "id": "opt-immediate-rollback",
+          "label": "Invoke the full rollback immediately and cancel the change",
+          "score": { "diagnosis": 0, "evidence": 0, "resolution": -1 },
+          "feedback": "Full rollback may be premature. Investigate first to determine whether the issue is widespread or limited to a known cause."
+        }
+      ]
+    }
+  ],
+  "ticket": {
+    "type": "change",
+    "category": "Projects / Change Management",
+    "priority": "p2",
+    "impact": "high",
+    "urgency": "low",
+    "sla": "week",
+    "initialDescription": "Mr. Thompson requests a change to migrate the printer fleet from direct IP printing to a centralized print server with secure release. Affects 180 users. Maintenance window: next break week.",
+    "requester": {
+      "name": "Mr. Thompson",
+      "role": "Administrator",
+      "identifiers": { "title": "Director of Technology", "office": "rm. 305" }
+    }
+  },
+  "location": {
+    "id": "change-management-room",
+    "name": "Change Management Workspace",
+    "objects": [
+      {
+        "id": "change-record",
+        "name": "Change Request (draft)",
+        "state": {
+          "id": "CHG-2026-0312",
+          "title": "Printer fleet migration to print server with secure release",
+          "scope": "180 users, 24 printers",
+          "risk": "medium",
+          "rollback_plan": "revert to direct IP, restore prior printer objects",
+          "cab_status": "pending review",
+          "approval_required_from": ["CIO", "Head of Operations", "Director of Technology"]
+        }
+      },
+      {
+        "id": "print-server",
+        "name": "Print Server (proposed)",
+        "state": {
+          "name": "PRINT-01",
+          "os": "Windows Server 2022",
+          "current_load": 0,
+          "target_load": 180,
+          "secure_release_enabled": true
+        }
+      }
+    ]
+  },
+  "nodes": [
+    {
+      "id": "intro",
+      "kind": "intro",
+      "title": "Scope the change",
+      "body": "Review the change request from Mr. Thompson. Confirm the scope (180 users, 24 printers), the maintenance window, and the CAB approval requirements. Identify all stakeholders.",
+      "transitions": [{ "event": "scope-confirmed", "to": "draft-change" }]
+    },
+    {
+      "id": "draft-change",
+      "kind": "inspect",
+      "title": "Draft the change request",
+      "body": "Complete the CAB change request template: scope, risk assessment, rollback plan, communication plan, validation plan, and approver list. Save the draft as evidence.",
+      "locationId": "change-management-room",
+      "objectId": "change-record",
+      "transitions": [
+        { "event": "draft-saved", "to": "decide-classification" }
+      ]
+    },
+    {
+      "id": "decide-classification",
+      "kind": "decide",
+      "title": "Classify the change",
+      "body": "Choose the correct change classification for a 180-user fleet-wide print server migration.",
+      "decisionPointId": "dp-change-scope",
+      "transitions": [
+        { "event": "decision-made", "to": "cab-review" }
+      ]
+    },
+    {
+      "id": "cab-review",
+      "kind": "inspect",
+      "title": "Present at CAB",
+      "body": "Present the change to the CAB. Capture the decision, any conditions, and the approvers. Save the CAB minutes as evidence.",
+      "locationId": "change-management-room",
+      "objectId": "change-record",
+      "transitions": [
+        { "event": "cab-approved", "to": "execute-change" }
+      ]
+    },
+    {
+      "id": "execute-change",
+      "kind": "remediate",
+      "title": "Execute the change in the maintenance window",
+      "body": "During the approved window, deploy the print server, migrate printer objects in batches, and update user devices. Monitor for errors. If issues exceed threshold, pause and decide next step.",
+      "locationId": "change-management-room",
+      "objectId": "print-server",
+      "transitions": [
+        { "event": "issue-encountered", "to": "decide-rollback" },
+        { "event": "change-complete", "to": "validate" }
+      ]
+    },
+    {
+      "id": "decide-rollback",
+      "kind": "decide",
+      "title": "Decide on rollback",
+      "body": "12 users report a release failure mid-rollout. Choose the correct response.",
+      "decisionPointId": "dp-rollback-trigger",
+      "transitions": [
+        { "event": "decision-made", "to": "validate" }
+      ]
+    },
+    {
+      "id": "validate",
+      "kind": "inspect",
+      "title": "Validate post-change",
+      "body": "Run the post-change validation: print from each user class (faculty, staff, admin), confirm secure release works, check the print server load. Save the validation report as evidence.",
+      "locationId": "change-management-room",
+      "objectId": "print-server",
+      "transitions": [
+        { "event": "validation-saved", "to": "document" }
+      ]
+    },
+    {
+      "id": "document",
+      "kind": "document",
+      "title": "Close the change",
+      "body": "Update the change log with the outcome, lessons learned, and any follow-up actions. Communicate the change completion to faculty and staff.",
+      "prompt": "Write the post-change communication to faculty and staff: what changed, what they need to do, and how to get help if printing does not work.",
+      "transitions": [
+        { "event": "change-closed", "to": "debrief" }
+      ]
+    },
+    {
+      "id": "debrief",
+      "kind": "debrief",
+      "title": "Debrief",
+      "body": "Review the change process. Key lessons: every fleet-wide change goes through CAB, always have a documented rollback plan, and a paused rollout is not a failure — it is risk control working.",
+      "transitions": []
+    }
+  ],
+  "startNode": "intro",
+  "terminalNodes": ["debrief"],
+  "scoring": {
+    "weights": {
+      "diagnosis": 0.8,
+      "evidence": 1.2,
+      "troubleshooting": 0.8,
+      "resolution": 1,
+      "validation": 1
+    },
+    "thresholds": { "jobReady": 3 }
+  },
+  "methodology": [
+    "identify",
+    "scope",
+    "gather-evidence",
+    "hypothesize",
+    "change",
+    "validate",
+    "document",
+    "follow-up"
+  ],
+  "kbOpportunity": "Change management workflow: draft change → classify (standard / normal / emergency) → CAB review → risk + rollback plan → approved window execution → validation → change log closeout.",
+  "skills": ["projects", "documentation"]
+}

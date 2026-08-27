@@ -1,0 +1,231 @@
+{
+  "id": "lab-35",
+  "schemaVersion": 1,
+  "contentVersion": 1,
+  "week": 9,
+  "order": 35,
+  "track": "asset",
+  "title": "Insurance / Lost-Damaged Equipment",
+  "persona": "Mrs. Rodriguez, parent of a 3rd-grade student",
+  "channel": "phone",
+  "scenario": "Mrs. Rodriguez calls the IT Service Desk in a worried voice. Her 3rd-grade son left his school-issued iPad on a bench during morning drop-off. When she went back to look for it during lunch, it was gone. The iPad is enrolled in MDM. The school's technology use agreement states parents are responsible for loss or damage above a $50 deductible.",
+  "impact": "Financial: the iPad is worth approximately $450. The school needs a documented loss claim for insurance and an MDM remote-wipe to protect school data. The student cannot do homework until a replacement is issued.",
+  "objectives": [
+    "Verify the caller's identity and relationship to the enrolled student",
+    "Confirm the device serial number and MDM enrollment status",
+    "Execute MDM remote lock and locate commands",
+    "Initiate the insurance loss claim and document the incident",
+    "Assess the financial liability and communicate the deductible to the parent",
+    "Coordinate a replacement device for the student"
+  ],
+  "tools": [
+    "MDM console",
+    "Student information system ( SIS )",
+    "Insurance claim form",
+    "Device replacement workflow",
+    "Technology use agreement (on file)"
+  ],
+  "evidence": [
+    { "id": "ev-mdm-locate", "description": "MDM location and status of the lost iPad at time of report", "kind": "note" },
+    { "id": "ev-mdm-lock", "description": "MDM remote lock confirmation and timestamp", "kind": "note" },
+    { "id": "ev-insurance-claim", "description": "Insurance claim form with device details, serial number, and incident description", "kind": "note" }
+  ],
+  "decisionPoints": [
+    {
+      "id": "dp-identity",
+      "prompt": "Mrs. Rodriguez is calling about her son's missing iPad. What is the first and most important verification step before taking any action on the device?",
+      "options": [
+        {
+          "id": "opt-skip-verify",
+          "label": "Skip verification — act immediately to lock the device since time is critical",
+          "score": { "diagnosis": -1, "evidence": -1, "resolution": -1 },
+          "feedback": "You must always verify the identity of the caller before taking action on any device. Skip verification risks locking a device that is not actually lost."
+        },
+        {
+          "id": "opt-verify-sis",
+          "label": "Verify the caller's identity in the SIS and confirm the iPad is enrolled under the school's account",
+          "score": { "diagnosis": 1, "evidence": 1, "resolution": 1 },
+          "feedback": "Correct — verify parent identity, student enrollment, and device enrollment before taking any MDM action. Document the verification in the ticket."
+        },
+        {
+          "id": "opt-ask-serial",
+          "label": "Ask Mrs. Rodriguez for the iPad serial number to look it up in the system",
+          "score": { "diagnosis": 0, "evidence": 0, "resolution": 0 },
+          "feedback": "Asking for the serial number is good, but the parent may not have it. Cross-reference against the student in the SIS."
+        }
+      ]
+    },
+    {
+      "id": "dp-mdm-action",
+      "prompt": "The identity is verified. The MDM shows the iPad as online with a last-known location. What is the most appropriate MDM action?",
+      "options": [
+        {
+          "id": "opt-wipe-only",
+          "label": "Immediately wipe the device to protect school data",
+          "score": { "diagnosis": 0, "evidence": 1, "resolution": -1 },
+          "feedback": "Wiping immediately destroys the ability to track the device and eliminates any chance of recovery. Wipe is a last resort."
+        },
+        {
+          "id": "opt-lock-locate",
+          "label": "Remote lock the device and enable lost mode to display contact information — then locate before wiping",
+          "score": { "diagnosis": 1, "evidence": 1, "resolution": 1 },
+          "feedback": "Correct — lock and lost mode protect data while keeping the device recoverable. Only wipe after all recovery options are exhausted."
+        },
+        {
+          "id": "opt-do-nothing",
+          "label": "Do nothing on MDM until the family confirms they have searched everywhere",
+          "score": { "diagnosis": -1, "evidence": -1, "resolution": -1 },
+          "feedback": "Every minute of delay risks data exposure. MDM actions should be taken immediately upon verified loss."
+        }
+      ]
+    }
+  ],
+  "ticket": {
+    "type": "incident",
+    "category": "Asset / Lost or Stolen",
+    "priority": "p2",
+    "impact": "medium",
+    "urgency": "high",
+    "sla": "business-hours",
+    "initialDescription": "Parent (Mrs. Rodriguez) reports her son's school-issued iPad was left on a bench and is now missing. iPad is MDM-enrolled. Family believes it may still be on school grounds.",
+    "requester": {
+      "name": "Mrs. Rodriguez",
+      "role": "Parent",
+      "identifiers": { "student": "Miguel Rodriguez", "grade": "3rd" }
+    }
+  },
+  "location": {
+    "id": "it-service-desk",
+    "name": "IT Service Desk",
+    "objects": [
+      {
+        "id": "mdm-console",
+        "name": "MDM Console (Jamf Pro)",
+        "state": {
+          "device_name": "Rodriguez-Miguel-iPad",
+          "serial": "DL1XP4Q9JKPF",
+          "enrollment_status": "enrolled",
+          "last_seen": "2026-08-27T08:15:00",
+          "last_location": "Building A main entrance bench",
+          "location_accuracy_m": 12,
+          "online": true,
+          "battery_pct": 67
+        }
+      },
+      {
+        "id": "sis-screen",
+        "name": "Student Information System",
+        "state": {
+          "student": "Miguel Rodriguez",
+          "grade": 3,
+          "homeroom": "Ms. Flores",
+          "enrolled_devices": ["iPad (DL1XP4Q9JKPF)"],
+          "responsible_party": "Mrs. Rodriguez",
+          "tua_signed": true
+        }
+      }
+    ]
+  },
+  "nodes": [
+    {
+      "id": "intake",
+      "kind": "intro",
+      "title": "Answer the call",
+      "body": "Answer the phone. Acknowledge Mrs. Rodriguez with empathy. Take down the key details: student name, device description, where it was left, and when. Set expectations: you will work to protect the device and help the family.",
+      "transitions": [{ "event": "report-taken", "to": "verify-identity" }]
+    },
+    {
+      "id": "verify-identity",
+      "kind": "inspect",
+      "title": "Verify identity in the SIS",
+      "body": "Look up the student in the SIS. Confirm Mrs. Rodriguez is listed as the parent and the iPad is enrolled under the school's MDM account. Save verification notes.",
+      "locationId": "it-service-desk",
+      "objectId": "sis-screen",
+      "transitions": [
+        { "event": "identity-verified", "to": "decide-verify" }
+      ]
+    },
+    {
+      "id": "decide-verify",
+      "kind": "decide",
+      "title": "Verify caller identity",
+      "body": "Before acting on MDM, confirm your verification steps are complete.",
+      "decisionPointId": "dp-identity",
+      "transitions": [
+        { "event": "decision-made", "to": "check-mdm" }
+      ]
+    },
+    {
+      "id": "check-mdm",
+      "kind": "inspect",
+      "title": "Check MDM status and location",
+      "body": "Look up the iPad in MDM. Note the last-seen time, last-known location, battery level, and whether it is currently online. Save the MDM status as evidence.",
+      "locationId": "it-service-desk",
+      "objectId": "mdm-console",
+      "transitions": [
+        { "event": "mdm-status-saved", "to": "decide-mdm-action" }
+      ]
+    },
+    {
+      "id": "decide-mdm-action",
+      "kind": "decide",
+      "title": "Choose MDM action",
+      "body": "The device is online and showing a location. Choose the appropriate MDM response.",
+      "decisionPointId": "dp-mdm-action",
+      "transitions": [
+        { "event": "decision-made", "to": "execute-mdm" }
+      ]
+    },
+    {
+      "id": "execute-mdm",
+      "kind": "remediate",
+      "title": "Execute MDM remote actions",
+      "body": "Enable lost mode on the device. Set the lock message to include a return contact. Attempt to retrieve the most precise location. Save the confirmation as evidence. Only escalate to remote wipe after 48 hours if the device remains unrecovered.",
+      "locationId": "it-service-desk",
+      "objectId": "mdm-console",
+      "transitions": [
+        { "event": "mdm-actions-complete", "to": "document-insurance" }
+      ]
+    },
+    {
+      "id": "document-insurance",
+      "kind": "document",
+      "title": "File the insurance claim and communicate",
+      "body": "Complete the insurance loss claim form with all device details, serial number, incident description, and MDM evidence. Email Mrs. Rodriguez with: confirmation of MDM actions, the insurance claim process, the $50 deductible per the technology use agreement, and the replacement timeline.",
+      "prompt": "Write the follow-up email to Mrs. Rodriguez: confirm MDM actions taken, explain the insurance claim, state the deductible, and outline the replacement process.",
+      "transitions": [
+        { "event": "claim-filed", "to": "debrief" }
+      ]
+    },
+    {
+      "id": "debrief",
+      "kind": "debrief",
+      "title": "Debrief",
+      "body": "Review the response. The key principles: always verify before acting, lock before wiping, communicate with empathy and clarity, and follow the technology use agreement for financial responsibility.",
+      "transitions": []
+    }
+  ],
+  "startNode": "intake",
+  "terminalNodes": ["debrief"],
+  "scoring": {
+    "weights": {
+      "diagnosis": 0.8,
+      "evidence": 1.2,
+      "troubleshooting": 0.6,
+      "resolution": 1,
+      "validation": 0.8
+    },
+    "thresholds": { "jobReady": 3 }
+  },
+  "methodology": [
+    "identify",
+    "gather-evidence",
+    "hypothesize",
+    "change",
+    "validate",
+    "document",
+    "follow-up"
+  ],
+  "kbOpportunity": "Lost/stolen device response playbook: verify identity in SIS → MDM lost mode + lock → document location + incident → file insurance claim → communicate deductible → coordinate replacement. Never wipe before attempting recovery.",
+  "skills": ["hardware-lifecycle", "mdm"]
+}

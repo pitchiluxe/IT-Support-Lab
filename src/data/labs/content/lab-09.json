@@ -1,0 +1,262 @@
+{
+  "id": "lab-09",
+  "schemaVersion": 1,
+  "contentVersion": 1,
+  "week": 3,
+  "order": 9,
+  "track": "windows",
+  "title": "Windows Upgrade",
+  "persona": "IT project technician",
+  "channel": "in-person",
+  "scenario": "The school has 30 Windows 10 machines that IT has decided to upgrade to Windows 11 23H2 before the new school year. You have been assigned to plan and execute the upgrade: assess which machines are eligible, build and validate a test image, test the 10 most critical applications for compatibility, document the app compatibility list, produce a rollback plan, schedule the phased rollout, and communicate the upgrade timeline to affected staff.",
+  "impact": "Operational. 30 workstations will be unavailable during the upgrade window. Faculty need to know when their machine is scheduled and what to expect. The upgrade must be complete before staff return for the new school year.",
+  "objectives": [
+    "Assess hardware eligibility for Windows 11 across all 30 machines using the compatibility scan",
+    "Build and validate a Windows 11 23H2 test image on one eligible machine",
+    "Test the 10 most critical school applications for Windows 11 compatibility",
+    "Produce a documented app compatibility list with pass/fail status",
+    "Produce a rollback plan with clear criteria for when to roll back",
+    "Schedule the phased rollout across the 30 machines",
+    "Draft and send a staff communication about the upgrade timeline"
+  ],
+  "tools": [
+    "Windows 11 compatibility scan tool (PC Health Check and direct scan)",
+    "MDT server (Microsoft Deployment Toolkit)",
+    "Windows 11 23H2 installation media",
+    "Application compatibility testing environment",
+    "Change management system",
+    "Staff email system"
+  ],
+  "evidence": [
+    { "id": "ev-compat-scan", "description": "Compatibility scan report showing pass/fail status for all 30 machines", "kind": "log" },
+    { "id": "ev-rollback", "description": "Rollback test results from the pilot machine confirming a clean rollback is possible", "kind": "note" },
+    { "id": "ev-staff-email", "description": "Draft staff communication email with the upgrade schedule and FAQ", "kind": "note" },
+    { "id": "ev-schedule", "description": "Upgrade schedule showing phased rollout plan for all 30 machines", "kind": "note" }
+  ],
+  "decisionPoints": [
+    {
+      "id": "dp-compat",
+      "prompt": "The Windows 11 compatibility scan results are in: 22 of the 30 machines pass all checks (TPM 2.0, Secure Boot, CPU compatibility). 8 machines fail due to TPM 1.2 only and unsupported CPU generation. What should you do?",
+      "options": [
+        {
+          "id": "opt-upgrade-compatible",
+          "label": "Upgrade the 22 compatible machines first and document the 8 ineligible machines for a future hardware refresh",
+          "score": { "diagnosis": 1, "evidence": 1, "resolution": 1 },
+          "feedback": "Correct. Upgrading the 22 compatible machines first is the practical path — the 8 ineligible machines cannot run Windows 11 without hardware changes, which are outside the scope of this upgrade project."
+        },
+        {
+          "id": "opt-fix-tpm",
+          "label": "Attempt to manually enable TPM 2.0 on the 8 failing machines through BIOS configuration to make them eligible",
+          "score": { "diagnosis": 0, "evidence": 0, "resolution": 0 },
+          "feedback": "The 8 machines lack TPM 2.0 hardware entirely — it is a hardware limitation, not a configuration setting. BIOS configuration cannot add TPM 2.0 to a machine that does not have it."
+        },
+        {
+          "id": "opt-delay-all",
+          "label": "Delay the entire upgrade until all 30 machines are compatible, including sourcing replacement hardware for the 8",
+          "score": { "diagnosis": 0, "evidence": 0, "resolution": -1 },
+          "feedback": "Delaying the entire project for 8 hardware-ineligible machines would prevent the school from completing the upgrade before staff return. The 22 compatible machines should proceed on schedule."
+        }
+      ]
+    },
+    {
+      "id": "dp-sis",
+      "prompt": "During application compatibility testing, the school's custom Student Information System (SIS) app is flagged as 'incompatible — may not run on Windows 11.' The vendor has not yet issued a compatibility statement. What is the right next step?",
+      "options": [
+        {
+          "id": "opt-sis-test",
+          "label": "Install the SIS app on the Windows 11 pilot and test core use cases before the broader rollout",
+          "score": { "diagnosis": 1, "evidence": 1, "resolution": 1 },
+          "feedback": "Correct. A compatibility flag is not a confirmed failure. Testing the app directly on the pilot is the fastest way to determine if it actually works. If it fails, you escalate to the vendor with test evidence."
+        },
+        {
+          "id": "opt-sis-vendor",
+          "label": "Wait for the vendor to issue an official Windows 11 compatibility statement before testing or deploying anything",
+          "score": { "diagnosis": 0, "evidence": 0, "resolution": 0 },
+          "feedback": "Waiting indefinitely for a vendor statement delays the entire project. A vendor statement may take weeks. Testing the app yourself takes one afternoon and gives you real data to work from."
+        },
+        {
+          "id": "opt-sis-skip",
+          "label": "Skip testing the SIS app and proceed with the upgrade; if it breaks, roll back the affected machine",
+          "score": { "diagnosis": -1, "evidence": -1, "resolution": -1 },
+          "feedback": "The SIS app is mission-critical — grade entry, attendance, and scheduling all depend on it. A blind rollout with no testing is an unacceptable risk to the school's core administrative functions."
+        }
+      ]
+    },
+    {
+      "id": "dp-rollback",
+      "prompt": "You have tested the rollback procedure on the pilot machine. The test shows that a clean rollback to Windows 10 is possible but takes approximately 45 minutes per machine. Under what condition should a rollback be triggered during the phased rollout?",
+      "options": [
+        {
+          "id": "opt-rollback-app",
+          "label": "Roll back if two or more of the 10 critical applications fail compatibility testing on any machine in the rollout batch",
+          "score": { "diagnosis": 1, "evidence": 1, "resolution": 1 },
+          "feedback": "Correct. A single application failure can be documented and addressed; two or more failures indicate a systemic compatibility issue that affects the workstation's usability and warrants a rollback pending resolution."
+        },
+        {
+          "id": "opt-rollback-any",
+          "label": "Roll back immediately if any single application fails to launch after the upgrade on any machine",
+          "score": { "diagnosis": 0, "evidence": 0, "resolution": 0 },
+          "feedback": "Rolling back for any single failure is too sensitive — minor UI glitches or cosmetic issues that do not affect core function should be documented rather than triggering a full rollback."
+        },
+        {
+          "id": "opt-rollback-none",
+          "label": "Do not roll back under any circumstances; document any issues and schedule remediation after the school year begins",
+          "score": { "diagnosis": -1, "evidence": -1, "resolution": -1 },
+          "feedback": "A no-rollback policy removes the safety net and exposes the school to operational risk. If the SIS app or grade entry software fails on the first rollout batch, staff will be unable to perform core functions on day one."
+        }
+      ]
+    }
+  ],
+  "ticket": {
+    "type": "change",
+    "category": "Windows / OS Upgrade",
+    "priority": "p2",
+    "impact": "high",
+    "urgency": "medium",
+    "sla": "week",
+    "initialDescription": "Plan and execute Windows 10 to Windows 11 23H2 upgrade for 30 school workstations. Assess eligibility, build test image, validate app compatibility, document findings, produce rollback plan, schedule phased rollout, communicate to staff.",
+    "requester": {
+      "name": "IT Operations",
+      "role": "Internal IT",
+      "identifiers": { "extension": "ext. 4100", "location": "IT workspace" }
+    }
+  },
+  "location": {
+    "id": "it-server-room",
+    "name": "IT Server Room and Test Bench",
+    "objects": [
+      {
+        "id": "mdt-server",
+        "name": "MDT Server (Microsoft Deployment Toolkit)",
+        "state": {
+          "status": "ready",
+          "win11ImagePath": "\\\\mdt\\deploymentshare$\\OS\\Win11-23H2",
+          "taskSequenceReady": true,
+          "applicationsCatalogReady": true
+        }
+      },
+      {
+        "id": "compat-scan",
+        "name": "Compatibility Scan Results",
+        "state": {
+          "totalMachines": 30,
+          "compatible": 22,
+          "incompatible": 8,
+          "failureReasons": ["TPM 1.2 only (no TPM 2.0)", "Unsupported CPU generation"],
+          "scanTool": "Windows 11 Health Check + direct hardware scan",
+          "scanDate": "2026-08-25T09:00:00Z"
+        }
+      }
+    ]
+  },
+  "nodes": [
+    {
+      "id": "intake",
+      "kind": "intro",
+      "title": "Intake and project kickoff",
+      "body": "Review the upgrade scope: 30 Windows 10 machines to be upgraded to Windows 11 23H2 before the new school year. Open the project ticket. Identify the 10 most critical applications that must be tested for compatibility.",
+      "transitions": [{ "event": "plan-recorded", "to": "assess-compat" }]
+    },
+    {
+      "id": "assess-compat",
+      "kind": "inspect",
+      "title": "Assess hardware compatibility",
+      "body": "Run the Windows 11 compatibility scan on all 30 machines. Record the results: 22 eligible (pass all checks), 8 ineligible (TPM 1.2 only, unsupported CPU). Save the scan report as evidence.",
+      "locationId": "it-server-room",
+      "objectId": "compat-scan",
+      "transitions": [{ "event": "evidence-saved", "to": "decide-compat" }]
+    },
+    {
+      "id": "decide-compat",
+      "kind": "decide",
+      "title": "Handle the 8 ineligible machines",
+      "body": "The compatibility scan is complete. 22 machines pass; 8 fail. Based on the scan results, choose the correct course of action for the upgrade project.",
+      "decisionPointId": "dp-compat",
+      "transitions": [{ "event": "decision-made", "to": "build-test-image" }]
+    },
+    {
+      "id": "build-test-image",
+      "kind": "intro",
+      "title": "Build and validate the test image",
+      "body": "Select one eligible machine as the pilot. Build the Windows 11 23H2 test image using the MDT task sequence. Apply Windows Update until current. Install the standard software suite. Validate the base image loads correctly.",
+      "transitions": [{ "event": "test-image-validated", "to": "test-apps" }]
+    },
+    {
+      "id": "test-apps",
+      "kind": "intro",
+      "title": "Test critical applications",
+      "body": "Install the 10 most critical school applications on the pilot machine. Run through the core use cases for each: launch, login, primary function, and shutdown. Record pass or fail for each application.",
+      "transitions": [{ "event": "app-test-complete", "to": "decide-sis" }]
+    },
+    {
+      "id": "decide-sis",
+      "kind": "decide",
+      "title": "Handle the SIS app compatibility flag",
+      "body": "The school's custom SIS app is flagged as potentially incompatible with Windows 11. The vendor has not issued a compatibility statement. Choose the right next step before the broader rollout.",
+      "decisionPointId": "dp-sis",
+      "transitions": [{ "event": "decision-made", "to": "test-rollback" }]
+    },
+    {
+      "id": "test-rollback",
+      "kind": "intro",
+      "title": "Test the rollback procedure",
+      "body": "Test the rollback procedure on the pilot machine. Confirm that a clean rollback to Windows 10 is possible. Record the rollback time and steps. Document the rollback criteria.",
+      "transitions": [{ "event": "rollback-tested", "to": "decide-rollback" }]
+    },
+    {
+      "id": "decide-rollback",
+      "kind": "decide",
+      "title": "Set rollback trigger criteria",
+      "body": "The rollback test is complete. A clean rollback is confirmed but takes 45 minutes per machine. Choose the correct rollback trigger criteria for the phased rollout.",
+      "decisionPointId": "dp-rollback",
+      "transitions": [{ "event": "decision-made", "to": "create-schedule" }]
+    },
+    {
+      "id": "create-schedule",
+      "kind": "document",
+      "title": "Create the upgrade schedule",
+      "body": "Produce the phased upgrade schedule. Group the 22 eligible machines into batches. Assign dates and times within the available maintenance windows. Account for rollback time in each batch window. Save the schedule as evidence.",
+      "prompt": "Write a draft upgrade schedule for the 22 compatible machines. Include batch groupings, dates, times, and the expected rollback window per batch.",
+      "transitions": [{ "event": "schedule-saved", "to": "create-comm" }]
+    },
+    {
+      "id": "create-comm",
+      "kind": "document",
+      "title": "Draft staff communication",
+      "body": "Draft a staff communication email that informs faculty about the Windows 11 upgrade. Include the timeline, what will be unavailable during the upgrade window, what data is safe, and who to contact if their machine has issues after the upgrade.",
+      "prompt": "Write a staff-facing email about the Windows 11 upgrade. Friendly tone, plain language. Include: what is happening, when their machine is scheduled, how long the machine will be unavailable, and who to contact for help.",
+      "transitions": [{ "event": "followup-saved", "to": "debrief" }]
+    },
+    {
+      "id": "debrief",
+      "kind": "debrief",
+      "title": "Debrief",
+      "body": "Review your score and identify what to practice next.",
+      "transitions": []
+    }
+  ],
+  "startNode": "intake",
+  "terminalNodes": ["debrief"],
+  "scoring": {
+    "weights": {
+      "diagnosis": 1,
+      "evidence": 1,
+      "troubleshooting": 1,
+      "resolution": 1,
+      "validation": 1
+    },
+    "thresholds": { "jobReady": 3 }
+  },
+  "methodology": [
+    "identify",
+    "scope",
+    "gather-evidence",
+    "hypothesize",
+    "test",
+    "validate",
+    "document",
+    "follow-up"
+  ],
+  "kbOpportunity": "Windows 11 hardware eligibility — TPM 2.0 and Secure Boot are hardware requirements that cannot be configured into machines that lack the necessary hardware. A machine that fails the compatibility scan due to TPM 1.2 only or an unsupported CPU cannot be upgraded without a hardware change.",
+  "skills": ["windows", "projects", "documentation"]
+}

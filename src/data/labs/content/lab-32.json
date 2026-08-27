@@ -1,0 +1,226 @@
+{
+  "id": "lab-32",
+  "schemaVersion": 1,
+  "contentVersion": 1,
+  "week": 8,
+  "order": 32,
+  "track": "asset",
+  "title": "Technology Inventory Audit",
+  "persona": "Director of Finance, Ms. Chen",
+  "channel": "email",
+  "scenario": "Ms. Chen, Director of Finance, requests a complete technology inventory of all MacBooks, iPads, Windows laptops, projectors, and printers in the lower school and main building. The annual audit is due Friday and last year's spreadsheet had many discrepancies. The CIO wants a single source of truth by end of week.",
+  "impact": "Compliance: without a verified inventory, the school cannot accurately report fixed assets for insurance, budgeting, and depreciation. Inaccurate records also affect warranty claims and loss/theft exposure.",
+  "objectives": [
+    "Define the scope of the audit and which asset categories are included",
+    "Identify the authoritative source of truth (MDM vs. spreadsheet vs. purchase ledger)",
+    "Compare records across systems and find discrepancies",
+    "Document each discrepancy with evidence and an owner",
+    "Produce a clean reconciled report for the CIO and Finance",
+    "Recommend process changes to prevent future drift"
+  ],
+  "tools": [
+    "MDM console (read-only inventory export)",
+    "Asset spreadsheet (shared drive)",
+    "Purchase ledger / PO system",
+    "Barcode scanner or camera",
+    "Documentation template"
+  ],
+  "evidence": [
+    { "id": "ev-export-mdm", "description": "Exported MDM inventory CSV for the audit window", "kind": "config" },
+    { "id": "ev-export-finance", "description": "Finance fixed-asset register snapshot used for comparison", "kind": "config" },
+    { "id": "ev-discrepancy-list", "description": "List of mismatches between MDM and Finance records with serial numbers", "kind": "note" }
+  ],
+  "decisionPoints": [
+    {
+      "id": "dp-source",
+      "prompt": "Which system should be treated as the authoritative source of truth for this audit?",
+      "options": [
+        {
+          "id": "opt-mdm",
+          "label": "The MDM inventory — it reflects what is actually deployed and enrolled right now",
+          "score": { "diagnosis": 1, "evidence": 1, "resolution": 1 },
+          "feedback": "Correct — MDM is the live source. The Finance ledger is accounting truth; MDM is operational truth. Reconcile them."
+        },
+        {
+          "id": "opt-finance",
+          "label": "The Finance fixed-asset register — it is the official record of what the school owns",
+          "score": { "diagnosis": 0, "evidence": 0, "resolution": 0 },
+          "feedback": "Finance is authoritative for accounting, but it does not reflect field reality. You need to reconcile both."
+        },
+        {
+          "id": "opt-spreadsheet",
+          "label": "The shared spreadsheet from last year — it is what people actually use day to day",
+          "score": { "diagnosis": -1, "evidence": -1, "resolution": -1 },
+          "feedback": "The shared spreadsheet is exactly what got you into trouble. Do not make it the source of truth."
+        }
+      ]
+    },
+    {
+      "id": "dp-discrepancy",
+      "prompt": "You find 14 iPads in Finance's register that do not appear in MDM. What is the most likely explanation and correct first action?",
+      "options": [
+        {
+          "id": "opt-remove-finance",
+          "label": "Remove the 14 from Finance as duplicates and assume they were double-counted",
+          "score": { "diagnosis": -1, "evidence": -1, "resolution": -1 },
+          "feedback": "Deleting records before confirming is destructive. You do not yet know if they were stolen, retired, or just unenrolled."
+        },
+        {
+          "id": "opt-physical-check",
+          "label": "Mark the 14 as 'needs physical verification' and dispatch a walk-through to locate them by serial number",
+          "score": { "diagnosis": 1, "evidence": 1, "resolution": 1 },
+          "feedback": "Correct — never modify a record until you have evidence. A physical sweep by serial number is the standard first step."
+        },
+        {
+          "id": "opt-reenroll",
+          "label": "Re-enroll all 14 iPads back into MDM and let MDM become the new truth",
+          "score": { "diagnosis": 0, "evidence": 0, "resolution": -1 },
+          "feedback": "Re-enrolling assumes you know where the devices are. You do not. Locate first, then re-enroll if appropriate."
+        }
+      ]
+    }
+  ],
+  "ticket": {
+    "type": "request",
+    "category": "Asset / Inventory",
+    "priority": "p3",
+    "impact": "medium",
+    "urgency": "medium",
+    "sla": "week",
+    "initialDescription": "Director of Finance (Ms. Chen) requests a complete, reconciled technology inventory for the annual audit. Due end of week.",
+    "requester": {
+      "name": "Ms. Chen",
+      "role": "Administrator",
+      "identifiers": { "department": "Finance", "office": "rm. 210A" }
+    }
+  },
+  "location": {
+    "id": "it-stockroom",
+    "name": "IT Stockroom and Audit Workspace",
+    "objects": [
+      {
+        "id": "mdm-export",
+        "name": "MDM Inventory Export (CSV)",
+        "state": {
+          "total_devices": 612,
+          "by_type": { "macbook": 184, "ipad": 220, "windows_laptop": 96, "windows_desktop": 38, "chromebook": 74 },
+          "last_export": "2026-08-26",
+          "enrollment_rate_pct": 94.3
+        }
+      },
+      {
+        "id": "finance-register",
+        "name": "Finance Fixed-Asset Register",
+        "state": {
+          "total_records": 641,
+          "by_type": { "macbook": 188, "ipad": 234, "windows_laptop": 102, "windows_desktop": 41, "chromebook": 76 },
+          "last_updated": "2026-06-30",
+          "status": "Annual close complete"
+        }
+      },
+      {
+        "id": "spreadsheet",
+        "name": "Shared Spreadsheet (last year's audit)",
+        "state": {
+          "total_rows": 658,
+          "last_touched": "2025-12-04",
+          "duplicate_serial_count": 11,
+          "missing_serial_count": 27
+        }
+      }
+    ]
+  },
+  "nodes": [
+    {
+      "id": "intro",
+      "kind": "intro",
+      "title": "Scope the audit",
+      "body": "Review the request from Ms. Chen. Clarify which buildings and which asset categories are in scope. Confirm the deadline and the format she expects for the report. Document the agreed scope before starting.",
+      "transitions": [{ "event": "scope-confirmed", "to": "inspect-systems" }]
+    },
+    {
+      "id": "inspect-systems",
+      "kind": "inspect",
+      "title": "Pull the source-of-truth exports",
+      "body": "Export the current MDM inventory and the Finance fixed-asset register. Save both as evidence. Do not start comparing until you have a frozen snapshot from each system.",
+      "locationId": "it-stockroom",
+      "objectId": "mdm-export",
+      "transitions": [
+        { "event": "evidence-saved", "to": "decide-source" }
+      ]
+    },
+    {
+      "id": "decide-source",
+      "kind": "decide",
+      "title": "Choose the authoritative source",
+      "body": "Decide which system you will treat as the source of truth for the operational view, and how you will reconcile against the accounting view.",
+      "decisionPointId": "dp-source",
+      "transitions": [
+        { "event": "decision-made", "to": "compare-records" }
+      ]
+    },
+    {
+      "id": "compare-records",
+      "kind": "inspect",
+      "title": "Compare records and find discrepancies",
+      "body": "Diff MDM against the Finance register by serial number. Tag every row as: matched, in MDM only, in Finance only, or in conflict. Save the discrepancy list as evidence.",
+      "locationId": "it-stockroom",
+      "objectId": "finance-register",
+      "transitions": [
+        { "event": "comparison-saved", "to": "decide-discrepancy" }
+      ]
+    },
+    {
+      "id": "decide-discrepancy",
+      "kind": "decide",
+      "title": "Handle the missing iPads",
+      "body": "You have a specific decision to make about the 14 iPads that appear in Finance but not in MDM. Pick the right first action.",
+      "decisionPointId": "dp-discrepancy",
+      "transitions": [
+        { "event": "decision-made", "to": "document" }
+      ]
+    },
+    {
+      "id": "document",
+      "kind": "document",
+      "title": "Produce the reconciled report",
+      "body": "Write a one-page summary for Ms. Chen: scope, methodology, total counts, top categories of discrepancy, owners, and proposed process improvements. Attach the full discrepancy list.",
+      "prompt": "Write the executive summary of the audit findings in plain language for the Director of Finance.",
+      "transitions": [
+        { "event": "report-saved", "to": "debrief" }
+      ]
+    },
+    {
+      "id": "debrief",
+      "kind": "debrief",
+      "title": "Debrief",
+      "body": "Review your score. Note the most important lesson: never modify an authoritative record before you have evidence. Identify which process gap caused the drift.",
+      "transitions": []
+    }
+  ],
+  "startNode": "intro",
+  "terminalNodes": ["debrief"],
+  "scoring": {
+    "weights": {
+      "diagnosis": 1,
+      "evidence": 1.2,
+      "troubleshooting": 0.8,
+      "resolution": 1,
+      "validation": 0.6
+    },
+    "thresholds": { "jobReady": 3 }
+  },
+  "methodology": [
+    "identify",
+    "scope",
+    "gather-evidence",
+    "hypothesize",
+    "test",
+    "change",
+    "validate",
+    "document",
+    "follow-up"
+  ],
+  "kbOpportunity": "Reconciling operational (MDM) and accounting (Finance register) sources of truth — establish a quarterly cadence and freeze snapshots before diffing.",
+  "skills": ["hardware-lifecycle", "documentation"]
+}

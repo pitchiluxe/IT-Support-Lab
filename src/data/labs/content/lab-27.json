@@ -1,0 +1,234 @@
+{
+  "id": "lab-27",
+  "schemaVersion": 1,
+  "contentVersion": 1,
+  "week": 7,
+  "order": 27,
+  "track": "network",
+  "title": "DNS / DHCP Incident",
+  "persona": "Mr. Rodriguez, Facilities Coordinator",
+  "channel": "phone",
+  "scenario": "Mr. Rodriguez calls the IT Service Desk. Over the past 30 minutes, the Facilities office has been receiving reports that 'most' devices in the building cannot reach the internet. He tried from his desktop, his laptop, and a phone on Wi-Fi — all show 'No Internet' in the browser. The problem appears to be growing. The school day is in full swing and several classes depend on online materials.",
+  "impact": "Operational: A building-wide network outage affecting most users. Classroom technology, parent communication, and administrative tools are unavailable until the network is restored.",
+  "objectives": [
+    "Confirm scope and severity of the incident quickly",
+    "Identify the layer at which the network is failing",
+    "Check core network services (DHCP, DNS, gateway) for evidence",
+    "Form a hypothesis and apply the correct mitigation",
+    "Restore service and validate across the building",
+    "Document the incident and any follow-up actions"
+  ],
+  "tools": [
+    "Network monitoring dashboard",
+    "DHCP server console",
+    "DNS server console",
+    "Core switch / router console",
+    "Service desk ticket system"
+  ],
+  "evidence": [
+    { "id": "ev-scope", "description": "Confirm 'most devices' — what percentage and which buildings are affected", "kind": "note" },
+    { "id": "ev-dhcp", "description": "DHCP scope status — lease pool exhaustion, service running state", "kind": "screenshot" },
+    { "id": "ev-dns", "description": "DNS service status and a sample query result from inside the network", "kind": "command-output" }
+  ],
+  "decisionPoints": [
+    {
+      "id": "dp-diagnosis",
+      "prompt": "Investigation shows the DHCP scope for the building is at 100% utilization (no free leases) and the DNS service is running but unreachable from clients. What is the root cause?",
+      "options": [
+        {
+          "id": "opt-dhcp",
+          "label": "The DHCP scope is exhausted — devices cannot get a valid IP, so the network appears broken",
+          "score": { "diagnosis": 0.9, "evidence": 0.9, "resolution": 0.9 },
+          "feedback": "Correct — an exhausted DHCP scope causes exactly these symptoms: a flood of devices with 169.254.x.x addresses and no real connectivity. The DNS service is running, but clients cannot reach it because they have no valid IP."
+        },
+        {
+          "id": "opt-internet",
+          "label": "The school's internet uplink is down",
+          "score": { "diagnosis": 0.2, "evidence": 0.1, "resolution": 0.2 },
+          "feedback": "An uplink outage would not produce an exhausted DHCP scope. The DHCP evidence is the key clue."
+        },
+        {
+          "id": "opt-attack",
+          "label": "A malicious actor has taken down the network",
+          "score": { "diagnosis": 0.1, "evidence": 0.0, "resolution": 0.1 },
+          "feedback": "There is no evidence of an attack. An exhausted DHCP scope is almost always a growth/usage issue (too many devices, scope too small)."
+        }
+      ]
+    },
+    {
+      "id": "dp-resolution",
+      "prompt": "What is the correct, immediate mitigation to restore service to the most users, fastest?",
+      "options": [
+        {
+          "id": "opt-expand",
+          "label": "Expand the DHCP scope so new devices can get an IP, then reconfigure the firewall to ensure DNS reachability",
+          "score": { "diagnosis": 0.9, "evidence": 0.9, "resolution": 0.9 },
+          "feedback": "Correct — expanding the scope is the direct fix for the immediate issue. A follow-up change should resize the scope permanently."
+        },
+        {
+          "id": "opt-restart",
+          "label": "Restart the DHCP service and wait",
+          "score": { "diagnosis": 0.3, "evidence": 0.2, "resolution": 0.2 },
+          "feedback": "Restarting DHCP does not add addresses to the scope. The pool is full because it is too small for the device count."
+        },
+        {
+          "id": "opt-rebuild",
+          "label": "Rebuild the entire network from scratch",
+          "score": { "diagnosis": 0.0, "evidence": 0.0, "resolution": -1.0 },
+          "feedback": "Destructive and unwarranted. A scope expansion is a 5-minute change, not a rebuild."
+        }
+      ]
+    }
+  ],
+  "ticket": {
+    "type": "major-incident",
+    "category": "Network / DHCP-DNS",
+    "priority": "p1",
+    "impact": "high",
+    "urgency": "high",
+    "sla": "24x7",
+    "initialDescription": "Building-wide network outage. Most devices cannot reach the internet. DHCP scope at 100%. School day in progress.",
+    "requester": {
+      "name": "Mr. Rodriguez",
+      "role": "Operations",
+      "identifiers": { "department": "Facilities", "location": "facility B" }
+    }
+  },
+  "location": {
+    "id": "network-ops",
+    "name": "Network Operations Center",
+    "objects": [
+      {
+        "id": "dhcp-scope",
+        "name": "Building DHCP Scope",
+        "state": {
+          "scopeName": "BLDG-A-10.40.0.0/22",
+          "totalAddresses": 1022,
+          "inUse": 1022,
+          "free": 0
+        }
+      },
+      {
+        "id": "dns-service",
+        "name": "DNS Service",
+        "state": {
+          "running": true,
+          "reachableFromOps": true,
+          "reachableFromClients": false
+        }
+      }
+    ]
+  },
+  "nodes": [
+    {
+      "id": "intake",
+      "kind": "intro",
+      "title": "Take the call — major incident",
+      "body": "Take the call. Verify the user. Note the report of 'most devices' affected. Open a P1 major-incident ticket. Begin the major-incident communication protocol.",
+      "transitions": [{ "event": "ticket-opened", "to": "confirm-scope" }]
+    },
+    {
+      "id": "confirm-scope",
+      "kind": "inspect",
+      "title": "Confirm scope and severity",
+      "body": "Check the network monitoring dashboard. Confirm the building(s) and percentage of devices affected. Document the scope.",
+      "locationId": "network-ops",
+      "objectId": "dhcp-scope",
+      "transitions": [
+        { "event": "scope-saved", "to": "inspect-core" }
+      ]
+    },
+    {
+      "id": "inspect-core",
+      "kind": "inspect",
+      "title": "Inspect core services",
+      "body": "Check DHCP scope utilization, DNS service status, and gateway reachability. Capture evidence of which layer is failing.",
+      "locationId": "network-ops",
+      "objectId": "dns-service",
+      "transitions": [
+        { "event": "evidence-saved", "to": "decide-diagnosis" }
+      ]
+    },
+    {
+      "id": "decide-diagnosis",
+      "kind": "decide",
+      "title": "Identify the root cause",
+      "body": "Based on the evidence — DHCP scope exhausted, DNS running but unreachable from clients — what is the root cause?",
+      "decisionPointId": "dp-diagnosis",
+      "transitions": [
+        { "event": "decision-made", "to": "decide-resolution" }
+      ]
+    },
+    {
+      "id": "decide-resolution",
+      "kind": "decide",
+      "title": "Choose the mitigation",
+      "body": "Pick the immediate mitigation that will restore service to the most users fastest.",
+      "decisionPointId": "dp-resolution",
+      "transitions": [
+        { "event": "decision-made", "to": "remediate" }
+      ]
+    },
+    {
+      "id": "remediate",
+      "kind": "remediate",
+      "title": "Expand the scope",
+      "body": "Expand the DHCP scope to a larger subnet or temporarily reduce lease time. Verify the firewall allows clients to reach the DNS server. Trigger a scope renewal and watch utilization drop.",
+      "transitions": [
+        { "event": "fix-applied", "to": "validate" }
+      ]
+    },
+    {
+      "id": "validate",
+      "kind": "remediate",
+      "title": "Validate across the building",
+      "body": "Confirm the network is restored by testing from a sample of classrooms, offices, and Wi-Fi. Watch the monitoring dashboard for steady state. Document the time to restore.",
+      "transitions": [
+        { "event": "validation-saved", "to": "document" }
+      ]
+    },
+    {
+      "id": "document",
+      "kind": "document",
+      "title": "Document the incident",
+      "body": "Write a major-incident report: timeline, root cause, mitigation, time-to-restore, and follow-up actions. Notify the change owner to permanently resize the DHCP scope. Send a summary to stakeholders.",
+      "prompt": "Write a brief incident summary to send to the school's admin team explaining what happened and what is being done to prevent it.",
+      "transitions": [
+        { "event": "followup-saved", "to": "debrief" }
+      ]
+    },
+    {
+      "id": "debrief",
+      "kind": "debrief",
+      "title": "Debrief",
+      "body": "Review your score. A KB article on recognizing DHCP scope exhaustion and the difference between a local DNS issue and a DHCP-rooted network outage would help the next on-call technician.",
+      "transitions": []
+    }
+  ],
+  "startNode": "intake",
+  "terminalNodes": ["debrief"],
+  "scoring": {
+    "weights": {
+      "diagnosis": 1.5,
+      "evidence": 1,
+      "troubleshooting": 1.2,
+      "resolution": 1,
+      "validation": 1
+    },
+    "thresholds": { "jobReady": 3 }
+  },
+  "methodology": [
+    "identify",
+    "scope",
+    "reproduce",
+    "gather-evidence",
+    "hypothesize",
+    "test",
+    "change",
+    "validate",
+    "document",
+    "follow-up"
+  ],
+  "kbOpportunity": "A building-wide 'no internet' report with DHCP scope at 100% is scope exhaustion, not an uplink or DNS outage. Expand the scope first, then file a permanent resize change.",
+  "skills": ["networking", "incident-response", "documentation"]
+}

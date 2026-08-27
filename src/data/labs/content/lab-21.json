@@ -1,0 +1,215 @@
+{
+  "id": "lab-21",
+  "schemaVersion": 1,
+  "contentVersion": 1,
+  "week": 6,
+  "order": 21,
+  "track": "mdm",
+  "title": "MDM Enrollment Issues",
+  "persona": "Mrs. Hayes, 4th-grade Teacher",
+  "channel": "email",
+  "scenario": "Mrs. Hayes submits a ticket: a new iPad issued for her classroom will not complete MDM enrollment. The iPad shows the Apple Setup Assistant but when she gets to the Remote Management step, the device errors out with 'Profile Installation Failed' and loops back. The iPad is brand new, has never been signed in, and is in the original box. IT issued it yesterday and a setup profile is supposed to push automatically.",
+  "impact": "Instructional: A new classroom iPad is unusable. The 18 students in this teacher's morning literacy block have no digital reading device until the iPad is enrolled and configured.",
+  "objectives": [
+    "Identify the device serial and confirm it is in the MDM inventory",
+    "Check the MDM console for any assignment, profile, or DEP errors for this device",
+    "Determine whether the issue is device-side, network-side, or MDM-side",
+    "Take the least-risky remediation to complete enrollment",
+    "Validate the iPad is fully managed and receiving profiles",
+    "Document the fix and follow up with the teacher"
+  ],
+  "tools": [
+    "Apple Business Manager (ABM) / Apple School Manager (ASM)",
+    "MDM console (JAMF / equivalent)",
+    "iPad Settings app",
+    "Service desk ticket system",
+    "Network status board"
+  ],
+  "evidence": [
+    { "id": "ev-serial", "description": "Device serial number and ABM/ASM assignment record", "kind": "note" },
+    { "id": "ev-mdm-state", "description": "Screenshot of the MDM console showing this device's current state and any error", "kind": "screenshot" },
+    { "id": "ev-network", "description": "Confirmation that the iPad can reach the internet and the MDM URL", "kind": "note" }
+  ],
+  "decisionPoints": [
+    {
+      "id": "dp-diagnosis",
+      "prompt": "The MDM console shows the device is assigned to the school in ABM/ASM but the enrollment profile payload is failing with a 'MDM server not reachable' error. What is the most likely cause?",
+      "options": [
+        {
+          "id": "opt-network",
+          "label": "The iPad cannot reach the school's MDM server URL over the network — likely a firewall or DNS issue",
+          "score": { "diagnosis": 0.9, "evidence": 0.9, "resolution": 0.8 },
+          "feedback": "Correct — MDM enrollment requires network reachability to the MDM server URL. The error message is the key clue."
+        },
+        {
+          "id": "opt-apple-id",
+          "label": "The device is not signed in to a Managed Apple ID, blocking profile installation",
+          "score": { "diagnosis": 0.4, "evidence": 0.3, "resolution": 0.3 },
+          "feedback": "Apple ID is part of the flow but the specific error is 'server not reachable', which is a network symptom, not an account symptom."
+        },
+        {
+          "id": "opt-broken",
+          "label": "The iPad hardware is defective and must be replaced",
+          "score": { "diagnosis": 0.1, "evidence": 0.0, "resolution": 0.0 },
+          "feedback": "Replacing the iPad would not fix a network reachability issue. The error message points to network, not hardware."
+        }
+      ]
+    },
+    {
+      "id": "dp-test",
+      "prompt": "Which is the best first test to confirm or rule out the network hypothesis?",
+      "options": [
+        {
+          "id": "opt-test-url",
+          "label": "On the iPad, open Safari to test general internet, then check if the MDM URL resolves",
+          "score": { "diagnosis": 0.9, "evidence": 0.9, "resolution": 0.7 },
+          "feedback": "Correct — this isolates whether the iPad has general internet access and whether the MDM URL specifically is reachable."
+        },
+        {
+          "id": "opt-erase",
+          "label": "Erase the iPad and start the Setup Assistant over from scratch",
+          "score": { "diagnosis": 0.3, "evidence": 0.0, "resolution": 0.0 },
+          "feedback": "An erase is not a test — it makes the same network call again. Test connectivity first."
+        },
+        {
+          "id": "opt-reassign",
+          "label": "Unassign and re-assign the device in ABM/ASM and try again",
+          "score": { "diagnosis": 0.4, "evidence": 0.1, "resolution": 0.2 },
+          "feedback": "Reassigning does not fix a network reachability problem. It only helps if the assignment itself was the issue, which the error message says is not the case."
+        }
+      ]
+    }
+  ],
+  "ticket": {
+    "type": "incident",
+    "category": "MDM / Enrollment",
+    "priority": "p2",
+    "impact": "medium",
+    "urgency": "high",
+    "sla": "business-hours",
+    "initialDescription": "New classroom iPad will not complete MDM enrollment. Error: 'Profile Installation Failed — MDM server not reachable'. Affects Mrs. Hayes' K-4 literacy block.",
+    "requester": {
+      "name": "Mrs. Hayes",
+      "role": "Faculty",
+      "identifiers": { "grade": "4th grade", "location": "rm. 12B" }
+    }
+  },
+  "location": {
+    "id": "faculty-office",
+    "name": "Classroom 12B",
+    "objects": [
+      {
+        "id": "new-ipad",
+        "name": "New Classroom iPad (un-enrolled)",
+        "state": {
+          "model": "iPad 10th gen",
+          "iosVersion": "iPadOS 17.5",
+          "serial": "F4LZK9ABCD",
+          "abmAssigned": true,
+          "enrollmentState": "Profile Installation Failed",
+          "lastError": "MDM server not reachable"
+        }
+      }
+    ]
+  },
+  "nodes": [
+    {
+      "id": "intake",
+      "kind": "intro",
+      "title": "Receive the ticket",
+      "body": "Review Mrs. Hayes' email. Note the device model, the exact error message, and when the iPad was issued. Open a ticket. The teacher's morning class is the deadline.",
+      "transitions": [{ "event": "ticket-opened", "to": "inspect-mdm" }]
+    },
+    {
+      "id": "inspect-mdm",
+      "kind": "inspect",
+      "title": "Inspect the device in MDM and ABM",
+      "body": "Look up the iPad's serial in the MDM console. Note its current enrollment state, any error messages, and the assigned profile. Cross-check ABM/ASM to confirm assignment to the school's MDM server.",
+      "locationId": "faculty-office",
+      "objectId": "new-ipad",
+      "transitions": [
+        { "event": "evidence-saved", "to": "decide-diagnosis" }
+      ]
+    },
+    {
+      "id": "decide-diagnosis",
+      "kind": "decide",
+      "title": "Identify the cause",
+      "body": "Based on the MDM error 'MDM server not reachable', what is the most likely cause?",
+      "decisionPointId": "dp-diagnosis",
+      "transitions": [
+        { "event": "decision-made", "to": "decide-test" }
+      ]
+    },
+    {
+      "id": "decide-test",
+      "kind": "decide",
+      "title": "Choose the next test",
+      "body": "Pick the least-risky test that will confirm or rule out your hypothesis before making changes.",
+      "decisionPointId": "dp-test",
+      "transitions": [
+        { "event": "decision-made", "to": "remediate" }
+      ]
+    },
+    {
+      "id": "remediate",
+      "kind": "remediate",
+      "title": "Restore reachability and re-enroll",
+      "body": "The iPad cannot reach the MDM URL because the guest network blocks internal DNS. Move the iPad to the staff network for the initial setup, or open the firewall to allow the MDM URL. Re-attempt the Remote Management step.",
+      "transitions": [
+        { "event": "fix-applied", "to": "validate" }
+      ]
+    },
+    {
+      "id": "validate",
+      "kind": "remediate",
+      "title": "Validate enrollment",
+      "body": "Confirm in the MDM console that the device shows as 'Supervised' and is receiving its configuration profile. Verify Classroom and other required apps are pushed to the iPad.",
+      "transitions": [
+        { "event": "validation-saved", "to": "document" }
+      ]
+    },
+    {
+      "id": "document",
+      "kind": "document",
+      "title": "Document the fix",
+      "body": "Write a ticket note: cause (network reachability to MDM URL), fix (network change or short-lived workaround), and validation. Send a follow-up to Mrs. Hayes confirming the iPad is ready.",
+      "prompt": "Write a brief follow-up to Mrs. Hayes confirming the iPad is enrolled and ready for class.",
+      "transitions": [
+        { "event": "followup-saved", "to": "debrief" }
+      ]
+    },
+    {
+      "id": "debrief",
+      "kind": "debrief",
+      "title": "Debrief",
+      "body": "Review your score. Consider how to differentiate 'Profile Installation Failed — server not reachable' from other enrollment errors.",
+      "transitions": []
+    }
+  ],
+  "startNode": "intake",
+  "terminalNodes": ["debrief"],
+  "scoring": {
+    "weights": {
+      "diagnosis": 1.2,
+      "evidence": 1,
+      "troubleshooting": 1,
+      "resolution": 1,
+      "validation": 0.8
+    },
+    "thresholds": { "jobReady": 3 }
+  },
+  "methodology": [
+    "identify",
+    "scope",
+    "gather-evidence",
+    "hypothesize",
+    "test",
+    "change",
+    "validate",
+    "document",
+    "follow-up"
+  ],
+  "kbOpportunity": "MDM enrollment 'server not reachable' errors almost always indicate a network path issue (firewall, DNS, or VLAN), not a device defect. Test MDM URL reachability before any device reset.",
+  "skills": ["mdm", "apple", "networking", "ticketing"]
+}

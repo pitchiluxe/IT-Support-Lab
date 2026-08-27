@@ -1,0 +1,221 @@
+{
+  "id": "lab-24",
+  "schemaVersion": 1,
+  "contentVersion": 1,
+  "week": 7,
+  "order": 24,
+  "track": "mdm",
+  "title": "Device Compliance",
+  "persona": "Mr. Davis, Middle School Science Teacher",
+  "channel": "phone",
+  "scenario": "Mr. Davis calls the IT Service Desk. This morning his school-issued MacBook started blocking him from signing in to email and Google Workspace. The screen shows a message from MDM: 'This device does not meet compliance requirements. Encryption is not enabled.' He is on his way to teach his first class. He says he did not change anything intentionally and the MacBook was working yesterday.",
+  "impact": "Operational: A faculty member cannot access email, calendar, or Google services on his school-issued device. Communication with parents and administration is blocked until compliance is restored.",
+  "objectives": [
+    "Identify the compliance check that failed and why",
+    "Confirm scope — is this device-specific or affecting others?",
+    "Gather evidence from the MDM console and the device",
+    "Choose the least-risky remediation to restore compliance",
+    "Validate the device is back to compliant and the user can sign in",
+    "Document the incident and follow up"
+  ],
+  "tools": [
+    "MDM console (compliance report)",
+    "FileVault status (macOS)",
+    "Device encryption audit log",
+    "Service desk ticket system"
+  ],
+  "evidence": [
+    { "id": "ev-compliance", "description": "Screenshot of the MDM compliance report for this device", "kind": "screenshot" },
+    { "id": "ev-filevault", "description": "FileVault status and encryption progress from the device", "kind": "command-output" },
+    { "id": "ev-scope", "description": "Check whether other MacBooks in the fleet show the same failure", "kind": "note" }
+  ],
+  "decisionPoints": [
+    {
+      "id": "dp-diagnosis",
+      "prompt": "The MDM compliance report shows this device is the only one with 'FileVault disabled'. All other fleet devices are encrypted. What is the most likely cause?",
+      "options": [
+        {
+          "id": "opt-recent",
+          "label": "FileVault was disabled recently, likely by a software update or a user action, and the device has not yet re-encrypted",
+          "score": { "diagnosis": 0.9, "evidence": 0.9, "resolution": 0.9 },
+          "feedback": "Correct — a single non-compliant device with a specific recent state change is the classic pattern. The fix is to re-enable FileVault and wait for encryption to complete."
+        },
+        {
+          "id": "opt-profile",
+          "label": "The MDM FileVault enforcement profile was removed and is no longer being delivered to the device",
+          "score": { "diagnosis": 0.3, "evidence": 0.2, "resolution": 0.3 },
+          "feedback": "A missing profile would affect all devices that received the removal, not just this one. The evidence points to a single-device state change."
+        },
+        {
+          "id": "opt-stolen",
+          "label": "The device has been stolen and someone disabled FileVault",
+          "score": { "diagnosis": 0.1, "evidence": -0.2, "resolution": 0.1 },
+          "feedback": "If the device were stolen, the user would not be on the phone with you. The user has the device in hand and is teaching class today."
+        }
+      ]
+    },
+    {
+      "id": "dp-resolution",
+      "prompt": "What is the correct remediation to restore compliance with the least risk and the least user disruption?",
+      "options": [
+        {
+          "id": "opt-reenable",
+          "label": "Push the FileVault enforcement profile from MDM to re-enable encryption and escrow the recovery key",
+          "score": { "diagnosis": 0.9, "evidence": 0.9, "resolution": 0.9 },
+          "feedback": "Correct — re-pushing the profile re-enables FileVault automatically and stores the recovery key centrally. Low user disruption."
+        },
+        {
+          "id": "opt-wipe",
+          "label": "Wipe the MacBook and rebuild it from a standard image",
+          "score": { "diagnosis": 0.1, "evidence": 0.0, "resolution": -0.5 },
+          "feedback": "Destructive and unwarranted. Re-enabling FileVault does not require a wipe and would not lose user data."
+        },
+        {
+          "id": "opt-waiver",
+          "label": "Issue a temporary compliance waiver for this device and revisit next month",
+          "score": { "diagnosis": 0.2, "evidence": 0.1, "resolution": 0.1 },
+          "feedback": "Waivers are for documented exceptions, not single-device state changes. The right action is to restore compliance, not bypass it."
+        }
+      ]
+    }
+  ],
+  "ticket": {
+    "type": "incident",
+    "category": "MDM / Compliance",
+    "priority": "p2",
+    "impact": "medium",
+    "urgency": "high",
+    "sla": "business-hours",
+    "initialDescription": "Faculty MacBook blocked from Google Workspace due to MDM compliance failure: FileVault disabled. First class in 30 minutes.",
+    "requester": {
+      "name": "Mr. Davis",
+      "role": "Faculty",
+      "identifiers": { "extension": "ext. 5207", "location": "rm. 207" }
+    }
+  },
+  "location": {
+    "id": "service-desk",
+    "name": "IT Service Desk",
+    "objects": [
+      {
+        "id": "mdm-compliance",
+        "name": "MDM Compliance Dashboard",
+        "state": {
+          "totalDevices": 240,
+          "compliant": 239,
+          "nonCompliant": 1,
+          "nonCompliantDevices": ["MB-Davis-018"]
+        }
+      }
+    ]
+  },
+  "nodes": [
+    {
+      "id": "intake",
+      "kind": "intro",
+      "title": "Take the call",
+      "body": "Take the call. Verify identity. Note the device (school MacBook), the user, and the exact error message. Open a P2 ticket.",
+      "transitions": [{ "event": "ticket-opened", "to": "inspect-mdm" }]
+    },
+    {
+      "id": "inspect-mdm",
+      "kind": "inspect",
+      "title": "Inspect compliance state",
+      "body": "Open the MDM compliance dashboard. Confirm the device is the only one failing, capture the failing check (FileVault), and check the device's last-check-in time. Save evidence.",
+      "locationId": "service-desk",
+      "objectId": "mdm-compliance",
+      "transitions": [
+        { "event": "evidence-saved", "to": "scope-check" }
+      ]
+    },
+    {
+      "id": "scope-check",
+      "kind": "intro",
+      "title": "Confirm scope",
+      "body": "Confirm this is a single-device failure, not a fleet-wide compliance problem. Document the scope and the recent change (likely a software update or a user action that disabled FileVault).",
+      "transitions": [
+        { "event": "scope-saved", "to": "decide-diagnosis" }
+      ]
+    },
+    {
+      "id": "decide-diagnosis",
+      "kind": "decide",
+      "title": "Identify the root cause",
+      "body": "Based on the evidence — a single device, FileVault disabled, others compliant — what is the most likely cause?",
+      "decisionPointId": "dp-diagnosis",
+      "transitions": [
+        { "event": "decision-made", "to": "decide-resolution" }
+      ]
+    },
+    {
+      "id": "decide-resolution",
+      "kind": "decide",
+      "title": "Choose the remediation",
+      "body": "Pick the least-risky remediation that will restore compliance with the least user disruption.",
+      "decisionPointId": "dp-resolution",
+      "transitions": [
+        { "event": "decision-made", "to": "remediate" }
+      ]
+    },
+    {
+      "id": "remediate",
+      "kind": "remediate",
+      "title": "Re-enable FileVault",
+      "body": "Push the FileVault enforcement profile from the MDM console. Confirm the device begins re-encryption. Ensure the recovery key is escrowed to MDM. Notify the user that email access will resume shortly.",
+      "transitions": [
+        { "event": "fix-applied", "to": "validate" }
+      ]
+    },
+    {
+      "id": "validate",
+      "kind": "remediate",
+      "title": "Validate",
+      "body": "Confirm in the MDM console that the device is now compliant. Have the user verify email and Google Workspace sign-in works. Save validation evidence.",
+      "transitions": [
+        { "event": "validation-saved", "to": "document" }
+      ]
+    },
+    {
+      "id": "document",
+      "kind": "document",
+      "title": "Document and follow up",
+      "body": "Close the ticket with: the failing check, the root cause, the remediation, and the validation. Follow up with the user to confirm they are back in business.",
+      "prompt": "Write a brief follow-up to Mr. Davis confirming his MacBook is compliant again and email is restored.",
+      "transitions": [
+        { "event": "followup-saved", "to": "debrief" }
+      ]
+    },
+    {
+      "id": "debrief",
+      "kind": "debrief",
+      "title": "Debrief",
+      "body": "Review your score. Think about the difference between a single-device compliance failure and a fleet-wide one — different escalation paths apply.",
+      "transitions": []
+    }
+  ],
+  "startNode": "intake",
+  "terminalNodes": ["debrief"],
+  "scoring": {
+    "weights": {
+      "diagnosis": 1.2,
+      "evidence": 1,
+      "troubleshooting": 1,
+      "resolution": 1,
+      "validation": 0.8
+    },
+    "thresholds": { "jobReady": 3 }
+  },
+  "methodology": [
+    "identify",
+    "scope",
+    "gather-evidence",
+    "hypothesize",
+    "test",
+    "change",
+    "validate",
+    "document",
+    "follow-up"
+  ],
+  "kbOpportunity": "Single-device MDM compliance failures often follow a recent state change (update, user action). Re-pushing the enforcement profile restores compliance without a wipe or rebuild.",
+  "skills": ["mdm", "security-awareness", "ticketing"]
+}

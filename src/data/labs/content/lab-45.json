@@ -1,0 +1,212 @@
+{
+  "id": "lab-45",
+  "schemaVersion": 1,
+  "contentVersion": 1,
+  "week": 11,
+  "order": 45,
+  "track": "operations",
+  "title": "Security-Sensitive Request",
+  "persona": "Mr. Allen, 11th-grade teacher",
+  "channel": "email",
+  "scenario": "Mr. Allen, an 11th-grade teacher, emails the help desk asking to bulk-export all student email addresses and grade levels from the SIS to use for an external newsletter service he is testing. He wants the export in CSV format by end of day.",
+  "impact": "Compliance and legal: student personally identifiable information (PII) is regulated by FERPA in the US. A bulk export of student data to an external service without proper authorization is a privacy violation and a reportable incident.",
+  "objectives": [
+    "Recognize the request as security-sensitive and FERPA-relevant",
+    "Verify the requester's identity and authority to request student data",
+    "Assess the request against the school's data-handling policy",
+    "Refuse or escalate as appropriate — do not act unilaterally",
+    "Document the request and the decision in the ticket",
+    "Communicate the policy and the correct process to Mr. Allen"
+  ],
+  "tools": [
+    "Data handling policy",
+    "FERPA compliance checklist",
+    "Ticket system",
+    "Communication templates",
+    "Escalation contact list (CIO, legal)"
+  ],
+  "evidence": [
+    { "id": "ev-request-eval", "description": "Written evaluation of the request against the data handling policy and FERPA", "kind": "note" },
+    { "id": "ev-escalation", "description": "Escalation record to the CIO including the original request and your evaluation", "kind": "note" },
+    { "id": "ev-policy-comm", "description": "Communication to Mr. Allen explaining the policy and the correct process", "kind": "note" }
+  ],
+  "decisionPoints": [
+    {
+      "id": "dp-first-action",
+      "prompt": "What is the first action when you receive a request for bulk student PII?",
+      "options": [
+        {
+          "id": "opt-partial-export",
+          "label": "Provide a partial export with just the names so the teacher can finish his task on time",
+          "score": { "diagnosis": -1, "evidence": -1, "resolution": -1 },
+          "feedback": "Even a partial export without authorization is a FERPA violation. Do not export any student data without approval."
+        },
+        {
+          "id": "opt-verify-evaluate",
+          "label": "Verify the requester's identity and authority, then evaluate the request against the data handling policy",
+          "score": { "diagnosis": 1, "evidence": 1, "resolution": 1 },
+          "feedback": "Correct — verify the requester, evaluate against policy, and do not export without explicit authorization. Speed is not a justification."
+        },
+        {
+          "id": "opt-fulfill-by-eod",
+          "label": "Honor the end-of-day deadline and prepare the export",
+          "score": { "diagnosis": -1, "evidence": -1, "resolution": -1 },
+          "feedback": "Deadlines do not override FERPA. A teacher-imposed deadline is not a valid authorization for bulk student PII."
+        }
+      ]
+    },
+    {
+      "id": "dp-escalation",
+      "prompt": "The data handling policy requires CIO and legal approval for any export of student PII to an external service. The CIO is the right escalation. What is the right tone in the escalation?",
+      "options": [
+        {
+          "id": "opt-casual-email",
+          "label": "Casual email — 'FYI a teacher is asking for student data, can you take a look when you have a moment'",
+          "score": { "diagnosis": -1, "evidence": -1, "resolution": -1 },
+          "feedback": "Casual framing undersells the risk and may delay decision. A security-sensitive request deserves a clear, urgent escalation."
+        },
+        {
+          "id": "opt-clear-urgent",
+          "label": "Clear, urgent, and structured: request, policy, recommended action, deadline, and risk if not decided",
+          "score": { "diagnosis": 1, "evidence": 1, "resolution": 1 },
+          "feedback": "Correct — give the CIO everything they need to make a fast, defensible decision: the request, the policy gap, your recommendation, and the deadline."
+        },
+        {
+          "id": "opt-no-escalation",
+          "label": "Do not escalate — handle it yourself and just decline the teacher",
+          "score": { "diagnosis": 0, "evidence": 0, "resolution": -1 },
+          "feedback": "Even if you decline, the policy requires escalation of the original request for record-keeping. The CIO also needs awareness of the pattern."
+        }
+      ]
+    }
+  ],
+  "ticket": {
+    "type": "request",
+    "category": "Security / Data Privacy",
+    "priority": "p2",
+    "impact": "high",
+    "urgency": "high",
+    "sla": "business-hours",
+    "initialDescription": "Teacher (Mr. Allen) requests a bulk CSV export of all student email addresses and grade levels from the SIS for an external newsletter service. End-of-day deadline imposed by requester.",
+    "requester": {
+      "name": "Mr. Allen",
+      "role": "Faculty",
+      "identifiers": { "department": "Upper School", "room": "rm. 22D" }
+    }
+  },
+  "location": {
+    "id": "it-service-desk",
+    "name": "IT Service Desk",
+    "objects": [
+      {
+        "id": "data-policy",
+        "name": "Data Handling Policy (excerpt)",
+        "state": {
+          "applies_to": "all student PII",
+          "regulations": ["FERPA", "state student privacy law"],
+          "approval_required_for_external_export": "CIO + legal",
+          "approved_vendors": "none for student contact data",
+          "audit_log_required": true
+        }
+      },
+      {
+        "id": "sis-screen",
+        "name": "SIS Data Access (locked)",
+        "state": {
+          "export_enabled": false,
+          "audit_log": "all access logged",
+          "current_requester_role": "Teacher (no bulk export entitlement)"
+        }
+      }
+    ]
+  },
+  "nodes": [
+    {
+      "id": "intro",
+      "kind": "intro",
+      "title": "Receive the request",
+      "body": "Read Mr. Allen's email carefully. Recognize the request as security-sensitive: bulk export of student PII to an external service. Note the end-of-day deadline — do not let the deadline pressure you into acting without authorization.",
+      "transitions": [{ "event": "request-recognized", "to": "verify-requester" }]
+    },
+    {
+      "id": "verify-requester",
+      "kind": "inspect",
+      "title": "Verify the requester",
+      "body": "Confirm Mr. Allen is a current teacher. Confirm he is authorized to receive student contact data for educational purposes within the school, but not to export it to an external service. Save verification notes.",
+      "locationId": "it-service-desk",
+      "objectId": "sis-screen",
+      "transitions": [
+        { "event": "requester-verified", "to": "decide-first-action" }
+      ]
+    },
+    {
+      "id": "decide-first-action",
+      "kind": "decide",
+      "title": "Decide the first action",
+      "body": "Choose the right first action for a request involving bulk student PII.",
+      "decisionPointId": "dp-first-action",
+      "transitions": [
+        { "event": "decision-made", "to": "evaluate-policy" }
+      ]
+    },
+    {
+      "id": "evaluate-policy",
+      "kind": "inspect",
+      "title": "Evaluate against policy",
+      "body": "Review the data handling policy. Determine that the request is not covered by Mr. Allen's authority and requires CIO + legal approval. Save the policy evaluation as evidence.",
+      "locationId": "it-service-desk",
+      "objectId": "data-policy",
+      "transitions": [
+        { "event": "policy-eval-saved", "to": "decide-escalation" }
+      ]
+    },
+    {
+      "id": "decide-escalation",
+      "kind": "decide",
+      "title": "Escalate to the CIO",
+      "body": "Choose the right tone and content for the escalation to the CIO.",
+      "decisionPointId": "dp-escalation",
+      "transitions": [
+        { "event": "decision-made", "to": "document" }
+      ]
+    },
+    {
+      "id": "document",
+      "kind": "document",
+      "title": "Document and respond to Mr. Allen",
+      "body": "Update the ticket with the policy evaluation, the escalation, and the decision. Send a clear, friendly email to Mr. Allen explaining the policy, why the request is paused, and the correct process (request approval via CIO, use a school-approved vendor).",
+      "prompt": "Write the email to Mr. Allen explaining the policy pause, why student data cannot be exported to an external service without approval, and the correct process to follow.",
+      "transitions": [
+        { "event": "policy-comm-sent", "to": "debrief" }
+      ]
+    },
+    {
+      "id": "debrief",
+      "kind": "debrief",
+      "title": "Debrief",
+      "body": "Review the response. Key lessons: every bulk PII request is security-sensitive, deadlines do not override FERPA, and the correct response is to verify, evaluate, escalate, and document — never to act unilaterally.",
+      "transitions": []
+    }
+  ],
+  "startNode": "intro",
+  "terminalNodes": ["debrief"],
+  "scoring": {
+    "weights": {
+      "diagnosis": 1,
+      "evidence": 1.2,
+      "troubleshooting": 0.4,
+      "resolution": 1,
+      "validation": 0.6
+    },
+    "thresholds": { "jobReady": 3 }
+  },
+  "methodology": [
+    "identify",
+    "scope",
+    "gather-evidence",
+    "document",
+    "follow-up"
+  ],
+  "kbOpportunity": "Security-sensitive request playbook: verify requester → evaluate against data handling policy and FERPA → escalate to CIO + legal → do not export without authorization → communicate policy to requester → document everything.",
+  "skills": ["security-awareness", "ticketing"]
+}

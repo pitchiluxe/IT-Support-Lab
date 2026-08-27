@@ -1,0 +1,230 @@
+{
+  "id": "lab-29",
+  "schemaVersion": 1,
+  "contentVersion": 1,
+  "week": 8,
+  "order": 29,
+  "track": "classroom-tech",
+  "title": "Projector / Display Incident",
+  "persona": "Mr. Thompson, Math Teacher",
+  "channel": "phone",
+  "scenario": "Mr. Thompson calls the IT Service Desk. The ceiling-mounted projector in classroom 204 is showing a blue screen with 'No Signal' even though his MacBook is plugged in via HDMI. He has tried the input button on the wall plate and on the projector's remote, but the projector does not detect the laptop. He can hear the laptop's audio playing through the room's speakers, which suggests the cable is at least partially connected. Class starts in 12 minutes.",
+  "impact": "Instructional: A 9th-grade math class will be without the planned projected lesson materials. The teacher can proceed verbally but cannot show the planned graphs and problem sets.",
+  "objectives": [
+    "Verify the projector state and the input source",
+    "Determine whether the issue is the laptop, the cable, the input, or the projector",
+    "Form a hypothesis and apply the least-risky test",
+    "Restore the projected image or escalate with evidence",
+    "Validate the display works for the teacher",
+    "Document the fix and follow up"
+  ],
+  "tools": [
+    "Wall plate / input selector",
+    "Spare HDMI cable",
+    "Projector remote",
+    "Service desk ticket system"
+  ],
+  "evidence": [
+    { "id": "ev-input", "description": "Current input selected on the projector and the input the laptop is plugged into", "kind": "note" },
+    { "id": "ev-cable", "description": "State of the HDMI cable — secure, damaged, or partially seated", "kind": "note" },
+    { "id": "ev-mac", "description": "macOS display settings — does it see the projector as an external display?", "kind": "screenshot" }
+  ],
+  "decisionPoints": [
+    {
+      "id": "dp-diagnosis",
+      "prompt": "The wall plate is on 'HDMI 1', the laptop's audio plays through the room speakers, but the projector still shows 'No Signal'. What is the most likely cause?",
+      "options": [
+        {
+          "id": "opt-input",
+          "label": "The projector's input source is set to HDMI 2 while the wall plate delivers HDMI 1",
+          "score": { "diagnosis": 0.9, "evidence": 0.9, "resolution": 0.9 },
+          "feedback": "Correct — the audio works because the cable is connected at the audio layer, but the video input on the projector is not the same as the wall plate. A source change fixes it."
+        },
+        {
+          "id": "opt-mac-display",
+          "label": "The MacBook is not configured to mirror or extend to the external display",
+          "score": { "diagnosis": 0.4, "evidence": 0.5, "resolution": 0.3 },
+          "feedback": "Plausible but the audio through the room speakers strongly suggests the cable is fully connected. The more likely cause is the projector input source."
+        },
+        {
+          "id": "opt-cable",
+          "label": "The HDMI cable is broken and must be replaced",
+          "score": { "diagnosis": 0.2, "evidence": 0.2, "resolution": 0.2 },
+          "feedback": "If the cable were broken, the audio would not work either. The cable is at least partially good."
+        }
+      ]
+    },
+    {
+      "id": "dp-test",
+      "prompt": "Which is the correct, least-risky first test?",
+      "options": [
+        {
+          "id": "opt-cycle-inputs",
+          "label": "Cycle through all the projector's input sources (HDMI 1, HDMI 2, VGA) using the remote or wall plate",
+          "score": { "diagnosis": 0.9, "evidence": 0.9, "resolution": 0.9 },
+          "feedback": "Correct — the cheapest test is to confirm which input the projector is actually on. The wall plate label and the projector's actual input can differ."
+        },
+        {
+          "id": "opt-replace-cable",
+          "label": "Replace the HDMI cable with a spare",
+          "score": { "diagnosis": 0.3, "evidence": 0.1, "resolution": 0.2 },
+          "feedback": "The audio works, so the cable is at least partially good. Test the source selection first."
+        },
+        {
+          "id": "opt-reinstall-mac",
+          "label": "Reinstall the macOS display drivers",
+          "score": { "diagnosis": 0.0, "evidence": -0.2, "resolution": -0.5 },
+          "feedback": "Destructive and unrelated. The problem is at the input selection, not the laptop."
+        }
+      ]
+    }
+  ],
+  "ticket": {
+    "type": "incident",
+    "category": "Classroom Tech / Projector",
+    "priority": "p2",
+    "impact": "medium",
+    "urgency": "high",
+    "sla": "business-hours",
+    "initialDescription": "Classroom 204 ceiling projector shows 'No Signal'. HDMI cable connected, audio works. Class in 12 minutes.",
+    "requester": {
+      "name": "Mr. Thompson",
+      "role": "Faculty",
+      "identifiers": { "extension": "ext. 5204", "location": "rm. 204" }
+    }
+  },
+  "location": {
+    "id": "rm-204",
+    "name": "Classroom 204",
+    "objects": [
+      {
+        "id": "ceiling-projector",
+        "name": "Ceiling Projector (Epson 1485Fi)",
+        "state": {
+          "power": "on",
+          "display": "No Signal",
+          "currentInput": "HDMI 2",
+          "wallPlateInput": "HDMI 1"
+        }
+      },
+      {
+        "id": "wall-plate",
+        "name": "Wall Input Plate",
+        "state": {
+          "label": "HDMI 1",
+          "cableConnected": true
+        }
+      }
+    ]
+  },
+  "nodes": [
+    {
+      "id": "intake",
+      "kind": "intro",
+      "title": "Take the call",
+      "body": "Take the call. Note the room, the device (projector), and the exact symptom ('No Signal'). Confirm audio is working from the laptop. Open a P2 ticket.",
+      "transitions": [{ "event": "ticket-opened", "to": "scope-check" }]
+    },
+    {
+      "id": "scope-check",
+      "kind": "intro",
+      "title": "Confirm scope",
+      "body": "Confirm this is a single-room issue. Ask if any other classrooms in the wing are reporting projector trouble. Document the scope.",
+      "transitions": [
+        { "event": "scope-saved", "to": "inspect-projector" }
+      ]
+    },
+    {
+      "id": "inspect-projector",
+      "kind": "inspect",
+      "title": "Inspect the projector and wall plate",
+      "body": "Ask Mr. Thompson to read the projector's current input (visible on the display or via the remote). Note what input the wall plate and cable are delivering. Save evidence.",
+      "locationId": "rm-204",
+      "objectId": "ceiling-projector",
+      "transitions": [
+        { "event": "evidence-saved", "to": "decide-diagnosis" }
+      ]
+    },
+    {
+      "id": "decide-diagnosis",
+      "kind": "decide",
+      "title": "Identify the cause",
+      "body": "Based on the wall plate being on HDMI 1 and the projector being on HDMI 2, what is the most likely cause?",
+      "decisionPointId": "dp-diagnosis",
+      "transitions": [
+        { "event": "decision-made", "to": "decide-test" }
+      ]
+    },
+    {
+      "id": "decide-test",
+      "kind": "decide",
+      "title": "Choose the next test",
+      "body": "Pick the least-risky test that will confirm or fix the issue.",
+      "decisionPointId": "dp-test",
+      "transitions": [
+        { "event": "decision-made", "to": "remediate" }
+      ]
+    },
+    {
+      "id": "remediate",
+      "kind": "remediate",
+      "title": "Restore the input",
+      "body": "Walk Mr. Thompson through switching the projector to HDMI 1 using the remote or wall plate. Confirm the image appears and the macOS desktop is mirrored.",
+      "transitions": [
+        { "event": "fix-applied", "to": "validate" }
+      ]
+    },
+    {
+      "id": "validate",
+      "kind": "remediate",
+      "title": "Validate",
+      "body": "Confirm the projected image is showing. Confirm the resolution and color look correct. Have Mr. Thompson open his lesson materials and confirm he is ready to teach.",
+      "transitions": [
+        { "event": "validation-saved", "to": "document" }
+      ]
+    },
+    {
+      "id": "document",
+      "kind": "document",
+      "title": "Document the fix",
+      "body": "Close the ticket with: the cause (input mismatch), the fix (source change to HDMI 1), and the validation. Note the wall-plate label vs. projector input mismatch as a follow-up item.",
+      "prompt": "Write a brief follow-up to Mr. Thompson confirming the fix and the next step if it happens again.",
+      "transitions": [
+        { "event": "followup-saved", "to": "debrief" }
+      ]
+    },
+    {
+      "id": "debrief",
+      "kind": "debrief",
+      "title": "Debrief",
+      "body": "Review your score. Consider why 'audio works but video does not' is a strong input-mismatch signature, and how to spot a wall-plate label vs. projector input drift.",
+      "transitions": []
+    }
+  ],
+  "startNode": "intake",
+  "terminalNodes": ["debrief"],
+  "scoring": {
+    "weights": {
+      "diagnosis": 1.2,
+      "evidence": 1,
+      "troubleshooting": 1,
+      "resolution": 1,
+      "validation": 0.8
+    },
+    "thresholds": { "jobReady": 3 }
+  },
+  "methodology": [
+    "identify",
+    "scope",
+    "reproduce",
+    "gather-evidence",
+    "hypothesize",
+    "test",
+    "change",
+    "validate",
+    "document",
+    "follow-up"
+  ],
+  "kbOpportunity": "When projector audio works but video shows 'No Signal', the cause is almost always an input source mismatch. Cycle inputs before replacing cables or restarting devices.",
+  "skills": ["classroom-tech", "customer-service", "ticketing"]
+}

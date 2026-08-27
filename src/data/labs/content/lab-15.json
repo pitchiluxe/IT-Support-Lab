@@ -1,0 +1,231 @@
+{
+  "id": "lab-15",
+  "schemaVersion": 1,
+  "contentVersion": 1,
+  "week": 5,
+  "order": 15,
+  "track": "apple",
+  "title": "Apple Update and Device Lifecycle",
+  "persona": "IT Lead (Self-Service)",
+  "channel": "in-person",
+  "scenario": "IT needs to update all 200 school-issued iPads and 80 MacBooks from iOS 17.3 / macOS 13.6 to iOS 18.2 and macOS 14.7. This is required for a new security policy and app compatibility. The MDM team needs to push these over-the-air updates with zero downtime for students. A teacher refuses the update on her MacBook because she 'cannot risk her students' work disappearing.'",
+  "impact": "Operational: 280 devices need updates without disrupting teaching. Compliance deadline drives the urgency.",
+  "objectives": [
+    "Plan a phased rollout with a pilot group first",
+    "Configure MDM software update policies for iOS and macOS",
+    "Execute the pilot and analyze the results",
+    "Handle devices that fail the update",
+    "Address teacher concerns about data loss during updates",
+    "Validate update compliance across the full fleet",
+    "Report rollout status to leadership"
+  ],
+  "tools": [
+    "Jamf Pro MDM console",
+    "Apple School Manager",
+    "Pilot device test plan",
+    "Status reporting dashboard"
+  ],
+  "evidence": [
+    { "id": "ev-update-policy", "description": "MDM software update policy screenshot showing phased rollout config", "kind": "screenshot" },
+    { "id": "ev-pilot-report", "description": "Pilot group compliance report — typically shows 8 of 20 successful", "kind": "screenshot" },
+    { "id": "ev-full-rollout", "description": "Full fleet compliance report after rollout completes", "kind": "screenshot" }
+  ],
+  "decisionPoints": [
+    {
+      "id": "dp-failed-devices",
+      "prompt": "Twelve devices in the pilot group failed the update. How do you proceed?",
+      "options": [
+        {
+          "id": "opt-investigate",
+          "label": "Pull logs from the 12 failed devices, identify the failure pattern, and remediate each device before retrying",
+          "score": { "diagnosis": 1, "evidence": 1, "resolution": 1 },
+          "feedback": "Correct. A blanket retry without diagnosis would risk repeating the same failures at scale. Pulling logs and addressing each root cause is the disciplined approach."
+        },
+        {
+          "id": "opt-blind-retry",
+          "label": "Push them through the same mechanism with a retry and hope they succeed",
+          "score": { "diagnosis": -1, "evidence": -1, "resolution": -1 },
+          "feedback": "Pushing the same update again without diagnosis will produce the same failure pattern. This is exactly the kind of approach that creates fleet-wide incidents."
+        },
+        {
+          "id": "opt-skip",
+          "label": "Exclude the 12 failed devices from the full rollout and revisit them later",
+          "score": { "diagnosis": 0, "evidence": 0, "resolution": 0 },
+          "feedback": "Excluding devices without diagnosis leaves compliance gaps. It is better to fix the root cause and then include them in the rollout."
+        }
+      ]
+    },
+    {
+      "id": "dp-teacher-refusal",
+      "prompt": "One teacher refuses the update on her MacBook because she 'cannot risk her students' work disappearing.' What is the correct response?",
+      "options": [
+        {
+          "id": "opt-educate-backup",
+          "label": "Explain the school's backup policy, provide a documented rollback window, and proceed after she confirms a recent backup",
+          "score": { "diagnosis": 1, "evidence": 1, "resolution": 1 },
+          "feedback": "Correct. Acknowledge the concern, ensure the teacher has a verified backup, and explain the institution's update policy. Most refusals resolve with clear information."
+        },
+        {
+          "id": "opt-ignore-concern",
+          "label": "Proceed with the update regardless — compliance with the security policy is non-negotiable",
+          "score": { "diagnosis": 0, "evidence": 0, "resolution": 0 },
+          "feedback": "Skipping the conversation creates resentment and may surface legitimate concerns. Take time to address the teacher's worry before proceeding."
+        },
+        {
+          "id": "opt-exclude-device",
+          "label": "Exclude her device from the update and document her as a permanent exception",
+          "score": { "diagnosis": -1, "evidence": -1, "resolution": -1 },
+          "feedback": "Permanent exceptions undermine the security policy and create compliance debt. The update is required; the teacher's data should be backed up before proceeding."
+        }
+      ]
+    }
+  ],
+  "ticket": {
+    "type": "change",
+    "category": "OS Update / Fleet Management",
+    "priority": "p2",
+    "impact": "high",
+    "urgency": "medium",
+    "sla": "week",
+    "initialDescription": "Fleet-wide update of 200 iPads (iOS 17.3 to 18.2) and 80 MacBooks (macOS 13.6 to 14.7). Zero downtime required. One teacher refusing update.",
+    "requester": {
+      "name": "IT Department",
+      "role": "IT Operations"
+    }
+  },
+  "location": {
+    "id": "it-server-room",
+    "name": "IT Server Room",
+    "objects": [
+      {
+        "id": "mdm-console",
+        "name": "Jamf Pro MDM Console",
+        "state": {
+          "logged_in": true,
+          "fleet_total": 280,
+          "fleet_ipad": 200,
+          "fleet_macbook": 80,
+          "current_ios": "17.3",
+          "current_macos": "13.6",
+          "target_ios": "18.2",
+          "target_macos": "14.7"
+        }
+      },
+      {
+        "id": "staging-ipads",
+        "name": "iPad Staging Area (pilot group)",
+        "state": {
+          "pilot_size": 20,
+          "pilot_compliant": 8,
+          "pilot_failed": 12
+        }
+      },
+      {
+        "id": "staging-macbooks",
+        "name": "MacBook Staging Area",
+        "state": {
+          "fleet_count": 80,
+          "refusals": 1
+        }
+      }
+    ]
+  },
+  "nodes": [
+    {
+      "id": "intro",
+      "kind": "intro",
+      "title": "Plan the rollout",
+      "body": "You are about to update 280 devices. Define a pilot group (e.g., 20 devices), a phased rollout plan, the MDM policies to configure, and the success criteria. Open a change ticket and announce the change window.",
+      "transitions": [{ "event": "plan-saved", "to": "configure-mdm" }]
+    },
+    {
+      "id": "configure-mdm",
+      "kind": "remediate",
+      "title": "Configure MDM software update policies",
+      "body": "In Jamf Pro, create software update policies: target iOS 18.2 for iPads and macOS 14.7 for MacBooks. Set phased deployment groups. Enable deferral windows per group. Document the policy configuration.",
+      "transitions": [{ "event": "policy-configured", "to": "execute-pilot" }]
+    },
+    {
+      "id": "execute-pilot",
+      "kind": "remediate",
+      "title": "Execute the pilot",
+      "body": "Push the update to the 20-device pilot group. Monitor for 24-48 hours. Document the pilot result: 8 of 20 succeeded, 12 failed.",
+      "transitions": [{ "event": "pilot-complete", "to": "decide-failed-devices" }]
+    },
+    {
+      "id": "decide-failed-devices",
+      "kind": "decide",
+      "title": "Address the 12 pilot failures",
+      "body": "12 pilot devices failed the update. Determine the correct next step before scaling to the full fleet.",
+      "decisionPointId": "dp-failed-devices",
+      "transitions": [{ "event": "decision-made", "to": "pilot-remediation" }]
+    },
+    {
+      "id": "pilot-remediation",
+      "kind": "remediate",
+      "title": "Remediate the failed pilot devices",
+      "body": "Pull logs from each of the 12 failed devices. Identify patterns: storage full, supervised state mismatch, OS version too far behind. Apply targeted fixes per device. Re-run the update on the remediated devices.",
+      "transitions": [{ "event": "pilot-remediation-complete", "to": "teacher-refusal" }]
+    },
+    {
+      "id": "teacher-refusal",
+      "kind": "decide",
+      "title": "Handle the teacher refusal",
+      "body": "A teacher is refusing the macOS update due to fear of student work loss. Determine the correct response.",
+      "decisionPointId": "dp-teacher-refusal",
+      "transitions": [{ "event": "decision-made", "to": "rollout" }]
+    },
+    {
+      "id": "rollout",
+      "kind": "remediate",
+      "title": "Roll out to the full fleet",
+      "body": "With the pilot validated and the teacher concern addressed, push the update to the remaining fleet in waves. Monitor for issues. Capture the compliance dashboard in real time.",
+      "transitions": [{ "event": "rollout-complete", "to": "validate" }]
+    },
+    {
+      "id": "validate",
+      "kind": "remediate",
+      "title": "Validate compliance",
+      "body": "Confirm the compliance report shows 280 of 280 devices on the target versions. Spot-check a sample of devices across both groups. Verify the teacher's device updated successfully.",
+      "transitions": [{ "event": "validation-saved", "to": "document" }]
+    },
+    {
+      "id": "document",
+      "kind": "document",
+      "title": "Report to leadership",
+      "body": "Write a rollout report for the CIO and principal: total devices updated, duration, issues encountered, teacher communication outcome, and post-rollout notes.",
+      "prompt": "Write the leadership update for the OS rollout, including pilot lessons and full-fleet outcomes.",
+      "transitions": [{ "event": "followup-saved", "to": "debrief" }]
+    },
+    {
+      "id": "debrief",
+      "kind": "debrief",
+      "title": "Debrief",
+      "body": "Review your score and reflect on phased rollout discipline.",
+      "transitions": []
+    }
+  ],
+  "startNode": "intro",
+  "terminalNodes": ["debrief"],
+  "scoring": {
+    "weights": {
+      "diagnosis": 0.8,
+      "evidence": 1,
+      "troubleshooting": 1.2,
+      "resolution": 1.2,
+      "validation": 1
+    },
+    "thresholds": { "jobReady": 3 }
+  },
+  "methodology": [
+    "scope",
+    "identify",
+    "hypothesize",
+    "test",
+    "change",
+    "validate",
+    "document"
+  ],
+  "kbOpportunity": "Phased OS update rollout on managed Apple devices — always run a pilot group first; pull failure logs before retrying; address end-user concerns with documentation and confirmation of backups rather than blanket exceptions.",
+  "skills": ["apple", "mdm", "projects"]
+}

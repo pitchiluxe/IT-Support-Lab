@@ -1,0 +1,242 @@
+{
+  "id": "lab-02",
+  "schemaVersion": 1,
+  "contentVersion": 1,
+  "week": 1,
+  "order": 2,
+  "track": "service-desk",
+  "title": "Urgent Classroom Outage",
+  "persona": "Mr. Patel, science teacher",
+  "channel": "phone",
+  "scenario": "Mr. Patel, a science teacher, calls the IT Service Desk at 7:45 AM. His entire classroom (Room 312) has no network — no Wi-Fi, no wired ethernet, no internet. Students arrive in 20 minutes. This is the first day of a new unit with a planned Kahoot quiz and a video demonstration. He needs the network restored before class starts.",
+  "impact": "Instructional: Class starts in 20 minutes. A Kahoot quiz and video demonstration are blocked. Twenty-plus students will be without digital learning tools for the entire first period if the outage is not resolved.",
+  "objectives": [
+    "Scope the outage: determine whether it is isolated to Room 312, a wing, or the whole school",
+    "Gather evidence from the teacher's device and the network environment",
+    "Identify the root cause (switch port failure, bad cable, DHCP scope exhaustion, upstream outage)",
+    "Restore service or escalate with documented evidence",
+    "Validate the fix and document the resolution",
+    "Follow up with the teacher to confirm restored functionality"
+  ],
+  "tools": [
+    "Service desk ticket system",
+    "Network status board",
+    "MDM console (read-only)",
+    "Standard intake form"
+  ],
+  "evidence": [
+    { "id": "ev-scope", "description": "Confirm scope: is the outage isolated to Room 312, or are adjacent rooms and other devices also affected?", "kind": "note" },
+    { "id": "ev-rootcause", "description": "Document the specific root cause identified through inspection and testing", "kind": "note" },
+    { "id": "ev-escalation", "description": "Record the escalation details or resolution action taken, including who was contacted and what evidence was shared", "kind": "note" }
+  ],
+  "decisionPoints": [
+    {
+      "id": "dp-triage",
+      "prompt": "Mr. Patel reports his entire classroom has no network — no Wi-Fi and no wired connection. What is the best initial triage step?",
+      "options": [
+        {
+          "id": "opt-dismiss",
+          "label": "Assume the teacher has misconfigured the laptop and walk him through reconnecting to Wi-Fi",
+          "score": { "diagnosis": -1, "evidence": -1, "resolution": -1 },
+          "feedback": "Dismissing the report as user error without checking scope risks wasting 20 minutes on the wrong problem. An entire classroom with zero connectivity is unlikely to be a device misconfiguration."
+        },
+        {
+          "id": "opt-scope-first",
+          "label": "Scope the outage by asking about other rooms and checking the network status board",
+          "score": { "diagnosis": 1, "evidence": 1, "resolution": 0.5 },
+          "feedback": "Correct — scoping the outage first determines whether this is an isolated room issue or a broader network event. This shapes the entire response path."
+        },
+        {
+          "id": "opt-send-tech",
+          "label": "Immediately dispatch a technician to Room 312 without any remote checks",
+          "score": { "diagnosis": 0, "evidence": -0.5, "resolution": 0 },
+          "feedback": "Dispatching without any remote scoping means the technician arrives without context. Gather scope information remotely first so the tech knows what to look for."
+        }
+      ]
+    },
+    {
+      "id": "dp-rootcause",
+      "prompt": "Scope confirmed: the outage is isolated to Room 312. Inspection reveals the teacher's laptop shows no network interfaces active. The wall ethernet port is dark. What is the most likely root cause?",
+      "options": [
+        {
+          "id": "opt-switch-port",
+          "label": "The switch port serving Room 312 has gone down or been disabled",
+          "score": { "diagnosis": 0.9, "evidence": 0.7, "resolution": 0.8 },
+          "feedback": "A single room losing all connectivity simultaneously is consistent with a switch port failure. Checking the switch port status is the right next step."
+        },
+        {
+          "id": "opt-bad-cable",
+          "label": "The ethernet cable running to the wall port in Room 312 has failed",
+          "score": { "diagnosis": 0.5, "evidence": 0.4, "resolution": 0.3 },
+          "feedback": "Possible, but a single cable failure is less common than a switch port issue. Checking the switch first is faster and rules out the most likely cause."
+        },
+        {
+          "id": "opt-dhcp-scope",
+          "label": "The DHCP scope serving the classroom subnet has been exhausted or is offline",
+          "score": { "diagnosis": 0.3, "evidence": 0.2, "resolution": 0.2 },
+          "feedback": "DHCP exhaustion would typically affect multiple rooms on the same subnet, not just one classroom."
+        },
+        {
+          "id": "opt-escalate-evidence",
+          "label": "Escalate to the network team with documented evidence: scope, device states, and switch port status",
+          "score": { "diagnosis": 0.5, "evidence": 1, "resolution": 0.9 },
+          "feedback": "Escalating with evidence is appropriate if the root cause is beyond the service desk's ability to fix remotely. Good escalation includes what was tried and what was observed."
+        }
+      ]
+    }
+  ],
+  "ticket": {
+    "type": "incident",
+    "category": "Network / Classroom Outage",
+    "priority": "p1",
+    "impact": "high",
+    "urgency": "high",
+    "sla": "business-hours",
+    "initialDescription": "Mr. Patel in Room 312 reports entire classroom has no network (Wi-Fi and wired). Class starts in 20 minutes. Kahoot quiz and video demo are blocked.",
+    "requester": {
+      "name": "Mr. Patel",
+      "role": "Faculty",
+      "identifiers": { "extension": "ext. 5203", "location": "rm. 312" }
+    }
+  },
+  "location": {
+    "id": "rm-312",
+    "name": "Room 312 Science Classroom",
+    "objects": [
+      {
+        "id": "ceiling-projector-312",
+        "name": "Ceiling Projector / Wi-Fi AP (Room 312)",
+        "state": {
+          "type": "combo-device",
+          "model": "Epson PowerLite 990U + embedded AP",
+          "projectorPower": "on",
+          "apPower": "unknown",
+          "wifiClients": 0,
+          "uplinkStatus": "no-link",
+          "lastSeen": 1724781720000
+        }
+      },
+      {
+        "id": "teacher-windows-laptop",
+        "name": "Teacher Windows Laptop (Mr. Patel)",
+        "state": {
+          "wifi": { "ssid": null, "connected": false, "status": "no-adapter-available" },
+          "ethernet": { "connected": false, "status": "cable-not-connected" },
+          "ip": "169.254.1.1",
+          "mac": "00:1a:2b:3c:4d:5e",
+          "os": "Windows 11 22H2",
+          "lastNetworkAuth": null
+        }
+      },
+      {
+        "id": "wall-ethernet-port",
+        "name": "Wall Ethernet Port (Room 312)",
+        "state": {
+          "portId": "A-312-04",
+          "status": "no-link",
+          "poeStatus": "off",
+          "vlan": "staff",
+          "switchPort": "SW2-G1-14",
+          "switchPortStatus": "down"
+        }
+      }
+    ]
+  },
+  "nodes": [
+    {
+      "id": "intake",
+      "kind": "intro",
+      "title": "Intake the call",
+      "body": "Mr. Patel calls at 7:45 AM. He sounds anxious. He reports his entire classroom has no network — no Wi-Fi and no wired connection. Students arrive in 20 minutes. Ask who is calling, what is affected, what time the problem started, and note any recent changes to the room. Document these answers before taking any action.",
+      "transitions": [{ "event": "intake-recorded", "to": "scope-check" }]
+    },
+    {
+      "id": "scope-check",
+      "kind": "intro",
+      "title": "Scope the outage",
+      "body": "Before making any changes, scope the outage. Ask Mr. Patel: are any other classrooms or offices in the building also down? Can he try a personal mobile hotspot to confirm internet is generally available? Check the network status board. Document whether this is isolated to Room 312, a single wing, or broader.",
+      "transitions": [{ "event": "scope-recorded", "to": "decide-triage" }]
+    },
+    {
+      "id": "decide-triage",
+      "kind": "decide",
+      "title": "Choose the triage approach",
+      "body": "Based on the scope information, choose the best initial triage action. Avoid dismissing the report as user error — an entire classroom losing both Wi-Fi and wired simultaneously is a real infrastructure event.",
+      "decisionPointId": "dp-triage",
+      "transitions": [{ "event": "decision-made", "to": "inspect-room" }]
+    },
+    {
+      "id": "inspect-room",
+      "kind": "inspect",
+      "title": "Inspect Room 312",
+      "body": "Inspect the objects in Room 312: the teacher's laptop, the wall ethernet port, and the ceiling projector/AP combo device. Note the status of each. Record all observations as evidence.",
+      "locationId": "rm-312",
+      "objectId": "wall-ethernet-port",
+      "transitions": [{ "event": "evidence-saved", "to": "decide-rootcause" }]
+    },
+    {
+      "id": "decide-rootcause",
+      "kind": "decide",
+      "title": "Identify root cause",
+      "body": "Evidence gathered: the wall port shows no link, the switch port status is down, and the teacher's laptop has no active network interfaces. Choose the most likely root cause and the appropriate action.",
+      "decisionPointId": "dp-rootcause",
+      "transitions": [{ "event": "decision-made", "to": "remediate" }]
+    },
+    {
+      "id": "remediate",
+      "kind": "remediate",
+      "title": "Restore or escalate",
+      "body": "If the root cause is a switch port failure or upstream issue beyond the service desk's access, escalate to the network team with documented evidence: scope, device states, port status, and what was already verified. If the cause is resolvable by the service desk (e.g., cable replacement), attempt the fix. Record every action taken.",
+      "transitions": [{ "event": "fix-attempted", "to": "validate" }]
+    },
+    {
+      "id": "validate",
+      "kind": "remediate",
+      "title": "Validate the fix",
+      "body": "Once the network team has resolved the issue or the service desk has completed a local fix, validate: ask Mr. Patel to reconnect the laptop to Wi-Fi and verify he can reach the internet. If a technician was dispatched, confirm the repair on-site. Save a validation note with the resolution time.",
+      "locationId": "rm-312",
+      "objectId": "teacher-windows-laptop",
+      "transitions": [{ "event": "validation-saved", "to": "document" }]
+    },
+    {
+      "id": "document",
+      "kind": "document",
+      "title": "Document the ticket",
+      "body": "Write a clear ticket summary: what was reported, what was found, what was done, and the resolution time. Include the evidence collected. Write a brief follow-up message to Mr. Patel confirming the issue is resolved and what to do if it recurs.",
+      "prompt": "Write a follow-up message to Mr. Patel confirming the network is restored. Plain language, no jargon, no internal ticket IDs.",
+      "transitions": [{ "event": "followup-saved", "to": "debrief" }]
+    },
+    {
+      "id": "debrief",
+      "kind": "debrief",
+      "title": "Debrief",
+      "body": "Review your score and identify what to practice next.",
+      "transitions": []
+    }
+  ],
+  "startNode": "intake",
+  "terminalNodes": ["debrief"],
+  "scoring": {
+    "weights": {
+      "diagnosis": 1,
+      "evidence": 1.2,
+      "troubleshooting": 1,
+      "resolution": 1,
+      "validation": 0.8
+    },
+    "thresholds": { "jobReady": 3 }
+  },
+  "methodology": [
+    "identify",
+    "scope",
+    "gather-evidence",
+    "hypothesize",
+    "test",
+    "change",
+    "validate",
+    "document",
+    "follow-up"
+  ],
+  "kbOpportunity": "Classroom-wide network outage — isolating a single-room outage from a building-wide event is the critical first step. When the wall port and switch port are both down, the switch port is the most common cause and the fastest path to escalation.",
+  "skills": ["customer-service", "ticketing", "classroom-tech"]
+}

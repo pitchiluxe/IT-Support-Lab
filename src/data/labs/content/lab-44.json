@@ -1,0 +1,240 @@
+{
+  "id": "lab-44",
+  "schemaVersion": 1,
+  "contentVersion": 1,
+  "week": 11,
+  "order": 44,
+  "track": "operations",
+  "title": "Major Incident Simulation",
+  "persona": "Mr. Thompson, Director of Technology",
+  "channel": "phone",
+  "scenario": "At 10:15 AM on a Tuesday, the school loses access to Google Workspace. Faculty cannot log in, students cannot reach Google Classroom, and the SIS authentication is failing. The outage is school-wide. Mr. Thompson declares a major incident and asks you to be the incident commander. The CIO is in a meeting and will join the bridge in 15 minutes.",
+  "impact": "Instructional and operational: 1,200 students and 150 staff are blocked from core school systems. The standardized testing window opens in 3 days. Every minute counts.",
+  "objectives": [
+    "Declare the major incident and stand up the incident bridge",
+    "Open the major-incident ticket and assign the incident commander",
+    "Communicate the initial status to stakeholders within 15 minutes",
+    "Coordinate the technical investigation with the network and identity teams",
+    "Provide regular status updates to faculty and the CIO",
+    "Document the timeline and lessons learned before closing the incident"
+  ],
+  "tools": [
+    "Major incident bridge (conference line or video)",
+    "Incident commander checklist",
+    "Status update template",
+    "Google Workspace status page",
+    "Identity provider admin console"
+  ],
+  "evidence": [
+    { "id": "ev-mi-declaration", "description": "Major incident declaration record with start time, scope, and incident commander", "kind": "note" },
+    { "id": "ev-status-updates", "description": "Log of status updates sent to faculty and leadership during the incident", "kind": "note" },
+    { "id": "ev-post-mortem", "description": "Post-incident review with timeline, root cause, and action items", "kind": "note" }
+  ],
+  "decisionPoints": [
+    {
+      "id": "dp-ic-role",
+      "prompt": "You are asked to be the incident commander. What is the first action?",
+      "options": [
+        {
+          "id": "opt-start-fixing",
+          "label": "Start fixing the issue immediately — every minute counts and you can coordinate later",
+          "score": { "diagnosis": -1, "evidence": -1, "resolution": -1 },
+          "feedback": "An incident commander coordinates — they do not also perform the technical fix. Doing both is a recipe for an uncommanded incident."
+        },
+        {
+          "id": "opt-stand-up-bridge",
+          "label": "Stand up the major incident bridge, assign a scribe and a tech lead, then coordinate",
+          "score": { "diagnosis": 1, "evidence": 1, "resolution": 1 },
+          "feedback": "Correct — IC coordinates. Stand up the bridge, assign roles, and run the investigation through the tech lead while you manage comms and decisions."
+        },
+        {
+          "id": "opt-wait-cio",
+          "label": "Wait for the CIO to join the bridge before taking any action",
+          "score": { "diagnosis": -1, "evidence": -1, "resolution": -1 },
+          "feedback": "The CIO is in a meeting. The IC must act now. The CIO joins when they are available and takes over only if escalation is needed."
+        }
+      ]
+    },
+    {
+      "id": "dp-status-comms",
+      "prompt": "It is 10:25 AM. The bridge is up. Faculty are flooding the help desk. What is the right status communication now?",
+      "options": [
+        {
+          "id": "opt-no-comm",
+          "label": "Wait until you have the root cause before sending a status update",
+          "score": { "diagnosis": -1, "evidence": -1, "resolution": -1 },
+          "feedback": "Silence during a major incident causes panic and floods the help desk. Communicate what you know now and what you are doing."
+        },
+        {
+          "id": "opt-initial-status",
+          "label": "Send a brief initial status to all faculty and the CIO: 'we are aware, we are investigating, updates every 20 minutes'",
+          "score": { "diagnosis": 1, "evidence": 1, "resolution": 1 },
+          "feedback": "Correct — communicate early, briefly, and on a known cadence. Promise what you can deliver: 'next update at HH:MM'."
+        },
+        {
+          "id": "opt-detailed-rc",
+          "label": "Send a detailed root-cause analysis to all faculty",
+          "score": { "diagnosis": -1, "evidence": -1, "resolution": -1 },
+          "feedback": "Speculating on root cause before the investigation is complete will mislead stakeholders and create churn. Communicate only what is confirmed."
+        }
+      ]
+    }
+  ],
+  "ticket": {
+    "type": "major-incident",
+    "category": "Incident Response / Major",
+    "priority": "p1",
+    "impact": "high",
+    "urgency": "high",
+    "sla": "24x7",
+    "initialDescription": "School-wide Google Workspace outage. Faculty cannot log in. SIS authentication failing. Standardized testing window in 3 days. Major incident declared at 10:18 AM by Director of Technology.",
+    "requester": {
+      "name": "Mr. Thompson",
+      "role": "Administrator",
+      "identifiers": { "title": "Director of Technology", "office": "rm. 305" }
+    }
+  },
+  "location": {
+    "id": "major-incident-bridge",
+    "name": "Major Incident Bridge",
+    "objects": [
+      {
+        "id": "bridge-room",
+        "name": "Incident Bridge",
+        "state": {
+          "incident_id": "MI-2026-0911",
+          "declared_at": "2026-08-27T10:18:00",
+          "incident_commander": "you",
+          "tech_lead": "TBD on bridge",
+          "scribe": "TBD on bridge",
+          "status": "active"
+        }
+      },
+      {
+        "id": "gws-status",
+        "name": "Google Workspace Status",
+        "state": {
+          "login_success_rate_pct": 4,
+          "directory_sync_status": "failing",
+          "identity_provider": "okta",
+          "identity_provider_status": "degraded"
+        }
+      }
+    ]
+  },
+  "nodes": [
+    {
+      "id": "intro",
+      "kind": "intro",
+      "title": "Receive the major incident declaration",
+      "body": "Acknowledge the major incident declaration. Confirm scope: Google Workspace, SIS auth, faculty and students. Note the standardized testing window pressure. Time-box the initial response.",
+      "transitions": [{ "event": "declaration-acknowledged", "to": "decide-ic" }]
+    },
+    {
+      "id": "decide-ic",
+      "kind": "decide",
+      "title": "Take the IC role",
+      "body": "You have been asked to be the incident commander. Choose the right first action.",
+      "decisionPointId": "dp-ic-role",
+      "transitions": [
+        { "event": "decision-made", "to": "open-mi" }
+      ]
+    },
+    {
+      "id": "open-mi",
+      "kind": "inspect",
+      "title": "Open the major incident ticket",
+      "body": "Open the major incident ticket with type=major-incident, priority P1, and impact=high. Note the bridge details, the IC, and the declared time. Save the declaration record as evidence.",
+      "locationId": "major-incident-bridge",
+      "objectId": "bridge-room",
+      "transitions": [
+        { "event": "mi-opened", "to": "decide-comms" }
+      ]
+    },
+    {
+      "id": "decide-comms",
+      "kind": "decide",
+      "title": "Issue the initial status update",
+      "body": "It is 10:25 AM. Choose the right status communication strategy for the next 10 minutes.",
+      "decisionPointId": "dp-status-comms",
+      "transitions": [
+        { "event": "decision-made", "to": "investigate" }
+      ]
+    },
+    {
+      "id": "investigate",
+      "kind": "inspect",
+      "title": "Coordinate the investigation",
+      "body": "The tech lead reports that the identity provider is degraded and directory sync is failing. Coordinate: confirm scope, request status from the vendor, set the next update time, and prepare the rollback if it is a config change.",
+      "locationId": "major-incident-bridge",
+      "objectId": "gws-status",
+      "transitions": [
+        { "event": "investigation-running", "to": "remediate" }
+      ]
+    },
+    {
+      "id": "remediate",
+      "kind": "remediate",
+      "title": "Apply the fix",
+      "body": "Apply the agreed fix: roll back the recent identity provider config change. Validate with the tech lead. Save the timeline of actions in the major incident ticket.",
+      "locationId": "major-incident-bridge",
+      "objectId": "bridge-room",
+      "transitions": [
+        { "event": "fix-applied", "to": "validate" }
+      ]
+    },
+    {
+      "id": "validate",
+      "kind": "inspect",
+      "title": "Validate the resolution",
+      "body": "Confirm with the tech lead that login success rate has returned to 100%. Validate with two known-good faculty accounts. Send the all-clear communication to faculty and the CIO.",
+      "locationId": "major-incident-bridge",
+      "objectId": "gws-status",
+      "transitions": [
+        { "event": "all-clear-sent", "to": "document" }
+      ]
+    },
+    {
+      "id": "document",
+      "kind": "document",
+      "title": "Write the post-incident review",
+      "body": "Document the timeline, root cause, decisions made, communication cadence, and lessons learned. Schedule a post-mortem with the bridge participants within 5 business days.",
+      "prompt": "Write the executive summary of the post-incident review for the CIO: timeline, root cause, what went well, and the top 3 action items.",
+      "transitions": [
+        { "event": "pir-saved", "to": "debrief" }
+      ]
+    },
+    {
+      "id": "debrief",
+      "kind": "debrief",
+      "title": "Debrief",
+      "body": "Review the major incident response. Key lessons: the IC coordinates, not fixes; communicate early and on a known cadence; and every major incident ends with a written post-mortem and action items.",
+      "transitions": []
+    }
+  ],
+  "startNode": "intro",
+  "terminalNodes": ["debrief"],
+  "scoring": {
+    "weights": {
+      "diagnosis": 1,
+      "evidence": 1,
+      "troubleshooting": 0.8,
+      "resolution": 1,
+      "validation": 0.8
+    },
+    "thresholds": { "jobReady": 3 }
+  },
+  "methodology": [
+    "identify",
+    "scope",
+    "gather-evidence",
+    "hypothesize",
+    "test",
+    "change",
+    "validate",
+    "document",
+    "follow-up"
+  ],
+  "kbOpportunity": "Major incident playbook: declare → IC + tech lead + scribe → bridge → status cadence (initial, every 20 min, all-clear) → fix → post-incident review with action items within 5 business days.",
+  "skills": ["incident-response", "ticketing", "documentation"]
+}

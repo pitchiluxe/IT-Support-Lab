@@ -1,0 +1,22 @@
+IT Support Lab Academy
+Copyright (c) 2026 Erick Omari
+All rights reserved.
+
+This software and its associated documentation files (the "Software") are
+provided for personal and educational use. You may install and use the
+Software on your own devices, but you may not redistribute, sublicense,
+or sell the Software or any portion of it without the prior written
+permission of the copyright holder.
+
+The lab scenarios contained in this application are fictional and intended
+for training purposes only. Any resemblance to real systems, persons, or
+incidents is coincidental. The application must not be used to access
+real equipment, networks, or systems without explicit authorization.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+OTHER DEALINGS IN THE SOFTWARE.

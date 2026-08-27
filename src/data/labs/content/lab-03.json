@@ -1,0 +1,201 @@
+{
+  "id": "lab-03",
+  "schemaVersion": 1,
+  "contentVersion": 1,
+  "week": 1,
+  "order": 3,
+  "track": "service-desk",
+  "title": "Parent Technology Support",
+  "persona": "Parent of a middle school student",
+  "channel": "portal",
+  "scenario": "A parent emails the IT Service Desk via the school portal. Their child has been locked out of their school Google account and cannot submit a homework assignment due tonight. The parent also mentions the child's district-issued Chromebook is showing a 'Chrome management policy' error at the login screen.",
+  "impact": "Instructional: Homework deadline is tonight. The parent is frustrated and needs a clear path to resolution. The issue involves two distinct problems — an account lockout and an MDM enrollment error — that require different handling.",
+  "objectives": [
+    "Clarify the requester's identity and confirm the affected student account",
+    "Distinguish between the Google account lockout and the MDM enrollment error — these are separate issues",
+    "Guide the parent through self-service steps for the password reset where appropriate",
+    "Determine whether the Chrome management policy error requires MDM team involvement",
+    "Escalate or resolve each issue appropriately",
+    "Document all communications and actions taken"
+  ],
+  "tools": [
+    "Service desk ticket system",
+    "Google Admin Console (read-only for verification)",
+    "MDM console (read-only)",
+    "Parent self-service portal documentation"
+  ],
+  "evidence": [
+    { "id": "ev-error-screenshot", "description": "Screenshot of the Chrome management policy error shown at login on the district Chromebook", "kind": "screenshot" },
+    { "id": "ev-parent-communication", "description": "Record of communication with the parent: initial request, clarifying questions, and resolution steps provided", "kind": "note" },
+    { "id": "ev-self-service-attempted", "description": "Record of self-service steps attempted by the parent, including what happened when each step was tried", "kind": "note" }
+  ],
+  "decisionPoints": [
+    {
+      "id": "dp-account-reset",
+      "prompt": "The parent reports their child cannot log into their school Google account. Is this a password reset that the parent can perform via the self-service portal, or does it require IT to reset the account directly?",
+      "options": [
+        {
+          "id": "opt-self-service",
+          "label": "Direct the parent to the self-service password reset portal for the student to try first",
+          "score": { "diagnosis": 0.5, "evidence": 0.3, "resolution": 0.5 },
+          "feedback": "Self-service is worth trying first, but verify whether the child's account has recovery options configured. If the child is under 13, parent-level recovery access may be different from standard accounts."
+        },
+        {
+          "id": "opt-it-reset",
+          "label": "Open a ticket for IT to reset the student's Google account password directly after verifying parent identity",
+          "score": { "diagnosis": 0.9, "evidence": 0.8, "resolution": 0.9 },
+          "feedback": "Correct — verify parent identity via the portal account before resetting. If the account lockout is due to a policy or device enrollment issue, a direct IT reset alone will not fix it."
+        },
+        {
+          "id": "opt-ignore-mdm",
+          "label": "Assume the account lockout is the only issue and ignore the Chrome management policy error for now",
+          "score": { "diagnosis": -1, "evidence": -1, "resolution": -0.5 },
+          "feedback": "The Chrome management policy error may prevent the child from logging in even after the account is reset. These two issues need to be addressed together."
+        }
+      ]
+    },
+    {
+      "id": "dp-mdm-error",
+      "prompt": "The parent describes a 'Chrome management policy' error shown at the Chromebook login screen. What is the most appropriate action for this error?",
+      "options": [
+        {
+          "id": "opt-reboot-home",
+          "label": "Instruct the parent to reboot the Chromebook and reconnect it to the home Wi-Fi network, then try logging in again",
+          "score": { "diagnosis": 0.7, "evidence": 0.5, "resolution": 0.6 },
+          "feedback": "A common cause of this error is the device losing MDM enrollment contact after being away from school Wi-Fi. A reboot and home reconnect often re-establish the enrollment check."
+        },
+        {
+          "id": "opt-mdm-team",
+          "label": "Create an MDM team ticket to re-enroll the device or clear the management policy error remotely",
+          "score": { "diagnosis": 0.6, "evidence": 0.7, "resolution": 0.8 },
+          "feedback": "If the reboot and reconnect do not resolve the error, the MDM team may need to re-enroll the device or push a management policy update. Escalate with evidence of what was already tried."
+        },
+        {
+          "id": "opt-reimage",
+          "label": "Tell the parent to factory-reset the Chromebook and re-enroll it as a new device",
+          "score": { "diagnosis": -1, "evidence": -1, "resolution": -1 },
+          "feedback": "Factory-resetting a district-managed Chromebook removes MDM controls and renders the device non-compliant. This is never the first step for a management policy error."
+        }
+      ]
+    }
+  ],
+  "ticket": {
+    "type": "incident",
+    "category": "Account / Device Management",
+    "priority": "p2",
+    "impact": "medium",
+    "urgency": "high",
+    "sla": "business-hours",
+    "initialDescription": "Parent reports child locked out of school Google account (homework due tonight) and district Chromebook showing Chrome management policy error at login.",
+    "requester": {
+      "name": "Parent of Student",
+      "role": "Parent",
+      "identifiers": { "portalAccount": "guardian-portal-acct", "studentGrade": "gr. 7" }
+    }
+  },
+  "location": {
+    "id": "remote-support",
+    "name": "Remote Support (No Physical Room)",
+    "objects": [
+      {
+        "id": "parent-chromebook",
+        "name": "District Chromebook (Parent's Child)",
+        "state": {
+          "enrolled": false,
+          "error": "Chrome management policy — this device is not receiving management policies from the organization",
+          "serialNumber": "CRB-X7K2-00042",
+          "model": "HP Chromebox G3",
+          "os": "ChromeOS 118",
+          "lastSchoolWifi": "SCHOOL-SECURE",
+          "homeWifiConnected": true,
+          "accountStatus": "locked"
+        }
+      }
+    ]
+  },
+  "nodes": [
+    {
+      "id": "intake",
+      "kind": "intro",
+      "title": "Review the portal submission",
+      "body": "A parent has submitted a ticket via the school portal. They report two separate issues: (1) their child is locked out of their school Google account and cannot submit homework due tonight, and (2) the district Chromebook shows a 'Chrome management policy' error at login. Review the submission and identify the two distinct issues before responding.",
+      "transitions": [{ "event": "intake-recorded", "to": "verify-identity" }]
+    },
+    {
+      "id": "verify-identity",
+      "kind": "intro",
+      "title": "Verify parent identity",
+      "body": "Before resetting any account or sharing any information, verify the parent's identity through the portal account. Confirm the student's name, grade, and the device serial number. Document the verification step.",
+      "transitions": [{ "event": "identity-verified", "to": "decide-account-reset" }]
+    },
+    {
+      "id": "decide-account-reset",
+      "kind": "decide",
+      "title": "Handle the account lockout",
+      "body": "The child's Google account is locked. Choose the best approach for resetting or unlocking the account, considering that the homework is due tonight and the parent needs a fast resolution.",
+      "decisionPointId": "dp-account-reset",
+      "transitions": [{ "event": "decision-made", "to": "decide-mdm-error" }]
+    },
+    {
+      "id": "decide-mdm-error",
+      "kind": "decide",
+      "title": "Handle the MDM enrollment error",
+      "body": "The Chrome management policy error is preventing the Chromebook from accepting the managed Google account login. Even after unlocking the account, the device may still block login. Choose the appropriate action for this error.",
+      "decisionPointId": "dp-mdm-error",
+      "transitions": [{ "event": "decision-made", "to": "self-service-steps" }]
+    },
+    {
+      "id": "self-service-steps",
+      "kind": "intro",
+      "title": "Guide self-service where applicable",
+      "body": "If self-service is appropriate (reboot and reconnect), send clear step-by-step instructions to the parent. If IT-side reset is needed, open a ticket and confirm the timeline with the parent. If MDM escalation is needed, document the device serial number and error, and submit the ticket.",
+      "transitions": [{ "event": "self-service-sent", "to": "validate" }]
+    },
+    {
+      "id": "validate",
+      "kind": "remediate",
+      "title": "Validate resolution",
+      "body": "Follow up with the parent to confirm both issues are resolved: can the child log into the Chromebook and access Google Classroom to submit the homework? Save the follow-up confirmation as evidence.",
+      "transitions": [{ "event": "validation-saved", "to": "document" }]
+    },
+    {
+      "id": "document",
+      "kind": "document",
+      "title": "Document the ticket",
+      "body": "Write a ticket summary covering both issues: what was reported, what was found, what actions were taken for each issue, and the resolution status. Include evidence of the error screenshot and parent communications.",
+      "prompt": "Write a brief internal ticket note summarizing both the Google account lockout and the MDM enrollment error, the actions taken for each, and the final resolution.",
+      "transitions": [{ "event": "followup-saved", "to": "debrief" }]
+    },
+    {
+      "id": "debrief",
+      "kind": "debrief",
+      "title": "Debrief",
+      "body": "Review your score and identify what to practice next.",
+      "transitions": []
+    }
+  ],
+  "startNode": "intake",
+  "terminalNodes": ["debrief"],
+  "scoring": {
+    "weights": {
+      "diagnosis": 1,
+      "evidence": 1.2,
+      "troubleshooting": 1,
+      "resolution": 1,
+      "validation": 0.8
+    },
+    "thresholds": { "jobReady": 3 }
+  },
+  "methodology": [
+    "identify",
+    "gather-evidence",
+    "hypothesize",
+    "test",
+    "change",
+    "validate",
+    "document",
+    "follow-up"
+  ],
+  "kbOpportunity": "Chrome management policy errors on district Chromebooks are often caused by the device losing contact with the MDM server after being offline from school Wi-Fi. A reboot and home reconnect resolves most cases; MDM team escalation is needed when the error persists.",
+  "skills": ["customer-service", "ticketing"]
+}

@@ -1,0 +1,231 @@
+{
+  "id": "lab-34",
+  "schemaVersion": 1,
+  "contentVersion": 1,
+  "week": 9,
+  "order": 34,
+  "track": "asset",
+  "title": "RMA and Vendor Workflow",
+  "persona": "Mr. Singh, 5th-grade teacher",
+  "channel": "portal",
+  "scenario": "Mr. Singh reports his school-issued Windows laptop will not charge. Diagnostics show the battery health is critical and the AC adapter is delivering insufficient wattage. The laptop is 18 months old, still under the manufacturer warranty, and the asset tag is on file. He needs a working laptop for next week's standardized testing.",
+  "impact": "Instructional and compliance: Mr. Singh's 5th-grade class cannot run the standardized testing client on the current laptop. The testing window opens Monday and is non-negotiable.",
+  "objectives": [
+    "Confirm the failure is hardware and not a charging-port or driver issue",
+    "Locate the warranty coverage, asset tag, and purchase record",
+    "Initiate the RMA with the correct vendor and serial number",
+    "Communicate an accurate timeline to the requester",
+    "Issue a loaner device for the duration of the repair",
+    "Document the entire RMA process and the expected return flow"
+  ],
+  "tools": [
+    "Manufacturer warranty portal",
+    "Asset management database",
+    "Vendor RMA submission form",
+    "Loaner device pool log",
+    "Ticket system"
+  ],
+  "evidence": [
+    { "id": "ev-diagnostics", "description": "Battery report and AC adapter wattage test result", "kind": "log" },
+    { "id": "ev-purchase-record", "description": "Purchase record showing warranty start date, vendor, and asset tag", "kind": "config" },
+    { "id": "ev-rma-confirmation", "description": "Vendor RMA number, shipping label, and expected turnaround time", "kind": "note" }
+  ],
+  "decisionPoints": [
+    {
+      "id": "dp-confirm-hw",
+      "prompt": "Before opening an RMA, what is the right confirmation step for a charging failure?",
+      "options": [
+        {
+          "id": "opt-replace-battery",
+          "label": "Immediately order a replacement battery from the parts catalog",
+          "score": { "diagnosis": 0, "evidence": -1, "resolution": 0 },
+          "feedback": "Ordering parts before confirming the failure mode risks wasting budget on the wrong component."
+        },
+        {
+          "id": "opt-known-good-adapter",
+          "label": "Test the laptop with a known-good AC adapter of the correct wattage and check the battery health report",
+          "score": { "diagnosis": 1, "evidence": 1, "resolution": 1 },
+          "feedback": "Correct — isolate the failure by swapping the most likely culprit (the adapter) and read the battery health report. This is non-destructive and gives you evidence for the RMA."
+        },
+        {
+          "id": "opt-driver-reset",
+          "label": "Reset the battery driver in Device Manager and reinstall the ACPI driver",
+          "score": { "diagnosis": 0, "evidence": 0, "resolution": 0 },
+          "feedback": "Driver resets are reasonable, but only after the hardware isolation step. With critical battery health reported, hardware is more likely."
+        }
+      ]
+    },
+    {
+      "id": "dp-rma-channel",
+      "prompt": "The battery health is reported as 8% of design capacity and the AC adapter passes. The laptop is under manufacturer warranty. What is the correct RMA channel?",
+      "options": [
+        {
+          "id": "opt-third-party",
+          "label": "Use a local third-party repair shop to swap the battery faster",
+          "score": { "diagnosis": 0, "evidence": -1, "resolution": -1 },
+          "feedback": "Opening the case at a third-party shop may void the manufacturer warranty. Always use the authorized channel for warranty work."
+        },
+        {
+          "id": "opt-manufacturer-rma",
+          "label": "Open a manufacturer RMA through the vendor portal with the serial number and ship the unit to the depot",
+          "score": { "diagnosis": 1, "evidence": 1, "resolution": 1 },
+          "feedback": "Correct — use the authorized channel, attach the asset tag, and ship with the RMA number. Provide the teacher with a loaner."
+        },
+        {
+          "id": "opt-charge-only",
+          "label": "Tell the teacher to charge overnight and use the laptop until it dies — no RMA needed",
+          "score": { "diagnosis": -1, "evidence": -1, "resolution": -1 },
+          "feedback": "A battery at 8% capacity will not survive a school day. The teacher cannot run standardized testing on it."
+        }
+      ]
+    }
+  ],
+  "ticket": {
+    "type": "incident",
+    "category": "Hardware / Warranty RMA",
+    "priority": "p2",
+    "impact": "high",
+    "urgency": "high",
+    "sla": "business-hours",
+    "initialDescription": "Teacher (Mr. Singh) reports school-issued Windows laptop will not charge. Battery health critical. Standardized testing window opens Monday.",
+    "requester": {
+      "name": "Mr. Singh",
+      "role": "Faculty",
+      "identifiers": { "department": "Lower School", "asset_tag": "AST-WIN-00482" }
+    }
+  },
+  "location": {
+    "id": "it-repair-bench",
+    "name": "IT Repair Bench",
+    "objects": [
+      {
+        "id": "windows-laptop",
+        "name": "Windows Laptop (Dell Latitude 5340)",
+        "state": {
+          "model": "Dell Latitude 5340",
+          "serial": "JLR5HM3",
+          "asset_tag": "AST-WIN-00482",
+          "warranty_end": "2027-09-12",
+          "battery_health_pct": 8,
+          "battery_cycle_count": 1142,
+          "ac_adapter_wattage": 60,
+          "ac_adapter_tested_wattage": 60
+        }
+      },
+      {
+        "id": "loaner-laptop",
+        "name": "Loaner Laptop (Dell Latitude 5330)",
+        "state": {
+          "available": true,
+          "asset_tag": "AST-WIN-00311",
+          "os": "Windows 11 Pro 23H2"
+        }
+      }
+    ]
+  },
+  "nodes": [
+    {
+      "id": "intake",
+      "kind": "intro",
+      "title": "Intake and warranty check",
+      "body": "Acknowledge the ticket. Look up the laptop's asset tag in the inventory system. Confirm the purchase date, vendor, and warranty end date. Note the standardized testing deadline and treat as priority.",
+      "transitions": [{ "event": "warranty-confirmed", "to": "reproduce" }]
+    },
+    {
+      "id": "reproduce",
+      "kind": "inspect",
+      "title": "Reproduce and isolate",
+      "body": "Connect the laptop to power. Confirm the symptom. Generate a battery health report and read the AC adapter wattage. Test with a known-good AC adapter of the correct wattage to isolate the failure.",
+      "locationId": "it-repair-bench",
+      "objectId": "windows-laptop",
+      "transitions": [
+        { "event": "evidence-saved", "to": "decide-confirm" }
+      ]
+    },
+    {
+      "id": "decide-confirm",
+      "kind": "decide",
+      "title": "Confirm the failure mode",
+      "body": "Choose the right confirmation step before opening the RMA. Do not skip the isolation step.",
+      "decisionPointId": "dp-confirm-hw",
+      "transitions": [
+        { "event": "decision-made", "to": "decide-channel" }
+      ]
+    },
+    {
+      "id": "decide-channel",
+      "kind": "decide",
+      "title": "Choose the RMA channel",
+      "body": "Hardware is confirmed failed. Pick the correct channel to repair the laptop under warranty.",
+      "decisionPointId": "dp-rma-channel",
+      "transitions": [
+        { "event": "decision-made", "to": "open-rma" }
+      ]
+    },
+    {
+      "id": "open-rma",
+      "kind": "remediate",
+      "title": "Open the RMA and arrange shipping",
+      "body": "Open the RMA in the vendor portal. Enter the serial number, asset tag, failure description, and diagnostic evidence. Receive the RMA number, depot address, and shipping label. Save the RMA confirmation as evidence.",
+      "locationId": "it-repair-bench",
+      "objectId": "windows-laptop",
+      "transitions": [
+        { "event": "rma-opened", "to": "issue-loaner" }
+      ]
+    },
+    {
+      "id": "issue-loaner",
+      "kind": "remediate",
+      "title": "Issue loaner and communicate timeline",
+      "body": "Check out a loaner laptop to Mr. Singh. Log the loaner with the same ticket. Communicate the RMA number, the expected turnaround (typically 5-10 business days), and what happens when the original laptop returns.",
+      "locationId": "it-repair-bench",
+      "objectId": "loaner-laptop",
+      "transitions": [
+        { "event": "loaner-checked-out", "to": "document" }
+      ]
+    },
+    {
+      "id": "document",
+      "kind": "document",
+      "title": "Document the RMA",
+      "body": "Update the ticket with: failure description, isolation evidence, RMA number, shipping tracking, expected return date, and loaner assignment. Write the follow-up message to Mr. Singh.",
+      "prompt": "Write the follow-up message to Mr. Singh summarizing the loaner, RMA number, expected return, and what to do if the loaner has problems.",
+      "transitions": [
+        { "event": "ticket-closed-loaner-open", "to": "debrief" }
+      ]
+    },
+    {
+      "id": "debrief",
+      "kind": "debrief",
+      "title": "Debrief",
+      "body": "Review the workflow. Note: isolate the failure with a known-good swap, use the authorized warranty channel, and never leave a teacher without a working device when the testing window is open.",
+      "transitions": []
+    }
+  ],
+  "startNode": "intake",
+  "terminalNodes": ["debrief"],
+  "scoring": {
+    "weights": {
+      "diagnosis": 1,
+      "evidence": 1.2,
+      "troubleshooting": 1,
+      "resolution": 1,
+      "validation": 0.6
+    },
+    "thresholds": { "jobReady": 3 }
+  },
+  "methodology": [
+    "identify",
+    "scope",
+    "reproduce",
+    "gather-evidence",
+    "hypothesize",
+    "test",
+    "change",
+    "validate",
+    "document",
+    "follow-up"
+  ],
+  "kbOpportunity": "RMA workflow for school-issued Windows laptops: warranty check → known-good isolation → vendor RMA portal → loaner device → close-the-loop documentation. Always use authorized channels for warranty work.",
+  "skills": ["hardware-lifecycle", "projects"]
+}

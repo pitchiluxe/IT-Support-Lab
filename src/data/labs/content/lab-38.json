@@ -1,0 +1,231 @@
+{
+  "id": "lab-38",
+  "schemaVersion": 1,
+  "contentVersion": 1,
+  "week": 10,
+  "order": 38,
+  "track": "projects",
+  "title": "New Employee Technology Onboarding",
+  "persona": "Ms. Patel, new 6th-grade math teacher",
+  "channel": "email",
+  "scenario": "HR submits a request to onboard Ms. Patel, a new 6th-grade math teacher, starting in 9 business days. She will need a MacBook, an iPad, a Google Workspace account with the Faculty OU, a school phone extension, building access badge, and the standard faculty app set. Her classroom is 12C and her mentor is Mrs. Hayes.",
+  "impact": "Operational: a delay in onboarding means Ms. Patel arrives on her first day unable to teach. A confused first day creates a poor impression and creates support burden across the IT team.",
+  "objectives": [
+    "Confirm the full onboarding checklist with HR and the hiring manager",
+    "Create the user accounts in the directory and Google Workspace with the correct OU",
+    "Stage the device images, enroll them in MDM, and assign them to the user",
+    "Test all credentials and device logins before the start date",
+    "Prepare a personalized welcome packet and first-day checklist",
+    "Conduct a 30-minute welcome walkthrough on her first morning"
+  ],
+  "tools": [
+    "Directory admin console",
+    "Google Workspace admin",
+    "MDM console",
+    "Standard onboarding checklist",
+    "Welcome packet template"
+  ],
+  "evidence": [
+    { "id": "ev-accounts-created", "description": "Confirmation of directory account, Google Workspace OU, and MFA enrollment", "kind": "config" },
+    { "id": "ev-devices-staged", "description": "Devices staged with asset tags, MDM enrolled, and assigned to the user", "kind": "config" },
+    { "id": "ev-welcome-packet", "description": "Personalized welcome packet with credentials, device serial numbers, and contacts", "kind": "note" }
+  ],
+  "decisionPoints": [
+    {
+      "id": "dp-account-order",
+      "prompt": "What is the correct order of operations for creating a new employee's accounts?",
+      "options": [
+        {
+          "id": "opt-google-first",
+          "label": "Create the Google Workspace account first because most school apps depend on it",
+          "score": { "diagnosis": 0, "evidence": 0, "resolution": 0 },
+          "feedback": "Google Workspace is the front end, but the directory is the back end. Create the directory account first so GWS can sync from it."
+        },
+        {
+          "id": "opt-directory-first",
+          "label": "Create the directory account first, then sync to Google Workspace, then enable MFA and OU assignment",
+          "score": { "diagnosis": 1, "evidence": 1, "resolution": 1 },
+          "feedback": "Correct — directory first, then downstream systems, then MFA. Skipping order causes orphaned accounts and permission drift."
+        },
+        {
+          "id": "opt-all-at-once",
+          "label": "Create all accounts simultaneously in each system to save time",
+          "score": { "diagnosis": -1, "evidence": -1, "resolution": -1 },
+          "feedback": "Simultaneous creation without the directory anchor produces duplicates and inconsistent permission models. Always anchor on the directory."
+        }
+      ]
+    },
+    {
+      "id": "dp-welcome-walkthrough",
+      "prompt": "Ms. Patel's first day is Monday at 8:00 AM. She has 30 minutes with you before class. What is the most valuable use of that time?",
+      "options": [
+        {
+          "id": "opt-policy-dump",
+          "label": "Walk her through the entire acceptable use policy and security training slides",
+          "score": { "diagnosis": -1, "evidence": 0, "resolution": -1 },
+          "feedback": "Information-dumping on day one overwhelms new employees. Cover AUP essentials only, and send the full training for self-paced completion."
+        },
+        {
+          "id": "opt-practical-tour",
+          "label": "Practical hands-on: log in, install apps, test the projector, find the shared drive, and meet her mentor",
+          "score": { "diagnosis": 1, "evidence": 1, "resolution": 1 },
+          "feedback": "Correct — hands-on practice on day one builds confidence and surfaces issues early. Pair with the mentor for ongoing support."
+        },
+        {
+          "id": "opt-no-walkthrough",
+          "label": "Skip the walkthrough — the welcome packet is enough and she can call the help desk",
+          "score": { "diagnosis": -1, "evidence": 0, "resolution": -1 },
+          "feedback": "New employees need guided context, not a packet. A 30-minute walkthrough is cheap insurance against a bad first day."
+        }
+      ]
+    }
+  ],
+  "ticket": {
+    "type": "request",
+    "category": "Projects / Onboarding",
+    "priority": "p3",
+    "impact": "medium",
+    "urgency": "medium",
+    "sla": "week",
+    "initialDescription": "HR submits onboarding request for Ms. Patel, new 6th-grade math teacher. Start date in 9 business days. Needs MacBook, iPad, Google Workspace account, phone extension, badge, standard faculty app set.",
+    "requester": {
+      "name": "HR Operations",
+      "role": "Administrator",
+      "identifiers": { "department": "Human Resources", "ticket_ref": "HR-2026-1182" }
+    }
+  },
+  "location": {
+    "id": "it-onboarding-room",
+    "name": "IT Onboarding Workstation",
+    "objects": [
+      {
+        "id": "user-record",
+        "name": "New User Record (Ms. Patel)",
+        "state": {
+          "name": "Priya Patel",
+          "role": "6th-grade Math Teacher",
+          "start_date": "2026-09-08",
+          "mentor": "Mrs. Hayes",
+          "classroom": "rm. 12C",
+          "directory_account": "not yet created",
+          "google_workspace": "not yet created",
+          "mfa": "not yet enrolled"
+        }
+      },
+      {
+        "id": "device-staging",
+        "name": "Device Staging Bench",
+        "state": {
+          "macbook_asset_tag": "AST-MAC-00612",
+          "ipad_asset_tag": "AST-IOS-00447",
+          "macbook_enrolled": false,
+          "ipad_enrolled": false,
+          "macos_target": "14.6",
+          "ipados_target": "17.6"
+        }
+      }
+    ]
+  },
+  "nodes": [
+    {
+      "id": "intro",
+      "kind": "intro",
+      "title": "Confirm the onboarding scope",
+      "body": "Review the HR request. Confirm the start date, role, mentor, classroom, and the full list of required accounts, devices, and access. Note any special requirements. Update the new user record.",
+      "transitions": [{ "event": "scope-confirmed", "to": "create-accounts" }]
+    },
+    {
+      "id": "create-accounts",
+      "kind": "inspect",
+      "title": "Create the user accounts",
+      "body": "Create the directory account first, then sync to Google Workspace and assign the Faculty OU. Enroll MFA. Save the account creation evidence.",
+      "locationId": "it-onboarding-room",
+      "objectId": "user-record",
+      "transitions": [
+        { "event": "accounts-saved", "to": "decide-account-order" }
+      ]
+    },
+    {
+      "id": "decide-account-order",
+      "kind": "decide",
+      "title": "Account creation order",
+      "body": "Confirm the order of operations. Was the directory created first?",
+      "decisionPointId": "dp-account-order",
+      "transitions": [
+        { "event": "decision-made", "to": "stage-devices" }
+      ]
+    },
+    {
+      "id": "stage-devices",
+      "kind": "remediate",
+      "title": "Stage the devices",
+      "body": "Image the MacBook and iPad to the school standard, enroll in MDM, assign to the user, and push the faculty app set. Save the staging record as evidence.",
+      "locationId": "it-onboarding-room",
+      "objectId": "device-staging",
+      "transitions": [
+        { "event": "devices-staged", "to": "validate" }
+      ]
+    },
+    {
+      "id": "validate",
+      "kind": "inspect",
+      "title": "Validate the onboarding end-to-end",
+      "body": "Log in to the MacBook and iPad as Ms. Patel would, with a test login if needed. Verify Google Workspace, MFA, the standard app set, the phone extension, and the badge. Save the validation evidence.",
+      "locationId": "it-onboarding-room",
+      "objectId": "user-record",
+      "transitions": [
+        { "event": "validation-saved", "to": "decide-welcome" }
+      ]
+    },
+    {
+      "id": "decide-welcome",
+      "kind": "decide",
+      "title": "Plan the welcome walkthrough",
+      "body": "Choose the most valuable use of the 30-minute first-day session.",
+      "decisionPointId": "dp-welcome-walkthrough",
+      "transitions": [
+        { "event": "decision-made", "to": "document" }
+      ]
+    },
+    {
+      "id": "document",
+      "kind": "document",
+      "title": "Prepare the welcome packet",
+      "body": "Assemble the personalized welcome packet: account details, device serial numbers, mentor contact, building access info, the 30-minute walkthrough agenda, and the help-desk contact.",
+      "prompt": "Write the welcome packet content for Ms. Patel. Plain language, friendly tone, clear next steps for her first morning.",
+      "transitions": [
+        { "event": "packet-saved", "to": "debrief" }
+      ]
+    },
+    {
+      "id": "debrief",
+      "kind": "debrief",
+      "title": "Debrief",
+      "body": "Review the onboarding. Key lessons: directory-first account creation, stage and validate devices before day one, and invest in a hands-on welcome walkthrough.",
+      "transitions": []
+    }
+  ],
+  "startNode": "intro",
+  "terminalNodes": ["debrief"],
+  "scoring": {
+    "weights": {
+      "diagnosis": 0.6,
+      "evidence": 1.2,
+      "troubleshooting": 0.6,
+      "resolution": 1,
+      "validation": 1
+    },
+    "thresholds": { "jobReady": 3 }
+  },
+  "methodology": [
+    "identify",
+    "scope",
+    "gather-evidence",
+    "change",
+    "validate",
+    "document",
+    "follow-up"
+  ],
+  "kbOpportunity": "Faculty onboarding checklist: directory → Google Workspace → MFA → device staging and MDM → standard app set → validation → welcome packet → 30-minute first-day walkthrough → mentor pairing.",
+  "skills": ["projects", "windows", "google-workspace"]
+}

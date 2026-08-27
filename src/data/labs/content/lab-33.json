@@ -1,0 +1,238 @@
+{
+  "id": "lab-33",
+  "schemaVersion": 1,
+  "contentVersion": 1,
+  "week": 9,
+  "order": 33,
+  "track": "asset",
+  "title": "Hardware Diagnosis and Repair",
+  "persona": "Ms. Parker, 7th-grade science teacher",
+  "channel": "in-person",
+  "scenario": "Ms. Parker brings her school MacBook to the IT office at 2:15 PM. The screen went black mid-lesson this morning. The laptop is under warranty until March. The screen shows no image but the power indicator is green and the machine makes the startup chime. She needs it back before tomorrow's lab.",
+  "impact": "Instructional: Ms. Parker's 7th-grade science class uses this MacBook daily for data collection and lab write-ups. Tomorrow's lab involves a partner presentation that cannot be moved.",
+  "objectives": [
+    "Reproduce the reported failure symptom",
+    "Determine whether the fault is in the display, GPU, logic board, or cabling",
+    "Document the diagnostic steps and findings",
+    "Determine if the repair is covered under warranty",
+    "Route the repair to the correct channel: in-house, Apple Store, or depot RMA",
+    "Provide the teacher with a loaner device if the repair will take more than a few hours"
+  ],
+  "tools": [
+    "External monitor (Thunderbolt)",
+    "Apple Diagnostics",
+    "Service Diagnostic Stickers reference",
+    "Warranty check portal",
+    "Loaner device pool log"
+  ],
+  "evidence": [
+    { "id": "ev-ext-monitor", "description": "External monitor output test result — does the MacBook display an image on a known-good monitor?", "kind": "note" },
+    { "id": "ev-apple-diagnostics", "description": "Apple Diagnostics result code (if run) or error code shown on screen", "kind": "log" },
+    { "id": "ev-warranty-status", "description": "Warranty coverage status from Apple's coverage checker", "kind": "config" }
+  ],
+  "decisionPoints": [
+    {
+      "id": "dp-first-test",
+      "prompt": "What is the most efficient first diagnostic test for a MacBook with no screen output but a green power light?",
+      "options": [
+        {
+          "id": "opt-reinstall-macos",
+          "label": "Reinstall macOS to rule out a software display driver failure",
+          "score": { "diagnosis": 0, "evidence": -1, "resolution": -1 },
+          "feedback": "Reinstalling macOS on a machine with no screen output is impractical and may wipe data without confirming hardware status."
+        },
+        {
+          "id": "opt-ext-monitor",
+          "label": "Connect an external Thunderbolt monitor to determine if the GPU and logic board are functional",
+          "score": { "diagnosis": 1, "evidence": 1, "resolution": 1 },
+          "feedback": "Correct — an external monitor test is the fastest way to distinguish a failed display panel from a logic board fault. It requires no disassembly and no data loss."
+        },
+        {
+          "id": "opt-open-case",
+          "label": "Open the MacBook and inspect the display ribbon cables for physical damage",
+          "score": { "diagnosis": 0, "evidence": 0, "resolution": 0 },
+          "feedback": "Opening the case is premature without first ruling out an external display issue. Follow the least-invasive diagnostic path first."
+        }
+      ]
+    },
+    {
+      "id": "dp-repair-path",
+      "prompt": "The external monitor test shows the MacBook boots normally and displays the login screen on the external monitor. The internal display is dead. What is the correct repair path?",
+      "options": [
+        {
+          "id": "opt-in-house",
+          "label": "Order a display assembly and replace it in the IT workshop",
+          "score": { "diagnosis": 0, "evidence": 0, "resolution": -1 },
+          "feedback": "MacBook display replacement requires Apple-certified parts and calibration. IT should not open the display assembly without proper tooling."
+        },
+        {
+          "id": "opt-apple-store",
+          "label": "Book a Genius Bar appointment — the display is likely a hardware failure covered under AppleCare",
+          "score": { "diagnosis": 1, "evidence": 1, "resolution": 1 },
+          "feedback": "Correct — display hardware failures are handled at an Apple Store or authorized service provider. Verify warranty coverage first."
+        },
+        {
+          "id": "opt-depot-rma",
+          "label": "Send the whole unit to the depot RMA vendor",
+          "score": { "diagnosis": 0, "evidence": 0, "resolution": 0 },
+          "feedback": "Depot RMA is appropriate for units with logic board issues. For a display-only failure, an in-person Apple Store visit is faster."
+        }
+      ]
+    }
+  ],
+  "ticket": {
+    "type": "incident",
+    "category": "Hardware / MacBook",
+    "priority": "p2",
+    "impact": "high",
+    "urgency": "high",
+    "sla": "business-hours",
+    "initialDescription": "Teacher (Ms. Parker) reports MacBook screen went black mid-lesson. Power light is green, machine makes startup chime, but no display output. Class needs it back by tomorrow morning.",
+    "requester": {
+      "name": "Ms. Parker",
+      "role": "Faculty",
+      "identifiers": { "department": "Science", "room": "rm. 8C" }
+    }
+  },
+  "location": {
+    "id": "it-workshop",
+    "name": "IT Workshop and Repair Bench",
+    "objects": [
+      {
+        "id": "faulty-macbook",
+        "name": "MacBook Air 13-inch (Ms. Parker)",
+        "state": {
+          "model": "MacBook Air 13 M2 2023",
+          "serial": "C02GOLD47JGH7",
+          "warranty": "AppleCare+ until 2027-03-15",
+          "power_light": "green",
+          "startup_chime": true,
+          "internal_display": "no output",
+          "external_display_via_tb": "not yet tested"
+        }
+      },
+      {
+        "id": "ext-monitor",
+        "name": "External Monitor (LG 27UK850)",
+        "state": {
+          "connected": false,
+          "resolution": "4K",
+          "input": "USB-C",
+          "status": "available and known-good"
+        }
+      },
+      {
+        "id": "loaner-pool",
+        "name": "Loaner Device Pool",
+        "state": {
+          "available": 2,
+          "models": ["MacBook Air M1", "Dell XPS 13"],
+          "checkout_log": "spreadsheet"
+        }
+      }
+    ]
+  },
+  "nodes": [
+    {
+      "id": "intake",
+      "kind": "intro",
+      "title": "Receive the device",
+      "body": "Receive Ms. Parker's MacBook. Log it in the repair intake system. Record the serial number, model, warranty status, and the teacher's description of what happened. Ask what she was doing when the screen went black.",
+      "transitions": [{ "event": "device-logged", "to": "reproduce" }]
+    },
+    {
+      "id": "reproduce",
+      "kind": "inspect",
+      "title": "Reproduce the failure",
+      "body": "Attempt to power on the MacBook and observe the symptoms. Note: power light, startup chime, external monitor port availability, and whether any image appears on the built-in display. Save findings as evidence.",
+      "locationId": "it-workshop",
+      "objectId": "faulty-macbook",
+      "transitions": [
+        { "event": "symptom-documented", "to": "decide-first-test" }
+      ]
+    },
+    {
+      "id": "decide-first-test",
+      "kind": "decide",
+      "title": "Choose the first diagnostic test",
+      "body": "Select the most efficient first test to determine whether the fault is in the display panel or the logic board.",
+      "decisionPointId": "dp-first-test",
+      "transitions": [
+        { "event": "decision-made", "to": "run-ext-monitor-test" }
+      ]
+    },
+    {
+      "id": "run-ext-monitor-test",
+      "kind": "inspect",
+      "title": "Run the external monitor test",
+      "body": "Connect the known-good external monitor to the MacBook via Thunderbolt. Power on and note whether the external monitor displays an image. Save the result as evidence.",
+      "locationId": "it-workshop",
+      "objectId": "ext-monitor",
+      "transitions": [
+        { "event": "result-saved", "to": "decide-repair-path" }
+      ]
+    },
+    {
+      "id": "decide-repair-path",
+      "kind": "decide",
+      "title": "Determine the repair path",
+      "body": "The external monitor confirmed the MacBook boots normally. The internal display is dead. Choose the correct repair channel.",
+      "decisionPointId": "dp-repair-path",
+      "transitions": [
+        { "event": "decision-made", "to": "issue-loaner" }
+      ]
+    },
+    {
+      "id": "issue-loaner",
+      "kind": "remediate",
+      "title": "Issue a loaner device",
+      "body": "Because the repair will take at least a day, check out a loaner MacBook to Ms. Parker. Log the loaner checkout with the same ticket number. Confirm her name, the loaner serial number, and the expected return date.",
+      "locationId": "it-workshop",
+      "objectId": "loaner-pool",
+      "transitions": [
+        { "event": "loaner-checked-out", "to": "document" }
+      ]
+    },
+    {
+      "id": "document",
+      "kind": "document",
+      "title": "Document and book repair",
+      "body": "Book the Genius Bar appointment for Ms. Parker. Add the appointment details to the ticket. Write a follow-up message confirming the loaner and the repair timeline.",
+      "prompt": "Write a follow-up message to Ms. Parker confirming the loaner MacBook, the repair path, and the expected resolution timeline.",
+      "transitions": [
+        { "event": "ticket-updated", "to": "debrief" }
+      ]
+    },
+    {
+      "id": "debrief",
+      "kind": "debrief",
+      "title": "Debrief",
+      "body": "Review your score. The key diagnostic principle: always test externally before opening hardware. The external monitor test is non-invasive, fast, and rules out the most common causes.",
+      "transitions": []
+    }
+  ],
+  "startNode": "intake",
+  "terminalNodes": ["debrief"],
+  "scoring": {
+    "weights": {
+      "diagnosis": 1,
+      "evidence": 1.2,
+      "troubleshooting": 1,
+      "resolution": 1,
+      "validation": 0.8
+    },
+    "thresholds": { "jobReady": 3 }
+  },
+  "methodology": [
+    "identify",
+    "reproduce",
+    "gather-evidence",
+    "hypothesize",
+    "test",
+    "validate",
+    "document",
+    "follow-up"
+  ],
+  "kbOpportunity": "MacBook no-screen-output diagnostic flowchart: power light present + startup chime = external monitor test first. If external works = display assembly failure → AppleCare repair path.",
+  "skills": ["hardware-lifecycle", "apple"]
+}

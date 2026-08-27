@@ -1,0 +1,254 @@
+{
+  "id": "lab-08",
+  "schemaVersion": 1,
+  "contentVersion": 1,
+  "week": 3,
+  "order": 8,
+  "track": "windows",
+  "title": "Build a Standard Windows Workstation",
+  "persona": "IT operations, lab deployment",
+  "channel": "in-person",
+  "scenario": "The school received 10 new Dell OptiPlex 7010 desktops for the computer lab. IT operations needs to build them from scratch — install Windows 11 Pro from a standard image, install the standard software suite, join each machine to the school domain, configure BitLocker, enable Remote Desktop for IT management, and apply the standard security baseline.",
+  "impact": "Operational. 10 workstations are offline until the build is complete. The computer lab has reduced seating during the build window. The build must be done consistently so the 10 machines are interchangeable for staff and students.",
+  "objectives": [
+    "Follow the standard build checklist in the correct order",
+    "Install Windows 11 Pro with the school's standard image",
+    "Apply Windows Update and install the standard software suite",
+    "Join each machine to the school domain",
+    "Configure BitLocker and store recovery keys in Active Directory",
+    "Apply the standard security baseline and validate with the build validation script"
+  ],
+  "tools": [
+    "Windows 11 Pro USB installer (standard school image)",
+    "Dell driver pack USB",
+    "Active Directory Users and Computers",
+    "Microsoft Endpoint Manager admin console",
+    "Group Policy Management console",
+    "Build validation script (school standard)"
+  ],
+  "evidence": [
+    { "id": "ev-checklist", "description": "Completed build checklist for each workstation", "kind": "note" },
+    { "id": "ev-bitlocker", "description": "BitLocker recovery key saved to Active Directory confirmation", "kind": "config" },
+    { "id": "ev-domain-join", "description": "Domain join confirmation and computer object location in AD", "kind": "screenshot" },
+    { "id": "ev-baseline-scan", "description": "Baseline scan results showing the security baseline is applied", "kind": "log" }
+  ],
+  "decisionPoints": [
+    {
+      "id": "dp-wifi",
+      "prompt": "During Windows Setup on the first machine, the built-in Wi-Fi adapter is not recognized and the OOBE wireless setup screen cannot proceed. What should you do?",
+      "options": [
+        {
+          "id": "opt-wifi-driver",
+          "label": "Use the Dell driver pack USB to install the Wi-Fi driver during OOBE, then continue the wireless setup",
+          "score": { "diagnosis": 1, "evidence": 1, "resolution": 1 },
+          "feedback": "Correct. The Dell driver pack contains the Wi-Fi driver for this exact model. Loading it during OOBE allows wireless setup to continue and provides a fully functional system rather than a wired-only machine."
+        },
+        {
+          "id": "opt-wifi-skip",
+          "label": "Skip wireless setup, connect the machine to the wired network, and continue the build wired-only",
+          "score": { "diagnosis": 0, "evidence": 0, "resolution": 0 },
+          "feedback": "You can complete the build, but the machine will be wired-only and will not be interchangeable with the other lab machines. Reopening the case to retrofit the driver later adds work."
+        },
+        {
+          "id": "opt-wifi-swap",
+          "label": "Swap the Wi-Fi adapter from one of the other nine machines to confirm whether the original is defective",
+          "score": { "diagnosis": 0, "evidence": -1, "resolution": 0 },
+          "feedback": "Swapping hardware to test a theory is not a Tier 1 or standard-build step. The driver approach is faster and reversible. Swap only if the driver install does not recognize the adapter at all."
+        }
+      ]
+    },
+    {
+      "id": "dp-baseline",
+      "prompt": "When you apply the standard security baseline (STIG) to a lab machine, one policy conflicts with a required application. The policy disables unsigned script execution; the application uses a signed but obscure script run as part of its login process. What should you do?",
+      "options": [
+        {
+          "id": "opt-baseline-escalate",
+          "label": "Pause, document the conflict, and escalate to security to request a formal policy exception with compensating controls",
+          "score": { "diagnosis": 1, "evidence": 1, "resolution": 1 },
+          "feedback": "Correct. Security baseline deviations must go through the security team with a formal exception. Silently excluding the application would weaken the baseline posture across the lab fleet."
+        },
+        {
+          "id": "opt-baseline-exclude",
+          "label": "Create a local GPO that excludes the application from the unsigned-script policy and document the exception",
+          "score": { "diagnosis": 0, "evidence": 0, "resolution": -1 },
+          "feedback": "Locally carving out an exception without security team approval is a security policy violation. It would work, but it bypasses the change-management process and creates inconsistent baseline coverage."
+        },
+        {
+          "id": "opt-baseline-skip",
+          "label": "Skip the security baseline entirely on this machine and add a note that baseline was not applied",
+          "score": { "diagnosis": -1, "evidence": -1, "resolution": -1 },
+          "feedback": "Skipping the baseline leaves the machine non-compliant and unmaintainable. The build validation script will flag it, and the machine cannot be deployed to staff or students without remediation."
+        }
+      ]
+    },
+    {
+      "id": "dp-bitlocker",
+      "prompt": "After BitLocker is enabled on the first machine, the system prompts for where to store the recovery key. Which option is the correct school policy choice?",
+      "options": [
+        {
+          "id": "opt-bitlocker-ad",
+          "label": "Store the recovery key in Active Directory and verify it appears under the computer object's BitLocker Recovery tab",
+          "score": { "diagnosis": 1, "evidence": 1, "resolution": 1 },
+          "feedback": "Correct. Storing BitLocker recovery keys in Active Directory is the school policy and the only way IT can recover a machine if a teacher forgets the PIN. The build validation script verifies AD storage."
+        },
+        {
+          "id": "opt-bitlocker-usb",
+          "label": "Save the recovery key to a USB drive labeled with the asset tag and store it in the IT workroom",
+          "score": { "diagnosis": 0, "evidence": 0, "resolution": 0 },
+          "feedback": "A USB backup is reasonable as a secondary step, but the school policy requires AD storage as the primary. Without AD storage, the build validation script will fail and IT cannot recover the machine remotely."
+        },
+        {
+          "id": "opt-bitlocker-skip",
+          "label": "Skip BitLocker for the lab fleet since machines never leave the building and users store no sensitive local data",
+          "score": { "diagnosis": -1, "evidence": -1, "resolution": -1 },
+          "feedback": "BitLocker is required regardless of physical location. Lab machines are still subject to the security baseline and may store credentials in the browser, cached passwords, or service accounts."
+        }
+      ]
+    }
+  ],
+  "ticket": {
+    "type": "change",
+    "category": "Hardware / Workstation Build",
+    "priority": "p3",
+    "impact": "medium",
+    "urgency": "medium",
+    "sla": "week",
+    "initialDescription": "Build 10 Dell OptiPlex 7010 desktops to the standard school Windows 11 Pro image. Join to domain, configure BitLocker with AD-backed recovery, enable RDP for IT management, apply security baseline.",
+    "requester": {
+      "name": "IT Operations",
+      "role": "Internal IT",
+      "identifiers": { "extension": "ext. 4100", "location": "IT workspace" }
+    }
+  },
+  "location": {
+    "id": "it-workspace",
+    "name": "IT Workspace Build Bench",
+    "objects": [
+      {
+        "id": "optiplex-1",
+        "name": "Dell OptiPlex 7010 #1",
+        "state": {
+          "assetTag": "IT-2026-0001",
+          "buildStatus": "queued",
+          "serialNumber": "DEL-OPT7010-0001",
+          "wifiAdapterRecognized": false,
+          "wiredNetwork": "connected"
+        }
+      },
+      {
+        "id": "build-tools",
+        "name": "Build Tools (USB drives and images)",
+        "state": {
+          "win11Image": "ready",
+          "dellDriverPack": "ready",
+          "buildScript": "ready",
+          "validationScript": "ready"
+        }
+      }
+    ]
+  },
+  "nodes": [
+    {
+      "id": "intake",
+      "kind": "intro",
+      "title": "Intake and planning",
+      "body": "Review the build plan: 10 Dell OptiPlex 7010 desktops need the standard Windows 11 Pro image, standard software, domain join, BitLocker with AD-recovery, RDP enabled, and the security baseline. Open the build checklist in the ticket.",
+      "transitions": [{ "event": "plan-recorded", "to": "inspect-machines" }]
+    },
+    {
+      "id": "inspect-machines",
+      "kind": "inspect",
+      "title": "Inspect the new hardware",
+      "body": "Inspect the first workstation. Confirm the asset tag, serial number, wired network connection, and basic BIOS state. Screenshot the build bench setup as evidence of the workspace readiness.",
+      "locationId": "it-workspace",
+      "objectId": "optiplex-1",
+      "transitions": [{ "event": "evidence-saved", "to": "decide-wifi" }]
+    },
+    {
+      "id": "decide-wifi",
+      "kind": "decide",
+      "title": "Handle the Wi-Fi adapter issue",
+      "body": "The first machine's Wi-Fi adapter is not recognized during OOBE. You have a Dell driver pack USB available. Choose the right approach for this build.",
+      "decisionPointId": "dp-wifi",
+      "transitions": [{ "event": "decision-made", "to": "install-os" }]
+    },
+    {
+      "id": "install-os",
+      "kind": "intro",
+      "title": "Install the standard image",
+      "body": "Boot the workstation from the Windows 11 Pro USB installer, apply the standard school image, run Windows Update until current, and install the standard software suite from the school's package repository.",
+      "transitions": [{ "event": "os-installed", "to": "decide-bitlocker" }]
+    },
+    {
+      "id": "decide-bitlocker",
+      "kind": "decide",
+      "title": "Configure BitLocker and recovery key",
+      "body": "BitLocker is enabled and prompts for the recovery key storage location. Choose the correct school policy choice for the recovery key.",
+      "decisionPointId": "dp-bitlocker",
+      "transitions": [{ "event": "decision-made", "to": "domain-join" }]
+    },
+    {
+      "id": "domain-join",
+      "kind": "intro",
+      "title": "Join the school domain",
+      "body": "Join the workstation to the school domain. Use the standard computer naming convention. Move the computer object to the Lab Computers OU. Screenshot the AD confirmation.",
+      "transitions": [{ "event": "domain-joined", "to": "decide-baseline" }]
+    },
+    {
+      "id": "decide-baseline",
+      "kind": "decide",
+      "title": "Apply the security baseline",
+      "body": "You are applying the standard security baseline (STIG) when one policy conflicts with a required application. The policy disables unsigned script execution; the application uses a signed script at login. Choose the correct response.",
+      "decisionPointId": "dp-baseline",
+      "transitions": [{ "event": "decision-made", "to": "validate" }]
+    },
+    {
+      "id": "validate",
+      "kind": "remediate",
+      "title": "Run the build validation script",
+      "body": "Run the standard build validation script. Confirm the workstation meets all build criteria: domain joined, BitLocker enabled with AD-recovery, RDP enabled, security baseline applied, baseline scan results clean. Save the scan results as evidence.",
+      "locationId": "it-workspace",
+      "objectId": "optiplex-1",
+      "transitions": [{ "event": "validation-saved", "to": "document" }]
+    },
+    {
+      "id": "document",
+      "kind": "document",
+      "title": "Document the build",
+      "body": "Complete the build checklist for the workstation. Note any deviations and their approvals. Update the asset record and tick off the first machine. Write a brief change note for the changelog.",
+      "prompt": "Write a short build summary for the changelog. Include machine count, baseline version, any deviations and their approvals.",
+      "transitions": [{ "event": "followup-saved", "to": "debrief" }]
+    },
+    {
+      "id": "debrief",
+      "kind": "debrief",
+      "title": "Debrief",
+      "body": "Review your score and identify what to practice next.",
+      "transitions": []
+    }
+  ],
+  "startNode": "intake",
+  "terminalNodes": ["debrief"],
+  "scoring": {
+    "weights": {
+      "diagnosis": 1,
+      "evidence": 1,
+      "troubleshooting": 1,
+      "resolution": 1,
+      "validation": 1
+    },
+    "thresholds": { "jobReady": 3 }
+  },
+  "methodology": [
+    "identify",
+    "scope",
+    "gather-evidence",
+    "hypothesize",
+    "test",
+    "change",
+    "validate",
+    "document"
+  ],
+  "kbOpportunity": "Security baseline conflicts with required applications — never carve out a local exception to a baseline policy. Document the conflict and route it through the security team for a formal exception with compensating controls.",
+  "skills": ["windows", "hardware-lifecycle", "documentation"]
+}

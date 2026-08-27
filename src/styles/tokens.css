@@ -1,0 +1,86 @@
+/* Light theme tokens (default — dark via media or data-theme="dark") */
+:root {
+  --background: 220 20% 98%;
+  --foreground: 222 22% 12%;
+  --card: 0 0% 100%;
+  --card-foreground: 222 22% 12%;
+  --muted: 220 14% 95%;
+  --muted-foreground: 222 12% 40%;
+  --border: 220 14% 88%;
+  --input: 220 14% 88%;
+  --ring: 222 80% 50%;
+  --primary: 222 80% 50%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 220 14% 92%;
+  --secondary-foreground: 222 22% 12%;
+  --accent: 220 14% 92%;
+  --accent-foreground: 222 22% 12%;
+  --destructive: 0 70% 50%;
+  --destructive-foreground: 0 0% 100%;
+  --success: 142 70% 40%;
+  --success-foreground: 0 0% 100%;
+  --warning: 38 92% 50%;
+  --warning-foreground: 222 22% 12%;
+  --radius: 0.5rem;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --background: 222 18% 7%;
+    --foreground: 220 20% 96%;
+    --card: 222 18% 10%;
+    --card-foreground: 220 20% 96%;
+    --muted: 222 14% 14%;
+    --muted-foreground: 220 14% 64%;
+    --border: 222 14% 18%;
+    --input: 222 14% 18%;
+    --ring: 222 80% 60%;
+    --primary: 222 80% 38%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 222 14% 16%;
+    --secondary-foreground: 220 20% 96%;
+    --accent: 222 14% 16%;
+    --accent-foreground: 220 20% 96%;
+    --destructive: 0 70% 55%;
+    --destructive-foreground: 0 0% 100%;
+    --success: 142 70% 45%;
+    --success-foreground: 0 0% 100%;
+    --warning: 38 92% 55%;
+    --warning-foreground: 0 0% 100%;
+  }
+}
+
+[data-theme='dark'] {
+  --background: 222 18% 7%;
+  --foreground: 220 20% 96%;
+  --card: 222 18% 10%;
+  --card-foreground: 220 20% 96%;
+  --muted: 222 14% 14%;
+  --muted-foreground: 220 14% 64%;
+  --border: 222 14% 18%;
+  --input: 222 14% 18%;
+  --ring: 222 80% 60%;
+  --primary: 222 80% 38%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 222 14% 16%;
+  --secondary-foreground: 220 20% 96%;
+  --accent: 222 14% 16%;
+  --accent-foreground: 220 20% 96%;
+  --destructive: 0 70% 55%;
+  --destructive-foreground: 0 0% 100%;
+  --success: 142 70% 45%;
+  --success-foreground: 0 0% 100%;
+  --warning: 38 92% 55%;
+  --warning-foreground: 0 0% 100%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

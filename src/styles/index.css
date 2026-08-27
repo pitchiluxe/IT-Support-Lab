@@ -1,0 +1,217 @@
+@import './tokens.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+  font-family:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ---------------------------------------------------------------------------
+ * Print stylesheet
+ *
+ * Used by the Portfolio page (and any future printable view). The goal is a
+ * clean letter-sized page: hide nav, hide buttons, expand all detail panels,
+ * and prefer light-on-white colors so toner costs stay low.
+ * ------------------------------------------------------------------------- */
+@media print {
+  /* Hide chrome: nav bar, action buttons, and the dismiss banner. */
+  header[role='banner'],
+  nav,
+  .print\:hidden {
+    display: none !important;
+  }
+
+  /* Use white background and dark text regardless of theme. */
+  body {
+    background: white !important;
+    color: black !important;
+  }
+
+  /* Remove card borders and shadows so the layout breathes on paper. */
+  [class*='shadow'] {
+    box-shadow: none !important;
+  }
+
+  /* Avoid awkward page breaks inside cards and detail blocks. */
+  section,
+  [class*='rounded-lg border'] {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  /* Wider layout — the screen max-width-5xl wastes a lot of paper. */
+  .mx-auto {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    max-width: 100% !important;
+  }
+
+  a {
+    color: inherit !important;
+    text-decoration: none !important;
+  }
+}
+
+*:focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 2px;
+}
+
+/* Visually hidden but accessible to screen readers */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ---------------------------------------------------------------------------
+ * Landing page animations
+ *
+ * Self-contained keyframes for the marketing surface. Kept here (rather than
+ * in tailwind config) so the rest of the app stays animation-free unless
+ * opted in via class name.
+ * ------------------------------------------------------------------------- */
+
+@keyframes fade-in-up {
+  0% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes blob {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+  }
+  33% {
+    transform: translate(30px, -20px) scale(1.1);
+  }
+  66% {
+    transform: translate(-20px, 20px) scale(0.95);
+  }
+}
+
+@keyframes grid-pan {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 60px 60px;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+ * Readiness badge glows
+ *
+ * Two soft pulse-glow loops for the "in progress" (green) and "not started"
+ * (red) badges on the readiness dashboard. The effect is a 14px emerald/red
+ * halo that breathes at ~2.5s — strong enough to read at a glance across a
+ * 3-column grid but subtle enough not to draw the eye from the rest of the UI.
+ * ------------------------------------------------------------------------- */
+
+@keyframes pulse-glow-green {
+  0%, 100% {
+    box-shadow:
+      0 0 6px -1px rgba(16, 185, 129, 0.45),
+      0 0 14px -2px rgba(16, 185, 129, 0.45);
+  }
+  50% {
+    box-shadow:
+      0 0 10px 0px rgba(16, 185, 129, 0.7),
+      0 0 22px -2px rgba(16, 185, 129, 0.55);
+  }
+}
+
+@keyframes pulse-glow-red {
+  0%, 100% {
+    box-shadow:
+      0 0 6px -1px rgba(239, 68, 68, 0.5),
+      0 0 12px -2px rgba(239, 68, 68, 0.45);
+  }
+  50% {
+    box-shadow:
+      0 0 10px 0px rgba(239, 68, 68, 0.75),
+      0 0 20px -2px rgba(239, 68, 68, 0.55);
+  }
+}
+
+.animate-pulse-glow-green {
+  animation: pulse-glow-green 2.4s ease-in-out infinite;
+}
+
+.animate-pulse-glow-red {
+  animation: pulse-glow-red 2.4s ease-in-out infinite;
+}
+
+.animate-fade-in-up {
+  opacity: 0;
+  animation: fade-in-up 0.7s ease-out forwards;
+}
+
+.animate-fade-in-up:nth-child(1) { animation-delay: 0ms; }
+.animate-fade-in-up:nth-child(2) { animation-delay: 80ms; }
+.animate-fade-in-up:nth-child(3) { animation-delay: 160ms; }
+.animate-fade-in-up:nth-child(4) { animation-delay: 240ms; }
+.animate-fade-in-up:nth-child(5) { animation-delay: 320ms; }
+
+.animate-blob {
+  animation: blob 18s ease-in-out infinite;
+}
+
+.animate-blob-slow {
+  animation: blob 26s ease-in-out infinite;
+  animation-delay: -8s;
+}
+
+.animate-blob-slower {
+  animation: blob 34s ease-in-out infinite;
+  animation-delay: -16s;
+}
+
+.bg-grid-fade {
+  background-image:
+    linear-gradient(to right, hsl(var(--border) / 0.5) 1px, transparent 1px),
+    linear-gradient(to bottom, hsl(var(--border) / 0.5) 1px, transparent 1px);
+  background-size: 60px 60px;
+  animation: grid-pan 18s linear infinite;
+  -webkit-mask-image: radial-gradient(ellipse at center, black 40%, transparent 75%);
+  mask-image: radial-gradient(ellipse at center, black 40%, transparent 75%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-in-up,
+  .animate-blob,
+  .animate-blob-slow,
+  .animate-blob-slower,
+  .bg-grid-fade,
+  .animate-pulse-glow-green,
+  .animate-pulse-glow-red {
+    animation: none !important;
+  }
+  .animate-fade-in-up {
+    opacity: 1;
+  }
+}

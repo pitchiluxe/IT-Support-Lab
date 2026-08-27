@@ -1,0 +1,219 @@
+{
+  "id": "lab-19",
+  "schemaVersion": 1,
+  "contentVersion": 1,
+  "week": 6,
+  "order": 19,
+  "track": "google-workspace",
+  "title": "Google Account / Login Issues",
+  "persona": "Mr. Davis, Middle School Science Teacher",
+  "channel": "phone",
+  "scenario": "Mr. Davis calls the IT Service Desk unable to sign in to his Google Workspace account. When he enters his password on the sign-in page, he is told 'Account is suspended. Contact your administrator.' His class begins in 30 minutes. He is in the building, at classroom 207, and has tried the password twice. He has not received any email notifications about a suspension. Two other teachers he spoke with in the staff lounge are working normally.",
+  "impact": "Instructional: A middle school science teacher cannot access Gmail, Classroom, or any Google service. Lesson plans, parent communication, and grading for 5 sections of middle school science are blocked until access is restored.",
+  "objectives": [
+    "Verify the user identity securely before disclosing account state",
+    "Check the account status in the Google Admin Console",
+    "Determine whether this is a policy violation, security action, or a stale state",
+    "Take the correct, least-risky action to restore or escalate",
+    "Validate the user can sign in and reach Gmail and Classroom",
+    "Document the incident and follow up"
+  ],
+  "tools": [
+    "Google Admin Console (admin.google.com)",
+    "User verification questions / directory",
+    "Service desk ticket system",
+    "Account audit log"
+  ],
+  "evidence": [
+    { "id": "ev-identity", "description": "User identity verified through a non-public detail (manager, hire date, etc.)", "kind": "note" },
+    { "id": "ev-account-state", "description": "Screenshot of the account status in the Google Admin Console", "kind": "screenshot" },
+    { "id": "ev-audit", "description": "Recent admin actions affecting the account (suspension reason, timestamp)", "kind": "log" }
+  ],
+  "decisionPoints": [
+    {
+      "id": "dp-diagnosis",
+      "prompt": "The Admin Console shows the account is 'Suspended — Suspended by Google for policy violation: spam originating from account'. What is the most likely root cause?",
+      "options": [
+        {
+          "id": "opt-compromise",
+          "label": "The account has been compromised and is being used to send spam from outside the school",
+          "score": { "diagnosis": 0.9, "evidence": 0.9, "resolution": 0.9 },
+          "feedback": "Correct — Google detects outbound spam patterns and automatically suspends accounts. This is the most common reason for an account-level suspension."
+        },
+        {
+          "id": "opt-user-error",
+          "label": "Mr. Davis has typed his password wrong too many times and triggered a suspension",
+          "score": { "diagnosis": 0.2, "evidence": 0.1, "resolution": 0.2 },
+          "feedback": "Failed sign-ins are not typically described as 'suspended by Google for policy violation'."
+        },
+        {
+          "id": "opt-school-policy",
+          "label": "The school's own admin team suspended the account pending a policy review",
+          "score": { "diagnosis": 0.3, "evidence": 0.2, "resolution": 0.3 },
+          "feedback": "The Admin Console shows it was suspended by Google, not by a school admin. This is an external (Google) action."
+        }
+      ]
+    },
+    {
+      "id": "dp-resolution",
+      "prompt": "The root cause is suspected account compromise. What is the correct first action before restoring access?",
+      "options": [
+        {
+          "id": "opt-password-reset",
+          "label": "Reset the user's password, force sign-out of all sessions, enable 2-step verification, then restore the account",
+          "score": { "diagnosis": 0.9, "evidence": 0.9, "resolution": 0.9 },
+          "feedback": "Correct — for a suspected compromise, you must remove the attacker's access first, then restore the legitimate user. This order matters."
+        },
+        {
+          "id": "opt-restore-only",
+          "label": "Simply restore the account from suspended state and let the user log in",
+          "score": { "diagnosis": 0.3, "evidence": 0.1, "resolution": 0.0 },
+          "feedback": "Restoring without changing credentials leaves the attacker in control. The account will be re-suspended."
+        },
+        {
+          "id": "opt-delete-account",
+          "label": "Delete the account and create a new one for the user",
+          "score": { "diagnosis": 0.1, "evidence": -0.5, "resolution": -0.8 },
+          "feedback": "Destructive and unnecessary. The user would lose all Drive data, calendar history, and email. Account restoration is the correct path."
+        }
+      ]
+    }
+  ],
+  "ticket": {
+    "type": "incident",
+    "category": "Google Workspace / Account Access",
+    "priority": "p1",
+    "impact": "high",
+    "urgency": "high",
+    "sla": "business-hours",
+    "initialDescription": "Teacher (Mr. Davis) cannot sign in to Google Workspace. Error: 'Account is suspended. Contact your administrator.' Class in 30 minutes.",
+    "requester": {
+      "name": "Mr. Davis",
+      "role": "Faculty",
+      "identifiers": { "extension": "ext. 5207", "location": "rm. 207" }
+    }
+  },
+  "location": {
+    "id": "service-desk",
+    "name": "IT Service Desk",
+    "objects": [
+      {
+        "id": "helpdesk-workstation",
+        "name": "IT Helpdesk Workstation",
+        "state": {
+          "os": "Windows 11",
+          "apps": ["Chrome", "Google Admin Console"]
+        }
+      },
+      {
+        "id": "admin-console",
+        "name": "Google Admin Console",
+        "state": {
+          "suspendedAccounts": 1,
+          "suspensionReason": "policy violation: spam",
+          "lastSuspensionAt": 1724850000000
+        }
+      }
+    ]
+  },
+  "nodes": [
+    {
+      "id": "intake",
+      "kind": "intro",
+      "title": "Take the call and verify identity",
+      "body": "Answer the call. Do not reveal any account state until you have verified the caller. Ask for name, role, and a verification question (manager's name, hire date, or other non-public detail). Open a ticket.",
+      "transitions": [{ "event": "identity-verified", "to": "inspect-admin" }]
+    },
+    {
+      "id": "inspect-admin",
+      "kind": "inspect",
+      "title": "Inspect account in Admin Console",
+      "body": "Open Google Admin Console and look up Mr. Davis. Note the account status, the suspension reason, the timestamp, and any recent admin actions. Save the audit log to the ticket.",
+      "locationId": "service-desk",
+      "objectId": "admin-console",
+      "transitions": [
+        { "event": "evidence-saved", "to": "decide-diagnosis" }
+      ]
+    },
+    {
+      "id": "decide-diagnosis",
+      "kind": "decide",
+      "title": "Identify the root cause",
+      "body": "Based on the audit log and the suspension reason, what is most likely happening?",
+      "decisionPointId": "dp-diagnosis",
+      "transitions": [
+        { "event": "decision-made", "to": "decide-resolution" }
+      ]
+    },
+    {
+      "id": "decide-resolution",
+      "kind": "decide",
+      "title": "Choose the correct action",
+      "body": "You suspect account compromise. Pick the correct first action to take before restoring access.",
+      "decisionPointId": "dp-resolution",
+      "transitions": [
+        { "event": "decision-made", "to": "remediate" }
+      ]
+    },
+    {
+      "id": "remediate",
+      "kind": "remediate",
+      "title": "Secure and restore the account",
+      "body": "Reset the password, force sign-out of all sessions, enable 2-step verification, then restore the account. Communicate the new temporary password securely to the user over the phone (not email).",
+      "transitions": [
+        { "event": "fix-applied", "to": "validate" }
+      ]
+    },
+    {
+      "id": "validate",
+      "kind": "remediate",
+      "title": "Validate",
+      "body": "Have Mr. Davis sign in with the temporary password and confirm he can reach Gmail and Classroom. Ask him to set up 2-step verification. Document the test.",
+      "transitions": [
+        { "event": "validation-saved", "to": "document" }
+      ]
+    },
+    {
+      "id": "document",
+      "kind": "document",
+      "title": "Document and follow up",
+      "body": "Write a detailed ticket note covering: the suspension reason, the steps taken, and the security recommendations. Send a follow-up to Mr. Davis with security guidance. File a security incident record for the audit trail.",
+      "prompt": "Write a brief, plain-language follow-up message to Mr. Davis explaining what happened and what to watch for.",
+      "transitions": [
+        { "event": "followup-saved", "to": "debrief" }
+      ]
+    },
+    {
+      "id": "debrief",
+      "kind": "debrief",
+      "title": "Debrief",
+      "body": "Review your score. Think about how to recognize a Google-initiated suspension vs. a school admin suspension vs. a password error. A KB article on this distinction would help future technicians.",
+      "transitions": []
+    }
+  ],
+  "startNode": "intake",
+  "terminalNodes": ["debrief"],
+  "scoring": {
+    "weights": {
+      "diagnosis": 1.2,
+      "evidence": 1,
+      "troubleshooting": 1,
+      "resolution": 1,
+      "validation": 0.8
+    },
+    "thresholds": { "jobReady": 3 }
+  },
+  "methodology": [
+    "identify",
+    "scope",
+    "gather-evidence",
+    "hypothesize",
+    "test",
+    "change",
+    "validate",
+    "document",
+    "follow-up"
+  ],
+  "kbOpportunity": "Google-initiated account suspensions for spam indicate a likely compromise. Always reset password, force sign-out, enable 2-step verification, then restore — not the other way around.",
+  "skills": ["google-workspace", "ticketing", "security-awareness", "documentation"]
+}

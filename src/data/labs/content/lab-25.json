@@ -1,0 +1,232 @@
+{
+  "id": "lab-25",
+  "schemaVersion": 1,
+  "contentVersion": 1,
+  "week": 7,
+  "order": 25,
+  "track": "mdm",
+  "title": "Lost / Stolen Device Response",
+  "persona": "Mrs. Hayes, 4th-grade Teacher",
+  "channel": "phone",
+  "scenario": "Mrs. Hayes calls the IT Service Desk in a panic. Her school-issued iPad was stolen from her classroom during the lunch period when she stepped out for 5 minutes. The iPad is signed in to her school Google account and contains student data, lesson plans, and parent email. The theft has been reported to the school office. She wants to know what to do next.",
+  "impact": "Security: A school-issued iPad with access to student data, parent communications, and a faculty Google account is in unauthorized hands. The risk of data exposure, account misuse, and credential theft must be mitigated within minutes.",
+  "objectives": [
+    "Verify the device and confirm the report with the user",
+    "Initiate the lost/stolen device playbook immediately",
+    "Lock the device, prevent further access, and revoke tokens",
+    "Reset the user's password and force sign-out of all sessions",
+    "Document the incident for the security record",
+    "Communicate next steps to the user and the school office"
+  ],
+  "tools": [
+    "MDM console — Lost Mode / Lock / Wipe actions",
+    "Google Admin Console — force sign-out, password reset",
+    "Service desk ticket system",
+    "Security incident report template",
+    "Police / school incident report reference"
+  ],
+  "evidence": [
+    { "id": "ev-device", "description": "Device serial, model, and current MDM state captured before action", "kind": "note" },
+    { "id": "ev-lost-mode", "description": "Confirmation that Lost Mode (or Lock) was activated, including the message shown on the device", "kind": "screenshot" },
+    { "id": "ev-account-revoked", "description": "Timestamp of Google Workspace password reset and force sign-out", "kind": "log" }
+  ],
+  "decisionPoints": [
+    {
+      "id": "dp-first-action",
+      "prompt": "What is the correct first action to take in the lost/stolen playbook?",
+      "options": [
+        {
+          "id": "opt-lock",
+          "label": "Activate Lost Mode (or Lock) on the iPad from the MDM console, with a custom message and contact phone number",
+          "score": { "diagnosis": 0.9, "evidence": 0.9, "resolution": 0.9 },
+          "feedback": "Correct — Lock/Lost Mode is immediate, reversible if the device is recovered, and prevents the thief from using the device. It is always the first action."
+        },
+        {
+          "id": "opt-wipe-immediately",
+          "label": "Immediately wipe the iPad remotely",
+          "score": { "diagnosis": 0.4, "evidence": 0.3, "resolution": 0.2 },
+          "feedback": "Wipe is appropriate if the device cannot be recovered, but it destroys evidence and is irreversible. Lock first; wipe if the device cannot be located after a reasonable window."
+        },
+        {
+          "id": "opt-call-police",
+          "label": "Tell Mrs. Hayes to call the police and wait",
+          "score": { "diagnosis": 0.2, "evidence": 0.1, "resolution": 0.1 },
+          "feedback": "School policy typically requires a school incident report first. The IT Service Desk can act immediately on the device; the police report can happen in parallel."
+        }
+      ]
+    },
+    {
+      "id": "dp-second-action",
+      "prompt": "The device is now locked. What is the next critical step to protect the user's account and data on the device?",
+      "options": [
+        {
+          "id": "opt-revoke",
+          "label": "Reset Google password, force sign-out of all sessions, and revoke OAuth tokens for the user",
+          "score": { "diagnosis": 0.9, "evidence": 0.9, "resolution": 0.9 },
+          "feedback": "Correct — even with Lost Mode, the iPad may still have cached sign-in tokens. Revoking the user's sessions and password ensures the thief cannot access school data."
+        },
+        {
+          "id": "opt-disable-account",
+          "label": "Suspend the user's Google Workspace account entirely",
+          "score": { "diagnosis": 0.3, "evidence": 0.2, "resolution": 0.1 },
+          "feedback": "Suspending the account is too broad — it blocks the teacher from any device. Password reset + force sign-out + token revocation is the right balance."
+        },
+        {
+          "id": "opt-wait",
+          "label": "Wait to see if the device is recovered before doing anything else",
+          "score": { "diagnosis": 0.0, "evidence": 0.0, "resolution": -0.5 },
+          "feedback": "Waiting is dangerous — the thief has minutes, not hours. The data on the device is at risk; act now, recover later if possible."
+        }
+      ]
+    }
+  ],
+  "ticket": {
+    "type": "incident",
+    "category": "MDM / Lost or Stolen Device",
+    "priority": "p1",
+    "impact": "high",
+    "urgency": "high",
+    "sla": "24x7",
+    "initialDescription": "School-issued iPad stolen from classroom 12B during lunch. Contains faculty Google account, student data, parent emails. Lost/stolen playbook required.",
+    "requester": {
+      "name": "Mrs. Hayes",
+      "role": "Faculty",
+      "identifiers": { "grade": "4th grade", "location": "rm. 12B" }
+    }
+  },
+  "location": {
+    "id": "service-desk",
+    "name": "IT Service Desk",
+    "objects": [
+      {
+        "id": "mdm-console",
+        "name": "MDM Console (Lost/Stolen Actions)",
+        "state": {
+          "deviceSerial": "F4LZK9WXYZ",
+          "currentState": "Enrolled, online 4 hours ago",
+          "lostModeSupported": true
+        }
+      },
+      {
+        "id": "google-admin",
+        "name": "Google Admin Console",
+        "state": {
+          "targetUser": "hayes.faculty",
+          "currentSessions": 3,
+          "oauthTokens": 12
+        }
+      }
+    ]
+  },
+  "nodes": [
+    {
+      "id": "intake",
+      "kind": "intro",
+      "title": "Take the call — calm and immediate",
+      "body": "Take the call. Verify identity. Note the device, the time of disappearance, and what data may be on it. Open a P1 ticket. Stay on the line with the user — this is a stressful event and you will guide them.",
+      "transitions": [{ "event": "ticket-opened", "to": "inspect-mdm" }]
+    },
+    {
+      "id": "inspect-mdm",
+      "kind": "inspect",
+      "title": "Inspect the device in MDM",
+      "body": "Look up the iPad in MDM. Confirm it is enrolled, capture serial, last check-in, and current state. Do not act yet — gather evidence first.",
+      "locationId": "service-desk",
+      "objectId": "mdm-console",
+      "transitions": [
+        { "event": "evidence-saved", "to": "decide-first-action" }
+      ]
+    },
+    {
+      "id": "decide-first-action",
+      "kind": "decide",
+      "title": "Choose the first action",
+      "body": "What is the correct first step in the lost/stolen playbook?",
+      "decisionPointId": "dp-first-action",
+      "transitions": [
+        { "event": "decision-made", "to": "remediate-lock" }
+      ]
+    },
+    {
+      "id": "remediate-lock",
+      "kind": "remediate",
+      "title": "Activate Lost Mode",
+      "body": "From the MDM console, activate Lost Mode (or Lock) with a message: 'This device is lost/stolen. Please call the IT Service Desk at ext. 4000.' Save the screenshot and the activation timestamp.",
+      "transitions": [
+        { "event": "lock-applied", "to": "decide-second-action" }
+      ]
+    },
+    {
+      "id": "decide-second-action",
+      "kind": "decide",
+      "title": "Choose the next action",
+      "body": "The device is now locked. What is the next critical step to protect the user's account and data?",
+      "decisionPointId": "dp-second-action",
+      "transitions": [
+        { "event": "decision-made", "to": "remediate-revoke" }
+      ]
+    },
+    {
+      "id": "remediate-revoke",
+      "kind": "remediate",
+      "title": "Revoke sessions and reset password",
+      "body": "In the Google Admin Console, force sign-out of all sessions for the user, reset the password, and revoke OAuth tokens. Communicate the new temporary password securely to the user over the phone.",
+      "locationId": "service-desk",
+      "objectId": "google-admin",
+      "transitions": [
+        { "event": "fix-applied", "to": "validate" }
+      ]
+    },
+    {
+      "id": "validate",
+      "kind": "remediate",
+      "title": "Validate",
+      "body": "Confirm in MDM that Lost Mode is active and the device shows the lock screen message. Confirm in Google Admin that the user has no active sessions. Have the user sign in to a known device with the new password and 2-step verification.",
+      "transitions": [
+        { "event": "validation-saved", "to": "document" }
+      ]
+    },
+    {
+      "id": "document",
+      "kind": "document",
+      "title": "Document the incident",
+      "body": "File a security incident report with timeline, actions taken, and the user's report of theft. Notify the school office and the IT lead per the lost/stolen playbook. Capture the police report number if available.",
+      "prompt": "Write a brief follow-up to Mrs. Hayes confirming the device is locked, her account is secured, and what to do next.",
+      "transitions": [
+        { "event": "followup-saved", "to": "debrief" }
+      ]
+    },
+    {
+      "id": "debrief",
+      "kind": "debrief",
+      "title": "Debrief",
+      "body": "Review your score. Think about the order of operations in a lost/stolen playbook and why each step matters. A KB article would help the next technician follow the same steps under pressure.",
+      "transitions": []
+    }
+  ],
+  "startNode": "intake",
+  "terminalNodes": ["debrief"],
+  "scoring": {
+    "weights": {
+      "diagnosis": 1,
+      "evidence": 0.8,
+      "troubleshooting": 1,
+      "resolution": 1.5,
+      "validation": 1
+    },
+    "thresholds": { "jobReady": 3 }
+  },
+  "methodology": [
+    "identify",
+    "scope",
+    "gather-evidence",
+    "hypothesize",
+    "test",
+    "change",
+    "validate",
+    "document",
+    "follow-up"
+  ],
+  "kbOpportunity": "Lost/stolen playbook order: (1) Lock/Lost Mode in MDM, (2) revoke account sessions, (3) reset password and OAuth tokens, (4) file security incident, (5) coordinate with school office and police.",
+  "skills": ["mdm", "security-awareness", "hardware-lifecycle", "ticketing"]
+}

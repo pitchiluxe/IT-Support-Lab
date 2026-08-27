@@ -1,0 +1,218 @@
+{
+  "id": "lab-37",
+  "schemaVersion": 1,
+  "contentVersion": 1,
+  "week": 10,
+  "order": 37,
+  "track": "projects",
+  "title": "School-Wide macOS/iPadOS Upgrade",
+  "persona": "Mr. Thompson, Director of Technology",
+  "channel": "email",
+  "scenario": "Mr. Thompson, Director of Technology, has approved a school-wide upgrade from macOS 13 Ventura and iPadOS 16 to the latest supported releases. The fleet includes 184 MacBooks and 220 iPads. The upgrade must complete during the summer break so the school year opens with the new OS. Three apps have known compatibility issues with the new OS and need testing.",
+  "impact": "Strategic: a failed upgrade would block the start of the school year. Three critical apps (student information system client, standardized testing client, and a creative-arts tool) need validation before deployment.",
+  "objectives": [
+    "Define the upgrade scope and the success criteria for each device class",
+    "Identify app compatibility issues and create a validation matrix",
+    "Plan a pilot with a representative sample of devices first",
+    "Stage the rollout using MDM with phased smart groups",
+    "Document a rollback plan in case of widespread issues",
+    "Communicate the upgrade schedule to faculty and staff"
+  ],
+  "tools": [
+    "MDM console (Jamf Pro)",
+    "Pilot test plan template",
+    "App compatibility matrix",
+    "Rollback runbook template",
+    "Communication templates"
+  ],
+  "evidence": [
+    { "id": "ev-compat-matrix", "description": "App compatibility matrix showing test results for each critical app on the new OS", "kind": "config" },
+    { "id": "ev-pilot-report", "description": "Pilot test report with pass/fail status from the 20 representative devices", "kind": "note" },
+    { "id": "ev-rollback-plan", "description": "Documented rollback plan with trigger conditions and steps", "kind": "note" }
+  ],
+  "decisionPoints": [
+    {
+      "id": "dp-pilot",
+      "prompt": "The pilot test reveals that one of the three critical apps (the standardized testing client) will not run on the new OS. What is the correct next step?",
+      "options": [
+        {
+          "id": "opt-skip-app",
+          "label": "Skip testing that app for now and proceed with the upgrade — IT can fix it later",
+          "score": { "diagnosis": -1, "evidence": -1, "resolution": -1 },
+          "feedback": "Skipping a known-broken critical app would block standardized testing for the entire school year. Do not proceed."
+        },
+        {
+          "id": "opt-delay-rollout",
+          "label": "Pause the rollout, escalate to the app vendor for a fix or a workaround, and only proceed when a path is clear",
+          "score": { "diagnosis": 1, "evidence": 1, "resolution": 1 },
+          "feedback": "Correct — a known-broken critical app is a stop-ship. Pause, engage the vendor, and document the impact on the timeline."
+        },
+        {
+          "id": "opt-force-deploy",
+          "label": "Force the upgrade to all devices and let the testing app fail — teachers can use a workaround",
+          "score": { "diagnosis": -1, "evidence": -1, "resolution": -1 },
+          "feedback": "Force-deploying with a known broken critical app is irresponsible. There is no acceptable workaround during testing windows."
+        }
+      ]
+    },
+    {
+      "id": "dp-rollout-strategy",
+      "prompt": "After the app issue is resolved, which rollout strategy is safest for a fleet of 184 MacBooks and 220 iPads?",
+      "options": [
+        {
+          "id": "opt-all-at-once",
+          "label": "Push to all devices in one weekend",
+          "score": { "diagnosis": 0, "evidence": 0, "resolution": -1 },
+          "feedback": "All-at-once deployment maximizes blast radius if something goes wrong. With 400 devices and 3 critical apps, this is too risky."
+        },
+        {
+          "id": "opt-phased-mdm",
+          "label": "Phased rollout via MDM smart groups: 5% first, then 25%, then 50%, then 100% over 2 weeks",
+          "score": { "diagnosis": 1, "evidence": 1, "resolution": 1 },
+          "feedback": "Correct — phased rollout with canary groups catches issues early. MDM allows automation of the smart-group expansion."
+        },
+        {
+          "id": "opt-manual-upgrade",
+          "label": "Have each faculty member perform the upgrade manually on their own schedule",
+          "score": { "diagnosis": -1, "evidence": -1, "resolution": -1 },
+          "feedback": "Manual upgrades with 184 MacBooks and 220 iPads will not complete reliably before school starts. Use MDM automation."
+        }
+      ]
+    }
+  ],
+  "ticket": {
+    "type": "change",
+    "category": "Projects / OS Upgrade",
+    "priority": "p2",
+    "impact": "high",
+    "urgency": "medium",
+    "sla": "week",
+    "initialDescription": "Mr. Thompson requests a school-wide macOS and iPadOS upgrade to the latest supported releases. 184 MacBooks and 220 iPads. Must complete before school start. Three critical apps need compatibility testing.",
+    "requester": {
+      "name": "Mr. Thompson",
+      "role": "Administrator",
+      "identifiers": { "title": "Director of Technology", "office": "rm. 305" }
+    }
+  },
+  "location": {
+    "id": "mdm-console",
+    "name": "MDM Console and Upgrade War Room",
+    "objects": [
+      {
+        "id": "fleet-overview",
+        "name": "Fleet Overview",
+        "state": {
+          "macbooks_total": 184,
+          "ipads_total": 220,
+          "current_macos": "13.6",
+          "current_ipados": "16.5",
+          "target_macos": "14.6",
+          "target_ipados": "17.6",
+          "managed_by_mdm": "100%"
+        }
+      },
+      {
+        "id": "app-matrix",
+        "name": "App Compatibility Matrix",
+        "state": {
+          "sis_client": { "status": "pass", "version": "9.2" },
+          "testing_client": { "status": "fail", "vendor_contact": "open" },
+          "creative_arts": { "status": "pass", "version": "4.0" }
+        }
+      }
+    ]
+  },
+  "nodes": [
+    {
+      "id": "intro",
+      "kind": "intro",
+      "title": "Scope the upgrade",
+      "body": "Confirm the scope: which OS versions, which device classes, which MDM smart groups, and the go/no-go date. Identify the 3 critical apps that need validation. Identify the success criteria.",
+      "transitions": [{ "event": "scope-confirmed", "to": "build-matrix" }]
+    },
+    {
+      "id": "build-matrix",
+      "kind": "inspect",
+      "title": "Build the compatibility matrix",
+      "body": "Test each of the 3 critical apps on the target OS versions. Record the results in the compatibility matrix. Note any vendor support tickets already open. Save the matrix as evidence.",
+      "locationId": "mdm-console",
+      "objectId": "app-matrix",
+      "transitions": [
+        { "event": "matrix-saved", "to": "decide-pilot" }
+      ]
+    },
+    {
+      "id": "decide-pilot",
+      "kind": "decide",
+      "title": "Pilot result decision",
+      "body": "The pilot reveals the standardized testing client is not compatible. Decide how to proceed.",
+      "decisionPointId": "dp-pilot",
+      "transitions": [
+        { "event": "decision-made", "to": "choose-rollout" }
+      ]
+    },
+    {
+      "id": "choose-rollout",
+      "kind": "decide",
+      "title": "Choose the rollout strategy",
+      "body": "Once the testing client is resolved, pick the rollout strategy for the full fleet.",
+      "decisionPointId": "dp-rollout-strategy",
+      "transitions": [
+        { "event": "decision-made", "to": "run-pilot" }
+      ]
+    },
+    {
+      "id": "run-pilot",
+      "kind": "inspect",
+      "title": "Run the pilot on 20 representative devices",
+      "body": "Push the upgrade to 20 representative devices (faculty MacBooks, student MacBooks, classroom iPads, shared iPads). Validate the 3 critical apps on each. Capture the results and save the pilot report.",
+      "locationId": "mdm-console",
+      "objectId": "fleet-overview",
+      "transitions": [
+        { "event": "pilot-report-saved", "to": "document" }
+      ]
+    },
+    {
+      "id": "document",
+      "kind": "document",
+      "title": "Document the rollout and communicate",
+      "body": "Finalize the phased rollout schedule, the rollback runbook, and the faculty communication. Send the schedule to Mr. Thompson for approval, then publish to faculty and staff.",
+      "prompt": "Write the rollout communication to faculty and staff: what is happening, when, what to do if their device prompts them, and who to contact for help.",
+      "transitions": [
+        { "event": "communication-sent", "to": "debrief" }
+      ]
+    },
+    {
+      "id": "debrief",
+      "kind": "debrief",
+      "title": "Debrief",
+      "body": "Review the approach. Key lessons: never ship an OS upgrade with a known broken critical app, always use phased rollouts via MDM, and always have a documented rollback plan.",
+      "transitions": []
+    }
+  ],
+  "startNode": "intro",
+  "terminalNodes": ["debrief"],
+  "scoring": {
+    "weights": {
+      "diagnosis": 1,
+      "evidence": 1.2,
+      "troubleshooting": 0.8,
+      "resolution": 1,
+      "validation": 0.8
+    },
+    "thresholds": { "jobReady": 3 }
+  },
+  "methodology": [
+    "identify",
+    "scope",
+    "gather-evidence",
+    "hypothesize",
+    "test",
+    "change",
+    "validate",
+    "document",
+    "follow-up"
+  ],
+  "kbOpportunity": "OS upgrade rollout playbook: compatibility matrix → pilot (5%) → phased MDM rollout (5% / 25% / 50% / 100%) → rollback runbook → post-rollout validation. Stop-ship on broken critical apps.",
+  "skills": ["projects", "apple", "mdm"]
+}

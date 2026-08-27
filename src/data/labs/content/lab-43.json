@@ -1,0 +1,190 @@
+{
+  "id": "lab-43",
+  "schemaVersion": 1,
+  "contentVersion": 1,
+  "week": 11,
+  "order": 43,
+  "track": "operations",
+  "title": "Post-Resolution Follow-Up",
+  "persona": "Mr. Liu, 8th-grade science teacher",
+  "channel": "phone",
+  "scenario": "Mr. Liu had a P2 incident two days ago: his classroom projector would not display from his MacBook. IT resolved the issue by replacing the HDMI cable and updating the adapter driver. Now you are following up to confirm the fix is holding and that he is not experiencing any related issues. He has not called back.",
+  "impact": "Customer experience: proactive follow-up catches regressions, surfaces related issues, and builds faculty trust in IT. Skipped follow-up makes IT look transactional and reactive.",
+  "objectives": [
+    "Review the closed ticket and the resolution steps performed",
+    "Open a follow-up contact within the school's SLA window",
+    "Confirm the issue has not recurred and no related issues exist",
+    "Document any new findings into the original ticket or a related one",
+    "Capture the satisfaction score and any feedback",
+    "Close the follow-up loop in the ticket system"
+  ],
+  "tools": [
+    "Ticket system",
+    "Customer satisfaction survey link",
+    "Follow-up script template",
+    "Asset history lookup",
+    "Email or phone"
+  ],
+  "evidence": [
+    { "id": "ev-followup-notes", "description": "Notes from the follow-up contact: confirmation, any new findings, satisfaction score", "kind": "note" },
+    { "id": "ev-ticket-update", "description": "Original ticket updated with the follow-up result and any new related tickets", "kind": "note" }
+  ],
+  "decisionPoints": [
+    {
+      "id": "dp-followup-channel",
+      "prompt": "Mr. Liu is reachable by phone or email. Which is the better follow-up channel?",
+      "options": [
+        {
+          "id": "opt-email",
+          "label": "Email — it is the school's standard for non-urgent follow-up and respects his time",
+          "score": { "diagnosis": 0, "evidence": 0, "resolution": 0 },
+          "feedback": "Email is appropriate for non-urgent follow-up, but a 2-day post-P2 check is often worth a quick phone call to catch regressions early."
+        },
+        {
+          "id": "opt-phone",
+          "label": "Phone call — quicker to confirm and easier to catch related issues in conversation",
+          "score": { "diagnosis": 1, "evidence": 1, "resolution": 1 },
+          "feedback": "Correct — a short phone call confirms the fix, surfaces related issues, and signals that IT cares. Reserve email for cases where the user has explicitly preferred it."
+        },
+        {
+          "id": "opt-no-followup",
+          "label": "Skip the follow-up — the ticket is closed and Mr. Liu can call if it recurs",
+          "score": { "diagnosis": -1, "evidence": -1, "resolution": -1 },
+          "feedback": "Skipping follow-up on a P2 sends the message that IT only cares about closing the ticket, not about the user's outcome."
+        }
+      ]
+    },
+    {
+      "id": "dp-related-issue",
+      "prompt": "Mr. Liu mentions in the follow-up that the projector sometimes flickers when both his MacBook and the classroom PC are connected. What is the correct next step?",
+      "options": [
+        {
+          "id": "opt-ignore",
+          "label": "Note it casually and offer to send someone 'sometime' — it is not the original issue",
+          "score": { "diagnosis": -1, "evidence": -1, "resolution": -1 },
+          "feedback": "An unreported related issue is a future ticket. Capture it properly with its own ticket number and ownership."
+        },
+        {
+          "id": "opt-new-ticket",
+          "label": "Open a new related ticket, link it to the original, and dispatch a technician for the flicker issue",
+          "score": { "diagnosis": 1, "evidence": 1, "resolution": 1 },
+          "feedback": "Correct — open a related ticket, link to the original, and dispatch. Following up is also a discovery opportunity."
+        },
+        {
+          "id": "opt-reopen-original",
+          "label": "Reopen the original ticket to absorb the new issue",
+          "score": { "diagnosis": 0, "evidence": 0, "resolution": 0 },
+          "feedback": "Reopening confuses metrics and ownership. Open a new related ticket and link them."
+        }
+      ]
+    }
+  ],
+  "ticket": {
+    "type": "incident",
+    "category": "Documentation / Follow-Up",
+    "priority": "p3",
+    "impact": "low",
+    "urgency": "low",
+    "sla": "business-hours",
+    "initialDescription": "Proactive follow-up on closed P2 incident TKT-2026-4488. Mr. Liu's classroom projector was not displaying from his MacBook. Resolved 2 days ago by HDMI cable replacement and driver update.",
+    "requester": {
+      "name": "Mr. Liu",
+      "role": "Faculty",
+      "identifiers": { "department": "Science", "room": "rm. 14A" }
+    }
+  },
+  "location": {
+    "id": "it-service-desk",
+    "name": "IT Service Desk",
+    "objects": [
+      {
+        "id": "closed-ticket",
+        "name": "Closed Ticket TKT-2026-4488",
+        "state": {
+          "title": "Projector not displaying from MacBook",
+          "category": "Classroom Tech",
+          "resolved_at": "2026-08-25T15:42:00",
+          "resolution_steps": ["replaced HDMI cable", "updated adapter driver", "validated with Mr. Liu"],
+          "csat_score": null
+        }
+      }
+    ]
+  },
+  "nodes": [
+    {
+      "id": "intro",
+      "kind": "intro",
+      "title": "Review the closed ticket",
+      "body": "Pull the closed ticket. Note the resolution steps, the asset involved, and the original impact. Confirm the follow-up window is within the school's standard (typically 2 business days for P2).",
+      "transitions": [{ "event": "ticket-reviewed", "to": "decide-channel" }]
+    },
+    {
+      "id": "decide-channel",
+      "kind": "decide",
+      "title": "Choose the follow-up channel",
+      "body": "Decide how to reach Mr. Liu for the follow-up.",
+      "decisionPointId": "dp-followup-channel",
+      "transitions": [
+        { "event": "decision-made", "to": "contact-user" }
+      ]
+    },
+    {
+      "id": "contact-user",
+      "kind": "inspect",
+      "title": "Contact the user",
+      "body": "Reach out to Mr. Liu. Confirm the original fix is holding. Ask if any related issues have come up. Save the follow-up notes as evidence.",
+      "locationId": "it-service-desk",
+      "objectId": "closed-ticket",
+      "transitions": [
+        { "event": "followup-notes-saved", "to": "decide-related" }
+      ]
+    },
+    {
+      "id": "decide-related",
+      "kind": "decide",
+      "title": "Handle a related issue",
+      "body": "Mr. Liu mentions a related flicker issue. Decide how to handle it.",
+      "decisionPointId": "dp-related-issue",
+      "transitions": [
+        { "event": "decision-made", "to": "document" }
+      ]
+    },
+    {
+      "id": "document",
+      "kind": "document",
+      "title": "Update the ticket and close the loop",
+      "body": "Update the original ticket with the follow-up result. Open a new related ticket if needed and link it. Capture the satisfaction score and any feedback in the original ticket.",
+      "prompt": "Write the final update to the original ticket: follow-up result, related ticket link (if any), satisfaction score, and closure status.",
+      "transitions": [
+        { "event": "loop-closed", "to": "debrief" }
+      ]
+    },
+    {
+      "id": "debrief",
+      "kind": "debrief",
+      "title": "Debrief",
+      "body": "Review the follow-up. Key lessons: every P2 deserves a follow-up, phone beats email for post-incident check-ins, and follow-up is a discovery opportunity for related issues.",
+      "transitions": []
+    }
+  ],
+  "startNode": "intro",
+  "terminalNodes": ["debrief"],
+  "scoring": {
+    "weights": {
+      "diagnosis": 0.4,
+      "evidence": 1,
+      "troubleshooting": 0.4,
+      "resolution": 1,
+      "validation": 1
+    },
+    "thresholds": { "jobReady": 3 }
+  },
+  "methodology": [
+    "identify",
+    "gather-evidence",
+    "document",
+    "follow-up"
+  ],
+  "kbOpportunity": "Post-resolution follow-up checklist: review closed ticket → phone the user within SLA window → confirm fix and related issues → capture CSAT → open linked tickets for new findings → close the loop.",
+  "skills": ["customer-service", "documentation"]
+}

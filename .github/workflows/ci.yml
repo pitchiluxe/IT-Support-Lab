@@ -1,0 +1,70 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# Cancel an in-flight run for the same ref when a new commit lands. This
+# keeps CI feedback snappy on rapid pushes.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # 3D campus is enabled for the e2e suite so the room-list / canvas tests
+  # can exercise the gate. Production deployments can choose either setting.
+  VITE_ENABLE_3D: 'true'
+
+jobs:
+  # ─────────────────────────────────────────────────────────────────────
+  # 1. Unit + lint + lab validation — fast feedback, no browser required.
+  # ─────────────────────────────────────────────────────────────────────
+  unit:
+    name: Unit tests, lint, lab validation
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm validate-labs
+      - run: pnpm test
+      - run: pnpm build
+
+  # ─────────────────────────────────────────────────────────────────────
+  # 2. End-to-end browser tests. Spins up the dev server in the workflow
+  #    and drives it with Playwright. Separate job because the e2e suite
+  #    is slower and benefits from a fresh, isolated runner.
+  # ─────────────────────────────────────────────────────────────────────
+  e2e:
+    name: Playwright e2e
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: unit
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install --with-deps chromium
+      - run: pnpm test:e2e
+      - name: Upload Playwright report on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report
+          retention-days: 7

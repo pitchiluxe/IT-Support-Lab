@@ -1,0 +1,260 @@
+{
+  "id": "lab-07",
+  "schemaVersion": 1,
+  "contentVersion": 1,
+  "week": 2,
+  "order": 7,
+  "track": "windows",
+  "title": "Windows User Profile Problem",
+  "persona": "Mr. Torres, history teacher",
+  "channel": "phone",
+  "scenario": "Mr. Torres, a history teacher, calls the IT service desk. When he logged into his Windows 11 laptop this morning, his desktop showed a blank background and a message: 'The user profile service failed to log you on. User profile cannot be loaded.' He can log in with a temporary local account, but all his files, email shortcuts, and saved passwords are inaccessible. He has lesson plans, grade records, and curriculum materials stored in his profile.",
+  "impact": "Instructional. Mr. Torres cannot access lesson plans, grade records, or curriculum materials stored in his Windows profile. If unresolved before class prep time, he cannot prepare for tomorrow's classes.",
+  "objectives": [
+    "Identify the current state of the user profile",
+    "Determine the most likely cause of the profile failure",
+    "Attempt an in-place profile repair or profile reload as appropriate",
+    "Recover or migrate accessible user data from the corrupt profile",
+    "Validate that the repaired or rebuilt profile loads correctly",
+    "Document all changes made to the system"
+  ],
+  "tools": [
+    "Service desk ticket system",
+    "Windows Computer Management console (Local Users and Groups)",
+    "Registry Editor (regedit) for profile repair",
+    "File Explorer for profile folder access",
+    "Windows Recovery Environment (WinRE)"
+  ],
+  "evidence": [
+    { "id": "ev-login-error", "description": "Screenshot of the 'user profile service failed to log you on' error at login", "kind": "screenshot" },
+    { "id": "ev-temp-desktop", "description": "Screenshot of the temporary local account desktop showing no user files", "kind": "screenshot" },
+    { "id": "ev-profile-folder", "description": "Screenshot of the C:\\Users\\ profile folder permissions and folder state", "kind": "screenshot" }
+  ],
+  "decisionPoints": [
+    {
+      "id": "dp-cause",
+      "prompt": "Mr. Torres says the problem started suddenly this morning. He had logged out normally last night. Which of the following is the most likely cause of a corrupt Windows user profile?",
+      "options": [
+        {
+          "id": "opt-cause-disk",
+          "label": "Disk corruption or file system error damaged the ntuser.dat registry hive in the user profile folder",
+          "score": { "diagnosis": 0, "evidence": 0, "resolution": 0 },
+          "feedback": "Disk corruption is possible, but it would typically affect other files and folders on the same disk. A targeted ntuser.dat corruption is more likely caused by a process that specifically touched that file."
+        },
+        {
+          "id": "opt-cause-wu",
+          "label": "A recent Windows Update modified the profile hive and migration failed on next login, leaving the profile inaccessible",
+          "score": { "diagnosis": 1, "evidence": 1, "resolution": 1 },
+          "feedback": "Correct. Windows Update is a known trigger for profile corruption — the update process can modify or lock the profile hive during the reboot cycle, causing the next login to fail. This is a documented pattern in K-12 environments."
+        },
+        {
+          "id": "opt-cause-av",
+          "label": "Antivirus quarantined ntuser.dat because it flagged a registry change as suspicious and isolated the hive file",
+          "score": { "diagnosis": 0, "evidence": -1, "resolution": 0 },
+          "feedback": "Antivirus quarantine of ntuser.dat is rare and would typically generate a quarantine notification. There is no record of that in this case."
+        }
+      ]
+    },
+    {
+      "id": "dp-repair",
+      "prompt": "You have logged in as the temporary local account. You navigate to the profile folder and confirm that Mr. Torres's profile folder still exists on disk with all his files intact. What is the next best step?",
+      "options": [
+        {
+          "id": "opt-repair-registry",
+          "label": "Rename the corrupt ProfileList registry key as backup, then create a new entry pointing to the existing folder",
+          "score": { "diagnosis": 1, "evidence": 1, "resolution": 1 },
+          "feedback": "Correct. This is the standard in-place profile repair procedure. The profile folder data is intact; you are fixing the registry linkage. No data is lost, and Mr. Torres can log in with his normal account afterward."
+        },
+        {
+          "id": "opt-rebuild",
+          "label": "Delete the corrupt profile folder and create a new profile for Mr. Torres, then restore files from a USB backup",
+          "score": { "diagnosis": 0, "evidence": 1, "resolution": 0 },
+          "feedback": "This would lose all profile settings, browser bookmarks, app preferences, and email shortcuts that are not file-based. Only files in Documents, Desktop, and Downloads would survive. A registry repair preserves more data."
+        },
+        {
+          "id": "opt-escalate-t2",
+          "label": "Escalate to Tier 2 because registry edits are outside Tier 1 scope",
+          "score": { "diagnosis": -1, "evidence": 0, "resolution": -1 },
+          "feedback": "Profile repair via registry is a standard Tier 1 procedure in most school IT environments and is within scope when the profile folder data is intact. Escalating without attempting the documented repair would delay Mr. Torres's access to his files."
+        }
+      ]
+    },
+    {
+      "id": "dp-data",
+      "prompt": "Before performing the registry repair, you should verify which files are accessible in the corrupt profile. What is the most important category of files to confirm are present and accessible before proceeding?",
+      "options": [
+        {
+          "id": "opt-data-docs",
+          "label": "Lesson plans and curriculum materials in Documents and on the Desktop — the highest-priority user data",
+          "score": { "diagnosis": 1, "evidence": 1, "resolution": 1 },
+          "feedback": "Correct. Lesson plans and curriculum materials in Documents and Desktop are the primary data at risk. Confirming their presence before the repair ensures Mr. Torres's instructional materials are safe."
+        },
+        {
+          "id": "opt-data-email",
+          "label": "Email configuration files and cached Outlook data in AppData — these contain email history and contacts",
+          "score": { "diagnosis": 0, "evidence": 1, "resolution": 0 },
+          "feedback": "These are important, but the lesson plans and curriculum files are the highest instructional priority. Email cache can be re-synced from the server; lesson plans stored locally cannot."
+        },
+        {
+          "id": "opt-data-all",
+          "label": "All files in the profile folder — back up everything before touching anything",
+          "score": { "diagnosis": 0, "evidence": 0, "resolution": 0 },
+          "feedback": "Backing up everything is thorough, but the key instructional data to verify first is the lesson plans and curriculum materials. A complete folder backup of a large profile takes time that Mr. Torres may not have before class."
+        }
+      ]
+    }
+  ],
+  "ticket": {
+    "type": "incident",
+    "category": "Windows / User Profile",
+    "priority": "p2",
+    "impact": "high",
+    "urgency": "high",
+    "sla": "business-hours",
+    "initialDescription": "Mr. Torres cannot log into his Windows 11 laptop. Login error: 'The user profile service failed to log you on. User profile cannot be loaded.' Logged in with temp account. Lesson plans and grade records are in the profile.",
+    "requester": {
+      "name": "Mr. Torres",
+      "role": "Faculty",
+      "identifiers": { "extension": "ext. 4430", "location": "history dept rm. 108" }
+    }
+  },
+  "location": {
+    "id": "teacher-windows-laptop",
+    "name": "Teacher Windows 11 Pro Laptop (Mr. Torres)",
+    "objects": [
+      {
+        "id": "laptop-login",
+        "name": "Windows Login Screen",
+        "state": {
+          "loginStatus": "temp-account-active",
+          "primaryProfile": "corrupt",
+          "tempProfile": "TEMP-ACCOUNT",
+          "profileState": "profile-service-error",
+          "corruptProfileName": "MrTorres",
+          "corruptProfileSid": "S-1-5-21-1234567890-0987654321-1111111111-1001",
+          "corruptProfilePath": "C:\\Users\\MrTorres",
+          "lastNormalLogin": "2026-08-25T15:45:00Z"
+        }
+      },
+      {
+        "id": "profile-folder",
+        "name": "Profile Folder (C:\\Users\\MrTorres)",
+        "state": {
+          "folderAccessible": true,
+          "documentsPresent": true,
+          "desktopPresent": true,
+          "downloadsPresent": true,
+          "appDataPresent": true,
+          "ntuserDatCorrupt": true,
+          "folderPermissions": "SYSTEM full, Administrators full, MrTorres read"
+        }
+      }
+    ]
+  },
+  "nodes": [
+    {
+      "id": "intake",
+      "kind": "intro",
+      "title": "Intake",
+      "body": "Take Mr. Torres's call. Ask him to describe exactly what he sees on screen, when he last logged in successfully, and what he needs access to most urgently. Document this in the ticket before proceeding.",
+      "transitions": [{ "event": "ticket-created", "to": "inspect-login" }]
+    },
+    {
+      "id": "inspect-login",
+      "kind": "inspect",
+      "title": "Inspect the login error",
+      "body": "Ask Mr. Torres to describe the exact error message on screen. Have him attempt to log in with his regular account again so you can observe the error. Capture a screenshot of the error dialog as evidence.",
+      "locationId": "teacher-windows-laptop",
+      "objectId": "laptop-login",
+      "transitions": [{ "event": "evidence-saved", "to": "log-temp" }]
+    },
+    {
+      "id": "log-temp",
+      "kind": "intro",
+      "title": "Switch to temporary account",
+      "body": "Guide Mr. Torres to log in with the temporary local account. Have him open File Explorer and navigate to C:\\Users\\MrTorres to confirm the profile folder and files are still present on disk. Document what is accessible.",
+      "transitions": [{ "event": "profile-state-documented", "to": "decide-cause" }]
+    },
+    {
+      "id": "decide-cause",
+      "kind": "decide",
+      "title": "Determine the likely cause",
+      "body": "Mr. Torres's profile folder is present and most files appear intact. The failure occurred at login, suggesting the registry hive (ntuser.dat) is corrupt. Based on the evidence, choose the most likely cause.",
+      "decisionPointId": "dp-cause",
+      "transitions": [{ "event": "decision-made", "to": "decide-data" }]
+    },
+    {
+      "id": "decide-data",
+      "kind": "decide",
+      "title": "Prioritize data before repair",
+      "body": "Before touching the registry, you want to confirm the most critical files are present in the profile folder. Which category of files should you verify first?",
+      "decisionPointId": "dp-data",
+      "transitions": [{ "event": "decision-made", "to": "inspect-profile-folder" }]
+    },
+    {
+      "id": "inspect-profile-folder",
+      "kind": "inspect",
+      "title": "Inspect the profile folder",
+      "body": "Open the profile folder inspector. Note the contents of Documents, Desktop, and Downloads. Record which files are present and accessible. Screenshot the folder structure as evidence.",
+      "locationId": "teacher-windows-laptop",
+      "objectId": "profile-folder",
+      "transitions": [{ "event": "evidence-saved", "to": "decide-repair" }]
+    },
+    {
+      "id": "decide-repair",
+      "kind": "decide",
+      "title": "Choose the repair approach",
+      "body": "The profile folder is intact. Mr. Torres's lesson plans and curriculum materials are confirmed present. The registry linkage is corrupt. Choose the appropriate repair approach.",
+      "decisionPointId": "dp-repair",
+      "transitions": [{ "event": "decision-made", "to": "validate" }]
+    },
+    {
+      "id": "validate",
+      "kind": "remediate",
+      "title": "Validate the repair",
+      "body": "Have Mr. Torres log out of the temporary account and log back in with his regular account. Confirm the desktop, taskbar, and profile files load correctly. Ask him to open a lesson plan document to verify data integrity.",
+      "locationId": "teacher-windows-laptop",
+      "objectId": "laptop-login",
+      "transitions": [{ "event": "validation-saved", "to": "document" }]
+    },
+    {
+      "id": "document",
+      "kind": "document",
+      "title": "Document the repair",
+      "body": "Write a ticket note summarizing the repair steps taken, what was confirmed before the repair, and the outcome. Write a brief customer-facing message to Mr. Torres confirming his access is restored and reminding him not to store grades locally.",
+      "prompt": "Write a follow-up message to Mr. Torres. Confirm his profile is restored. Mention the lesson plans are intact. Plain language, no technical jargon.",
+      "transitions": [{ "event": "followup-saved", "to": "debrief" }]
+    },
+    {
+      "id": "debrief",
+      "kind": "debrief",
+      "title": "Debrief",
+      "body": "Review your score and identify what to practice next.",
+      "transitions": []
+    }
+  ],
+  "startNode": "intake",
+  "terminalNodes": ["debrief"],
+  "scoring": {
+    "weights": {
+      "diagnosis": 1,
+      "evidence": 1,
+      "troubleshooting": 1,
+      "resolution": 1,
+      "validation": 1
+    },
+    "thresholds": { "jobReady": 3 }
+  },
+  "methodology": [
+    "identify",
+    "gather-evidence",
+    "hypothesize",
+    "test",
+    "change",
+    "validate",
+    "document",
+    "follow-up"
+  ],
+  "kbOpportunity": "Windows Update as a trigger for user profile corruption — Windows Update can interrupt profile hive locking during the reboot cycle, causing the 'user profile service failed to log you on' error on the next login. The fix is a registry repair, not a profile deletion.",
+  "skills": ["windows", "ticketing"]
+}

@@ -1,0 +1,259 @@
+{
+  "id": "lab-04",
+  "schemaVersion": 1,
+  "contentVersion": 1,
+  "week": 1,
+  "order": 4,
+  "track": "service-desk",
+  "title": "Complex Escalation",
+  "persona": "Mr. Davis, music teacher",
+  "channel": "email",
+  "scenario": "Mr. Davis, a middle school music teacher, emails the IT Service Desk. His classroom's entire audio system — ceiling speakers, wireless lapel mic, and the wall panel mixer — went completely silent mid-class yesterday. No one reported it yesterday. His choir concert is Friday — three days away. He needs audio restored before then.",
+  "impact": "Instructional: The choir concert is Friday. A complete audio system failure affecting speakers, wireless mic, and mixer simultaneously suggests a shared upstream cause. The concert deadline makes this time-sensitive despite the late report.",
+  "objectives": [
+    "Verify the scope of the audio failure across all components",
+    "Identify the correct escalation path: internal IT vs. vendor support",
+    "Gather sufficient evidence so the next team can act without needing to re-investigate",
+    "Document the handoff clearly with all relevant context",
+    "Follow up with Mr. Davis on restoration status",
+    "Validate restoration before the concert"
+  ],
+  "tools": [
+    "Service desk ticket system",
+    "Equipment inventory system",
+    "Vendor contact list",
+    "Standard escalation template"
+  ],
+  "evidence": [
+    { "id": "ev-mixer-display", "description": "Photo or description of the mixer display showing current status, input levels, and any error indicators", "kind": "screenshot" },
+    { "id": "ev-power-cabling", "description": "Documentation of power and cabling checks performed on the mixer, speakers, and wireless mic base station", "kind": "note" },
+    { "id": "ev-vendor-handoff", "description": "Vendor ticket number and summary of the escalation, or documentation of the internal fix applied and confirmed", "kind": "note" }
+  ],
+  "decisionPoints": [
+    {
+      "id": "dp-triage-category",
+      "prompt": "All three audio components — ceiling speakers, wireless lapel mic, and the wall mixer — went silent simultaneously. What is the most likely category of failure?",
+      "options": [
+        {
+          "id": "opt-vendor-hardware",
+          "label": "Vendor hardware failure — one or more components have failed and need repair or replacement",
+          "score": { "diagnosis": 0.8, "evidence": 0.5, "resolution": 0.7 },
+          "feedback": "Simultaneous failure of all components points toward a shared cause, possibly the mixer or the upstream power/data feed. Vendor hardware failure is a real possibility and should be investigated."
+        },
+        {
+          "id": "opt-user-error",
+          "label": "User operation error — someone accidentally muted or powered off the mixer or the speakers",
+          "score": { "diagnosis": 0.3, "evidence": 0.2, "resolution": 0.4 },
+          "feedback": "Possible, but a simultaneous failure of all three components — including devices Mr. Davis may not have touched — makes this less likely as the sole cause."
+        },
+        {
+          "id": "opt-power-issue",
+          "label": "Power issue — a tripped breaker or failed power supply to the mixer or speaker amp has cut power to the entire system",
+          "score": { "diagnosis": 0.6, "evidence": 0.4, "resolution": 0.6 },
+          "feedback": "A shared power source failure is consistent with all three components going silent at once. Checking power is a fast and non-destructive first step."
+        },
+        {
+          "id": "opt-software-config",
+          "label": "Software or configuration issue — a firmware update or configuration change to the mixer has disabled outputs",
+          "score": { "diagnosis": 0.4, "evidence": 0.3, "resolution": 0.4 },
+          "feedback": "A firmware or config issue could disable outputs, but it typically affects only the mixer, not the wireless mic or passive speakers directly."
+        }
+      ]
+    },
+    {
+      "id": "dp-escalation",
+      "prompt": "Internal checks have been completed: power to the mixer is confirmed on, cabling appears intact, and the mixer display shows normal levels. The audio is still not working. At what point do you escalate to the vendor?",
+      "options": [
+        {
+          "id": "opt-escalate-immediate",
+          "label": "Escalate to the vendor immediately without further internal investigation",
+          "score": { "diagnosis": 0, "evidence": -1, "resolution": 0.2 },
+          "feedback": "Escalating without evidence wastes the vendor's time and may result in a site visit for a simple fix. Gather enough information so the vendor can triage remotely."
+        },
+        {
+          "id": "opt-gather-then-escalate",
+          "label": "Document mixer settings, cable states, and power checks; escalate to vendor with full evidence",
+          "score": { "diagnosis": 0.9, "evidence": 1, "resolution": 0.9 },
+          "feedback": "Correct — a well-documented escalation with mixer photos, cable states, and symptoms lets the vendor determine if this is a remote-fixable config issue or requires on-site service, saving time before Friday's concert."
+        },
+        {
+          "id": "opt-replace-mixer",
+          "label": "Order a replacement mixer immediately and swap it out without further diagnosis",
+          "score": { "diagnosis": 0.1, "evidence": -0.5, "resolution": 0 },
+          "feedback": "Replacing hardware without diagnosis is costly and may not fix the issue if the problem is in the speakers, mic, or cabling rather than the mixer."
+        }
+      ]
+    }
+  ],
+  "ticket": {
+    "type": "incident",
+    "category": "Audio / Classroom Technology",
+    "priority": "p2",
+    "impact": "high",
+    "urgency": "high",
+    "sla": "business-hours",
+    "initialDescription": "Mr. Davis reports entire classroom audio system silent mid-class. Ceiling speakers, wireless lapel mic, and wall mixer all affected. Choir concert is Friday.",
+    "requester": {
+      "name": "Mr. Davis",
+      "role": "Faculty",
+      "identifiers": { "extension": "ext. 4417", "location": "rm. 215" }
+    }
+  },
+  "location": {
+    "id": "rm-215",
+    "name": "Room 215 Music Room",
+    "objects": [
+      {
+        "id": "audio-mixer-215",
+        "name": "Wall Panel Mixer (Room 215)",
+        "state": {
+          "power": "on",
+          "error": "none detected",
+          "display": "all inputs nominal, output levels at 0",
+          "model": "Yamaha MG10XU",
+          "firmware": "1.04",
+          "lastConfigChange": "2024-08-10",
+          "muteAll": false,
+          "outputs": "active"
+        }
+      },
+      {
+        "id": "wireless-mic-215",
+        "name": "Wireless Lapel Mic (Room 215)",
+        "state": {
+          "status": "unknown",
+          "baseStationPower": "unknown",
+          "frequency": "UHF 600MHz",
+          "batteryLevel": "unknown",
+          "pairingStatus": "unknown",
+          "lastUsed": "2024-09-14"
+        }
+      },
+      {
+        "id": "ceiling-speakers-215",
+        "name": "Ceiling Speakers (Room 215)",
+        "state": {
+          "status": "unknown",
+          "ampPower": "unknown",
+          "model": "JBL Control 26C",
+          "impedance": "8 ohm",
+          "connection": "hardwired to mixer output",
+          "lastTested": "2024-08-20"
+        }
+      }
+    ]
+  },
+  "nodes": [
+    {
+      "id": "intake",
+      "kind": "intro",
+      "title": "Review the email",
+      "body": "Mr. Davis has emailed the service desk. His entire audio system in Room 215 — ceiling speakers, wireless lapel mic, and wall panel mixer — went silent mid-class yesterday. He did not report it yesterday, and his choir concert is Friday. Acknowledge the email, document the reported symptoms, and open a ticket.",
+      "transitions": [{ "event": "intake-recorded", "to": "scope-check" }]
+    },
+    {
+      "id": "scope-check",
+      "kind": "intro",
+      "title": "Verify scope and gather history",
+      "body": "Ask Mr. Davis clarifying questions: was the audio working before yesterday's class? Did anyone adjust the mixer or move equipment? Did the issue start mid-song or mid-sentence? Check the equipment inventory for the last maintenance date on these devices. Document all findings.",
+      "transitions": [{ "event": "scope-recorded", "to": "decide-triage-category" }]
+    },
+    {
+      "id": "decide-triage-category",
+      "kind": "decide",
+      "title": "Categorize the failure",
+      "body": "All three components went silent at once. Based on the history and symptom pattern, choose the most likely failure category to guide your evidence-gathering approach.",
+      "decisionPointId": "dp-triage-category",
+      "transitions": [{ "event": "decision-made", "to": "inspect-audio" }]
+    },
+    {
+      "id": "inspect-audio",
+      "kind": "inspect",
+      "title": "Inspect the audio equipment",
+      "body": "Inspect the three audio objects in Room 215: the wall mixer, the wireless mic base station, and the ceiling speakers. For each, record power status, any error indicators, and visible cable conditions. Take a photo of the mixer display. Document all observations.",
+      "locationId": "rm-215",
+      "objectId": "audio-mixer-215",
+      "transitions": [{ "event": "evidence-saved", "to": "power-cabling-checks" }]
+    },
+    {
+      "id": "power-cabling-checks",
+      "kind": "inspect",
+      "title": "Check power and cabling",
+      "body": "Perform power and cabling checks on all three audio components. Verify the mixer is receiving power, the amp feeding the ceiling speakers is on, and the wireless mic base station is powered. Check that all cables are seated. Document each check and its result.",
+      "locationId": "rm-215",
+      "objectId": "wireless-mic-215",
+      "transitions": [{ "event": "evidence-saved", "to": "decide-escalation" }]
+    },
+    {
+      "id": "decide-escalation",
+      "kind": "decide",
+      "title": "Determine escalation path",
+      "body": "Internal checks are complete. Power is on, cabling appears intact, and the mixer display shows nominal levels. The audio is still not working. Choose the escalation approach that will get the fastest resolution before Friday's concert.",
+      "decisionPointId": "dp-escalation",
+      "transitions": [{ "event": "decision-made", "to": "escalate-or-fix" }]
+    },
+    {
+      "id": "escalate-or-fix",
+      "kind": "remediate",
+      "title": "Execute escalation or internal fix",
+      "body": "If the issue is vendor-level (hardware failure beyond the mixer), submit a vendor ticket with full documentation: device serial numbers, photos of the mixer display, power/cabling check results, and a summary of symptoms. If the issue has a simple internal fix (e.g., a loose cable, a muted output), apply it and document the change.",
+      "transitions": [{ "event": "escalation-submitted", "to": "follow-up-teacher" }]
+    },
+    {
+      "id": "follow-up-teacher",
+      "kind": "intro",
+      "title": "Follow up with Mr. Davis",
+      "body": "Contact Mr. Davis to give him a status update: what was found, what action is being taken, and the expected timeline for restoration. Given the concert on Friday, set a follow-up reminder to check restoration status before the concert.",
+      "transitions": [{ "event": "followup-sent", "to": "validate" }]
+    },
+    {
+      "id": "validate",
+      "kind": "remediate",
+      "title": "Validate restoration",
+      "body": "Once the vendor has serviced the equipment or the internal fix has been applied, validate: have Mr. Davis test the speakers, wireless mic, and mixer in a live session. Confirm all three components are working before closing the ticket. Document the validation result with the concert deadline in mind.",
+      "locationId": "rm-215",
+      "objectId": "audio-mixer-215",
+      "transitions": [{ "event": "validation-saved", "to": "document" }]
+    },
+    {
+      "id": "document",
+      "kind": "document",
+      "title": "Document the ticket",
+      "body": "Write a comprehensive ticket summary: what was reported, the timeline (reported one day late), all evidence gathered, the escalation path chosen, the vendor ticket number or internal fix applied, and the validation result. Ensure the next team member can understand the full history without asking Mr. Davis to re-explain.",
+      "prompt": "Write an internal ticket note summarizing the audio system failure, the triage and evidence-gathering steps, the escalation decision and vendor ticket details, and the resolution status ahead of Friday's concert.",
+      "transitions": [{ "event": "followup-saved", "to": "debrief" }]
+    },
+    {
+      "id": "debrief",
+      "kind": "debrief",
+      "title": "Debrief",
+      "body": "Review your score and identify what to practice next.",
+      "transitions": []
+    }
+  ],
+  "startNode": "intake",
+  "terminalNodes": ["debrief"],
+  "scoring": {
+    "weights": {
+      "diagnosis": 1,
+      "evidence": 1.2,
+      "troubleshooting": 1,
+      "resolution": 1,
+      "validation": 0.8
+    },
+    "thresholds": { "jobReady": 3 }
+  },
+  "methodology": [
+    "identify",
+    "scope",
+    "gather-evidence",
+    "hypothesize",
+    "test",
+    "change",
+    "validate",
+    "document",
+    "follow-up"
+  ],
+  "kbOpportunity": "Simultaneous failure of all audio components in a classroom is often caused by a shared upstream issue — a power failure to the amp, a disabled mixer output, or a vendor-level hardware fault. Always check shared infrastructure before escalating, and document evidence thoroughly so the vendor can triage remotely.",
+  "skills": ["customer-service", "ticketing", "incident-response"]
+}
