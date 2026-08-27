@@ -6,7 +6,7 @@ import { existsSync } from 'node:fs';
 import path from 'node:path';
 
 const OUT = path.resolve('docs/screenshots');
-const BASE = 'http://localhost:5173';
+const BASE = process.env.SCREENSHOT_BASE ?? 'http://localhost:5173';
 
 if (!existsSync(OUT)) {
   await mkdir(OUT, { recursive: true });
@@ -16,6 +16,12 @@ const browser = await chromium.launch();
 const ctx = await browser.newContext({
   viewport: { width: 1440, height: 900 },
   deviceScaleFactor: 2,
+  colorScheme: 'dark',
+});
+// Pin the app to dark mode (the user can also do this in Settings) so the
+// screenshots look consistent regardless of the host OS theme.
+await ctx.addInitScript(() => {
+  try { localStorage.setItem('itsla.theme', 'dark'); } catch (_) {}
 });
 const page = await ctx.newPage();
 
