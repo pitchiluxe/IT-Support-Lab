@@ -21,14 +21,8 @@ Requires Node 20+ and pnpm 10.
 
 | | |
 |---|---|
-| ![Landing](docs/screenshots/01-landing.png) | ![Dashboard](docs/screenshots/02-dashboard.png) |
-| **Landing page** — your home base | **Dashboard** — current week, readiness at a glance |
-| ![Labs](docs/screenshots/03-labs.png) | ![Lab Run](docs/screenshots/04-lab-run.png) |
-| **Lab browser** — filter by track and week | **Lab run** — scenario + evidence + AI tutor |
-| ![Readiness](docs/screenshots/05-readiness.png) | ![Portfolio](docs/screenshots/06-portfolio.png) |
-| **Readiness dashboard** — 13 skill areas, levels, progress | **Portfolio** — case studies, KB articles, export |
-| ![Settings](docs/screenshots/07-settings.png) | |
-| **Settings** — tutor provider, AI parameters | |
+| ![Landing](docs/screenshots/01-landing.png) | ![Labs](docs/screenshots/03-labs.png) |
+| **Landing page** — your home base | **Lab browser** — filter by track and week |
 
 ## Optional: 3D campus
 
