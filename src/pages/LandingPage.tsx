@@ -126,8 +126,7 @@ function Hero({ hasProfile, onPrimary }: { hasProfile: boolean; onPrimary: () =>
             className="gap-2 bg-background/60 backdrop-blur"
           >
             <a
-              href="/downloads/IT-Support-Lab-Setup.exe"
-              download
+              href="https://github.com/pitchiluxe/IT-Support-Lab/releases/download/v0.1.0/IT-Support-Lab-Setup.exe"
               aria-label="Download the IT Support Lab Windows installer"
             >
               <Download className="h-4 w-4" aria-hidden="true" />
@@ -980,8 +979,7 @@ function DownloadsSection() {
         </p>
         <div className="mt-10 grid gap-4 sm:grid-cols-2">
           <a
-            href="/downloads/IT-Support-Lab-Setup.exe"
-            download
+            href="https://github.com/pitchiluxe/IT-Support-Lab/releases/download/v0.1.0/IT-Support-Lab-Setup.exe"
             className="group flex items-center justify-between gap-4 rounded-xl border bg-card p-6 text-left transition-all hover:border-primary/50 hover:shadow-lg"
           >
             <div>
@@ -997,8 +995,7 @@ function DownloadsSection() {
             <Download className="h-5 w-5 shrink-0 text-muted-foreground transition-transform group-hover:translate-y-0.5 group-hover:text-primary" aria-hidden="true" />
           </a>
           <a
-            href="/downloads/IT-Support-Lab-Portable.exe"
-            download
+            href="https://github.com/pitchiluxe/IT-Support-Lab/releases/download/v0.1.0/IT-Support-Lab-Portable.exe"
             className="group flex items-center justify-between gap-4 rounded-xl border bg-card p-6 text-left transition-all hover:border-primary/50 hover:shadow-lg"
           >
             <div>
