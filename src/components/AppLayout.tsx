@@ -1,5 +1,5 @@
 import { Link, Outlet, useLocation } from 'react-router-dom';
-import { useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { Sun, Moon, GraduationCap, Settings, TrendingUp, Briefcase, ArrowRight } from 'lucide-react';
 import { useTheme } from '@/app/ThemeProvider';
 import { Button } from '@/components/ui/button';
@@ -16,12 +16,12 @@ const appNav = [
 
 /** In-page anchor links shown in the header on the landing page. */
 const LANDING_NAV = [
-  { to: '#how-it-works', label: 'How it works' },
-  { to: '#what-it-is', label: 'Features' },
-  { to: '#skills', label: 'Skills' },
-  { to: '#coach', label: 'AI Coach' },
-  { to: '#faq', label: 'FAQ' },
-  { to: '#contact', label: 'Contact' },
+  { to: 'how-it-works', label: 'How it works' },
+  { to: 'what-it-is', label: 'Features' },
+  { to: 'skills', label: 'Skills' },
+  { to: 'coach', label: 'AI Coach' },
+  { to: 'faq', label: 'FAQ' },
+  { to: 'contact', label: 'Contact' },
 ] as const;
 
 export function AppLayout() {
@@ -43,6 +43,35 @@ export function AppLayout() {
   // The "home" target for the logo. The user wants clicking the logo to
   // always return to the landing page, regardless of where they are.
   const logoTo = '/';
+
+  // Click handler for in-page anchor links. We do this in JS instead of
+  // using <a href="#…"> because the app uses createHashRouter — the
+  // browser hash is owned by React Router, so a plain anchor click would
+  // either 404 (if the user is on a non-landing route and the hash lands
+  // on an unknown route) or fight the router for the URL. Instead we
+  // navigate to '/' if we aren't there, then scroll to the element id.
+  const handleAnchorClick = useCallback(
+    (e: React.MouseEvent<HTMLElement>, id: string) => {
+      e.preventDefault();
+      const scroll = () => {
+        // Try the main element first (its overflow-auto owns the scroll),
+        // then fall back to the window.
+        const el = document.getElementById(id);
+        if (!el) return;
+        const top = el.getBoundingClientRect().top + (mainRef.current?.scrollTop ?? window.scrollY);
+        mainRef.current?.scrollTo({ top, behavior: 'smooth' });
+        window.scrollTo({ top, behavior: 'smooth' });
+      };
+      if (isLanding) {
+        scroll();
+      } else {
+        navigate('/');
+        // Wait for the landing page to render before scrolling.
+        requestAnimationFrame(() => requestAnimationFrame(scroll));
+      }
+    },
+    [isLanding, navigate],
+  );
 
   return (
     <div className="flex h-full flex-col">
@@ -77,13 +106,13 @@ export function AppLayout() {
             className="hidden flex-1 flex-wrap items-center justify-center gap-0 text-xs sm:flex sm:gap-1"
           >
             {LANDING_NAV.map((link) => (
-              <a
+              <button
                 key={link.to}
-                href={link.to}
+                onClick={(e) => handleAnchorClick(e, link.to)}
                 className="whitespace-nowrap rounded-md px-2 py-1.5 font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground sm:px-2.5"
               >
                 {link.label}
-              </a>
+              </button>
             ))}
           </nav>
         ) : (

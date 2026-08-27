@@ -45,16 +45,28 @@ import { cn } from '@/lib/utils';
  * works — before a learner ever sees the dashboard.
  *
  * If the learner already has a profile, the primary CTA jumps them
- * straight to `/dashboard`. If not, the CTA opens Settings so they can
+ * straight to `/labs`. If not, the CTA opens Settings so they can
  * create a profile and pick a study schedule.
  */
 export function LandingPage() {
   const { hasProfile } = useProfileStore();
   const navigate = useNavigate();
 
+  const scrollToSection = (id: string) => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth' });
+      window.scrollBy(0, -80); // offset for the sticky header
+    }
+  };
+
   return (
     <div className="min-h-full overflow-x-hidden">
-      <Hero hasProfile={hasProfile} onPrimary={() => navigate(hasProfile ? '/dashboard' : '/settings')} />
+      <Hero
+        hasProfile={hasProfile}
+        onPrimary={() => navigate(hasProfile ? '/labs' : '/settings')}
+        onSeeHowItWorks={() => scrollToSection('how-it-works')}
+      />
       <TrustBar />
       <WhatItIs />
       <HowItWorks />
@@ -63,10 +75,10 @@ export function LandingPage() {
       <SkillsGrid />
       <WhyItWorks />
       <CoachShowcase />
-      <ScheduleSection hasProfile={hasProfile} onPrimary={() => navigate(hasProfile ? '/dashboard' : '/settings')} />
+      <ScheduleSection hasProfile={hasProfile} onPrimary={() => navigate(hasProfile ? '/labs' : '/settings')} />
       <FAQ />
       <ContactUs />
-      <FinalCTA hasProfile={hasProfile} onPrimary={() => navigate(hasProfile ? '/dashboard' : '/settings')} />
+      <FinalCTA hasProfile={hasProfile} onPrimary={() => navigate(hasProfile ? '/labs' : '/settings')} />
       <DownloadsSection />
       <CreatedBy />
     </div>
@@ -77,7 +89,7 @@ export function LandingPage() {
 // Hero
 // ─────────────────────────────────────────────────────────────────────────
 
-function Hero({ hasProfile, onPrimary }: { hasProfile: boolean; onPrimary: () => void }) {
+function Hero({ hasProfile, onPrimary, onSeeHowItWorks }: { hasProfile: boolean; onPrimary: () => void; onSeeHowItWorks: () => void }) {
   return (
     <section className="relative isolate overflow-hidden">
       {/* Animated grid background */}
@@ -133,8 +145,13 @@ function Hero({ hasProfile, onPrimary }: { hasProfile: boolean; onPrimary: () =>
               Download for Windows
             </a>
           </Button>
-          <Button size="lg" variant="outline" asChild className="bg-background/60 backdrop-blur">
-            <a href="#how-it-works">See how it works</a>
+          <Button
+            size="lg"
+            variant="outline"
+            onClick={onSeeHowItWorks}
+            className="bg-background/60 backdrop-blur"
+          >
+            See how it works
           </Button>
         </div>
 
