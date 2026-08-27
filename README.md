@@ -24,6 +24,13 @@ Requires Node 20+ and pnpm 10.
 | ![Landing](docs/screenshots/01-landing.png) | ![Labs](docs/screenshots/03-labs.png) |
 | **Landing page** — your home base | **Lab browser** — filter by track and week |
 
+## Downloads
+
+Download the Windows app and run it without a browser.
+
+- [IT Support Lab Setup.exe](dist/downloads/IT-Support-Lab-Setup.exe) — installer (134 MB)
+- [IT Support Lab Portable.exe](dist/downloads/IT-Support-Lab-Portable.exe) — no-install, move anywhere (244 MB)
+
 ## Optional: 3D campus
 
 The 3D campus view is gated behind `VITE_ENABLE_3D`. When it's off (the default), the 2D location panel is the only rendering. When it's on, learners can opt in via **Settings → Campus view → 3D**.

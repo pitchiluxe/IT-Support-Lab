@@ -1,7 +1,6 @@
 import { createHashRouter, RouterProvider } from 'react-router-dom';
 import { ErrorBoundary } from './ErrorBoundary';
 import { LandingPage } from '@/pages/LandingPage';
-import { HomePage } from '@/pages/HomePage';
 import { LabsPage } from '@/pages/LabsPage';
 import { LabRunPage } from '@/pages/LabRunPage';
 import { SettingsPage } from '@/pages/SettingsPage';
@@ -24,7 +23,7 @@ const router = createHashRouter([
     ),
     children: [
       { index: true, element: <LandingPage /> },
-      { path: 'dashboard', element: <HomePage /> },
+      { path: 'dashboard', element: <LandingPage /> },
       { path: 'labs', element: <LabsPage /> },
       { path: 'lab/:labId', element: <LabRunPage /> },
       { path: 'readiness', element: <ReadinessPage /> },

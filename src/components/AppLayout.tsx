@@ -1,6 +1,6 @@
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import { useEffect, useRef } from 'react';
-import { Sun, Moon, Monitor, GraduationCap, Settings, TrendingUp, Briefcase, ArrowRight } from 'lucide-react';
+import { Sun, Moon, GraduationCap, Settings, TrendingUp, Briefcase, ArrowRight } from 'lucide-react';
 import { useTheme } from '@/app/ThemeProvider';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -8,7 +8,6 @@ import { useProfileStore } from '@/features/profile/store';
 import { useNavigate } from 'react-router-dom';
 
 const appNav = [
-  { to: '/dashboard', label: 'Dashboard', icon: Monitor },
   { to: '/labs', label: 'Labs', icon: GraduationCap },
   { to: '/readiness', label: 'Readiness', icon: TrendingUp },
   { to: '/portfolio', label: 'Portfolio', icon: Briefcase },
@@ -122,7 +121,7 @@ export function AppLayout() {
               variant="outline"
               className="gap-1.5 whitespace-nowrap"
               onClick={() =>
-                navigate(hasProfile ? '/dashboard' : '/settings')
+                navigate(hasProfile ? '/labs' : '/settings')
               }
             >
               Open the app

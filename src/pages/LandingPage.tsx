@@ -31,6 +31,8 @@ import {
   Instagram,
   Youtube,
   Send,
+  Download,
+  Monitor,
 } from 'lucide-react';
 import { useProfileStore } from '@/features/profile/store';
 import { Button } from '@/components/ui/button';
@@ -65,6 +67,7 @@ export function LandingPage() {
       <FAQ />
       <ContactUs />
       <FinalCTA hasProfile={hasProfile} onPrimary={() => navigate(hasProfile ? '/dashboard' : '/settings')} />
+      <DownloadsSection />
       <CreatedBy />
     </div>
   );
@@ -115,6 +118,21 @@ function Hero({ hasProfile, onPrimary }: { hasProfile: boolean; onPrimary: () =>
           >
             {hasProfile ? 'Open my dashboard' : 'Start the free labs'}
             <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" aria-hidden="true" />
+          </Button>
+          <Button
+            size="lg"
+            variant="outline"
+            asChild
+            className="gap-2 bg-background/60 backdrop-blur"
+          >
+            <a
+              href="/downloads/IT-Support-Lab-Setup.exe"
+              download
+              aria-label="Download the IT Support Lab Windows installer"
+            >
+              <Download className="h-4 w-4" aria-hidden="true" />
+              Download for Windows
+            </a>
           </Button>
           <Button size="lg" variant="outline" asChild className="bg-background/60 backdrop-blur">
             <a href="#how-it-works">See how it works</a>
@@ -946,6 +964,60 @@ function FinalCTA({ hasProfile, onPrimary }: { hasProfile: boolean; onPrimary: (
 // ─────────────────────────────────────────────────────────────────────────
 // Created-by credit
 // ─────────────────────────────────────────────────────────────────────────
+
+function DownloadsSection() {
+  return (
+    <section className="border-y py-16 sm:py-20">
+      <div className="mx-auto max-w-3xl px-6 text-center">
+        <div className="inline-flex items-center gap-2 rounded-full border bg-background px-3 py-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+          Free download
+        </div>
+        <h2 className="mt-4 text-balance text-3xl font-bold tracking-tight sm:text-4xl">
+          Get the desktop app.
+        </h2>
+        <p className="mt-4 text-balance text-muted-foreground sm:text-lg">
+          Install the full Windows app. Works offline, no browser needed.
+        </p>
+        <div className="mt-10 grid gap-4 sm:grid-cols-2">
+          <a
+            href="/downloads/IT-Support-Lab-Setup.exe"
+            download
+            className="group flex items-center justify-between gap-4 rounded-xl border bg-card p-6 text-left transition-all hover:border-primary/50 hover:shadow-lg"
+          >
+            <div>
+              <div className="flex items-center gap-2 font-semibold">
+                <Monitor className="h-5 w-5 text-primary" aria-hidden="true" />
+                Windows Installer
+              </div>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Setup wizard — installs to Program Files. Recommended for most users.
+              </p>
+              <p className="mt-2 text-xs text-muted-foreground">134 MB · Windows 10/11</p>
+            </div>
+            <Download className="h-5 w-5 shrink-0 text-muted-foreground transition-transform group-hover:translate-y-0.5 group-hover:text-primary" aria-hidden="true" />
+          </a>
+          <a
+            href="/downloads/IT-Support-Lab-Portable.exe"
+            download
+            className="group flex items-center justify-between gap-4 rounded-xl border bg-card p-6 text-left transition-all hover:border-primary/50 hover:shadow-lg"
+          >
+            <div>
+              <div className="flex items-center gap-2 font-semibold">
+                <Monitor className="h-5 w-5 text-primary" aria-hidden="true" />
+                Portable (no install)
+              </div>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Runs directly — no installation, no admin rights needed. Move it anywhere.
+              </p>
+              <p className="mt-2 text-xs text-muted-foreground">244 MB · Windows 10/11</p>
+            </div>
+            <Download className="h-5 w-5 shrink-0 text-muted-foreground transition-transform group-hover:translate-y-0.5 group-hover:text-primary" aria-hidden="true" />
+          </a>
+        </div>
+      </div>
+    </section>
+  );
+}
 
 function CreatedBy() {
   return (
