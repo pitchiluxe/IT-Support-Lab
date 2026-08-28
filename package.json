@@ -34,15 +34,25 @@
     "files": [
       "dist/**/*",
       "electron/**/*",
-      "package.json"
+      "package.json",
+      "node_modules/electron-updater/**/*",
+      "node_modules/lazy-property/**/*"
     ],
     "asar": true,
+    "publish": {
+      "provider": "github",
+      "owner": "pitchiluxe",
+      "repo": "IT-Support-Lab",
+      "releaseType": "release"
+    },
     "win": {
       "icon": "build-assets/installer-icon.ico",
       "target": [
         {
           "target": "nsis",
-          "arch": ["x64"]
+          "arch": [
+            "x64"
+          ]
         }
       ],
       "verifyUpdateCodeSignature": false,
@@ -73,6 +83,7 @@
     "clsx": "^2.1.1",
     "dexie": "^4.0.10",
     "dexie-react-hooks": "^1.1.7",
+    "electron-updater": "^6.8.9",
     "lucide-react": "^0.460.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",

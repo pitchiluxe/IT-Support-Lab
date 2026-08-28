@@ -18,7 +18,7 @@
 
 const path = require('node:path');
 const fs = require('node:fs');
-const { app, BrowserWindow, Menu, shell } = require('electron');
+const { app, BrowserWindow, Menu, shell, ipcMain, dialog } = require('electron');
 
 // Diagnostic log file. Helps debug "JavaScript error in main process"
 // dialogs where the user can't see what's printed. Only written when
@@ -245,10 +245,107 @@ function createMenu() {
   Menu.setApplicationMenu(menu);
 }
 
+// ── Auto-update ─────────────────────────────────────────────────────────────
+// Only runs in production. Skipped in dev so we don't hit GitHub API rate limits.
+function setupAutoUpdater() {
+  if (isDev) return;
+
+  let autoUpdater;
+  try {
+    ({ autoUpdater } = require('electron-updater'));
+  } catch (e) {
+    // If the module isn't bundled (shouldn't happen), silently skip updates.
+    return;
+  }
+
+  // Silent in production — user only hears about it if there's a real update.
+  autoUpdater.autoDownload = false;
+  autoUpdater.autoInstallOnAppQuit = true;
+
+  autoUpdater.on('checking-for-update', () => {
+    if (process.env.ITSLA_DEBUG) {
+      console.log('[updater] checking for update…');
+    }
+  });
+
+  autoUpdater.on('update-available', (info) => {
+    if (process.env.ITSLA_DEBUG) {
+      console.log('[updater] update available:', info.version);
+    }
+    // Notify the renderer that an update is ready.
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.send('update-available', {
+        version: info.version,
+        releaseNotes: info.releaseNotes ?? '',
+      });
+    }
+  });
+
+  autoUpdater.on('update-not-available', () => {
+    if (process.env.ITSLA_DEBUG) {
+      console.log('[updater] no update available');
+    }
+  });
+
+  autoUpdater.on('error', (err) => {
+    if (process.env.ITSLA_DEBUG) {
+      console.error('[updater] error:', err.message);
+    }
+  });
+
+  autoUpdater.on('download-progress', (progress) => {
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.send('update-download-progress', {
+        percent: progress.percent,
+      });
+    }
+  });
+
+  autoUpdater.on('update-downloaded', (info) => {
+    if (process.env.ITSLA_DEBUG) {
+      console.log('[updater] downloaded:', info.version);
+    }
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.send('update-downloaded', {
+        version: info.version,
+      });
+    }
+  });
+
+  // IPC handlers so the renderer can trigger check / download / install.
+  ipcMain.handle('check-for-updates', async () => {
+    try {
+      const result = await autoUpdater.checkForUpdates();
+      return result?.updateInfo ?? null;
+    } catch (e) {
+      return null;
+    }
+  });
+
+  ipcMain.handle('download-update', async () => {
+    try {
+      await autoUpdater.downloadUpdate();
+      return true;
+    } catch (e) {
+      return false;
+    }
+  });
+
+  ipcMain.handle('install-update', () => {
+    autoUpdater.quitAndInstall(false, true);
+  });
+
+  // Check for updates a few seconds after startup.
+  setTimeout(() => {
+    autoUpdater.checkForUpdates().catch(() => {});
+  }, 5000);
+}
+
 // ── Lifecycle ────────────────────────────────────────────────────────────────
 app.whenReady().then(() => {
   createMenu();
   createWindow();
+  setupAutoUpdater();
 
   app.on('activate', () => {
     // macOS: re-create window when dock icon is clicked and no windows exist.

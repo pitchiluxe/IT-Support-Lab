@@ -27,8 +27,6 @@ import {
   Globe,
   Linkedin,
   Twitter,
-  Facebook,
-  Instagram,
   Youtube,
   Send,
   Download,
@@ -822,9 +820,7 @@ function ContactUs() {
             <div className="mt-4 flex flex-wrap gap-2">
               {[
                 { label: 'LinkedIn', href: 'https://www.linkedin.com/in/erickomari', icon: Linkedin },
-                { label: 'Twitter / X', href: 'https://twitter.com/erickomari', icon: Twitter },
-                { label: 'Facebook', href: 'https://www.facebook.com/erickomari', icon: Facebook },
-                { label: 'Instagram', href: 'https://www.instagram.com/erickomari', icon: Instagram },
+                { label: 'Twitter / X', href: 'https://twitter.com/eomari', icon: Twitter },
                 { label: 'YouTube', href: 'https://www.youtube.com/@erickomari', icon: Youtube },
                 { label: 'Website', href: 'https://www.technobiztrader.net', icon: Globe },
               ].map(({ label, href, icon: Icon }) => (
@@ -876,9 +872,14 @@ function ContactUs() {
               <h3 className="text-lg font-semibold">Send a message</h3>
             </div>
             <p className="mt-1 text-sm text-muted-foreground">
-              Your message will be delivered to{' '}
-              <span className="font-medium text-foreground">erickomari2432@gmail.com</span>{' '}
-              via your default email client.
+              Your message goes directly to{' '}
+              <a
+                href={`mailto:${CREATOR_EMAIL}?subject=${subject}`}
+                className="font-medium text-foreground underline-offset-4 hover:underline"
+              >
+                {CREATOR_EMAIL}
+              </a>
+              .
             </p>
 
             <div className="mt-6 grid gap-4 sm:grid-cols-2">

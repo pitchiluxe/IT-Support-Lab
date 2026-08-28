@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useProfileStore } from '@/features/profile/store';
 import { useNavigate } from 'react-router-dom';
+import { UpdateBanner } from '@/features/update/UpdateBanner';
 
 const appNav = [
   { to: '/labs', label: 'Labs', icon: GraduationCap },
@@ -181,6 +182,9 @@ export function AppLayout() {
       <main ref={mainRef} className="flex-1 overflow-auto">
         <Outlet />
       </main>
+
+      {/* Auto-update notification — only renders inside Electron */}
+      <UpdateBanner />
     </div>
   );
 }

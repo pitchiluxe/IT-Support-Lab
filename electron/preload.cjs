@@ -7,10 +7,24 @@
  */
 'use strict';
 
-const { contextBridge } = require('electron');
+const { contextBridge, ipcRenderer } = require('electron');
 
 contextBridge.exposeInMainWorld('app', {
   platform: process.platform,
   version: process.env.npm_package_version || '0.1.0',
   isDev: process.argv.includes('--dev'),
+
+  // Auto-update — renderer side
+  onUpdateAvailable: (callback) => {
+    ipcRenderer.on('update-available', (_event, info) => callback(info));
+  },
+  onUpdateDownloaded: (callback) => {
+    ipcRenderer.on('update-downloaded', (_event, info) => callback(info));
+  },
+  onUpdateProgress: (callback) => {
+    ipcRenderer.on('update-download-progress', (_event, progress) => callback(progress));
+  },
+  checkForUpdates: () => ipcRenderer.invoke('check-for-updates'),
+  downloadUpdate: () => ipcRenderer.invoke('download-update'),
+  installUpdate: () => ipcRenderer.invoke('install-update'),
 });
