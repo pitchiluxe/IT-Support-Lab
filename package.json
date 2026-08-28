@@ -1,7 +1,7 @@
 {
   "name": "it-services-support-tech-lab",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "IT Support Lab — interactive training environment for IT support technicians",
   "author": "Erick Omari",
   "type": "module",
