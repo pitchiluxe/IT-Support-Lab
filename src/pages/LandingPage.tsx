@@ -780,7 +780,7 @@ function ContactUs() {
         <div className="mx-auto mt-12 grid max-w-3xl gap-8 sm:grid-cols-[200px_1fr] sm:items-center">
           <div className="mx-auto sm:mx-0">
             <img
-              src="/Erick.jpg"
+              src="Erick.jpg"
               alt="Portrait of Erick Omari, creator of IT Support Lab Academy"
               width={200}
               height={200}
