@@ -26,10 +26,10 @@ Requires Node 20+ and pnpm 10.
 
 ## Downloads
 
-Download the Windows app and run it without a browser. Latest release: **[v0.1.0](https://github.com/pitchiluxe/IT-Support-Lab/releases/tag/v0.1.0)**.
+Download the Windows app and run it without a browser. Latest release: **[v0.2.0](https://github.com/pitchiluxe/IT-Support-Lab/releases/tag/v0.2.0)**.
 
-- [IT-Support-Lab-Setup.exe](https://github.com/pitchiluxe/IT-Support-Lab/releases/download/v0.1.0/IT-Support-Lab-Setup.exe) — installer (134 MB)
-- [IT-Support-Lab-Portable.exe](https://github.com/pitchiluxe/IT-Support-Lab/releases/download/v0.1.0/IT-Support-Lab-Portable.exe) — no-install, move anywhere (244 MB)
+- [IT-Support-Lab-Setup-0.2.0.exe](https://github.com/pitchiluxe/IT-Support-Lab/releases/download/v0.2.0/IT-Support-Lab-Setup-0.2.0.exe) — installer (135 MB)
+- [IT Support Lab 0.2.0.exe](https://github.com/pitchiluxe/IT-Support-Lab/releases/download/v0.2.0/IT.Support.Lab.0.2.0.exe) — portable, no-install (244 MB)
 
 ## Optional: 3D campus
 
